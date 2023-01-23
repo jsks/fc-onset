@@ -2,49 +2,39 @@
 
 library(caTools)
 library(dplyr)
-library(haven)
-library(readxl)
-library(sjPlot)
+library(ggplot2)
 
-df <- readRDS("./data/merged_data.rds")
+df <- readRDS("./data/intrastate_merged.rds")
 
-###
-# Descriptive stats
-table(df$lagged_fc_onset)
-
-# How many observations post-Cold War
-filter(df, end_year >= 1991) |> nrow()
-filter(df, lagged_fc_onset == 1, end_year >= 1991) |> nrow()
-filter(df, lagged_fc_onset == 1, censored) |> nrow()
-
-# How many interstate vs intrastate
-filter(df, !type_of_conflict %in% 3:4) |> nrow()
+ml <- glm(lagged_fc_onset ~ ext_f_wavg + max_intensity + v2x_polyarchy_avg + v2x_polyarchy_range +
+              e_gdppc_avg + e_pop_avg + cinc_avg, data = df, family = binomial)
 
 
 
+vars <- c("ext_sup_bin", "ext_x_bin", "ext_w_bin", "ext_m_bin",
+          "ext_t_bin", "ext_f_bin", "ext_l_bin")
 
-###
-# Analysis - Basic logistic models
-ml <- glm(lagged_fc_onset ~ ext_f_wavg + factor(type_of_conflict) +
-              max_intensity, data = df, family = binomial)
-summary(ml)
+fits <- lapply(vars, function(v) {
+    fml <- sprintf("lagged_fc_onset ~ %s + max_intensity + v2x_polyarchy_avg + e_gdppc_avg + e_pop_avg + cinc_avg", v) |>
+        formula()
 
-p <- predict(ml, type = "response")
-summary(p[df$lagged_fc_onset == 1])
-table(df$lagged_fc_onset, p >= 0.25)
+    ml <- glm(fml, data = df, family = "binomial")
+    ci <- confint(ml)[2,]
 
-colAUC(p, df$lagged_fc_onset, plotROC = T)
+    data.frame(var = v, point = coef(ml)[2], lower = ci[1], upper= ci[2])
+}) |> bind_rows()
 
-###
-# Intra-state conflicts
-sub.df <- filter(df, type_of_conflict %in% 3:4)
+plot.df <- mutate(fits, var = case_when(var == "ext_sup_bin" ~ "Aggregate Support",
+                            var == "ext_x_bin" ~ "Military Support",
+                                        var == "ext_w_bin" ~ "Weapons",
+                                        var == "ext_m_bin" ~ "Material/Logistics",
+                                        var == "ext_t_bin" ~ "Training/Expertise",
+                                        var == "ext_f_bin" ~ "Funding",
+                                        var == "ext_l_bin" ~ "Access to Territory"))
 
-ml <- glm(lagged_fc_onset ~ ext_x_bin  + max_intensity,
-          data = sub.df, family= binomial)
-summary(ml)
-
-p <- predict(ml, type = "response")
-summary(p)
-table(sub.df$lagged_fc_onset, predict(ml, type = "response") >= 0.25)
-
-colAUC(p, sub.df$lagged_fc_onset, plotROC = T)
+ggplot(plot.df, aes(point, var)) +
+    geom_point() +
+    geom_errorbarh(aes(xmin = lower, xmax = upper), height = 0) +
+    geom_vline(xintercept = 0, linetype = "dotted") +
+    xlab("Estimate + 95% CI") +
+    theme(axis.title.y = element_blank())
