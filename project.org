@@ -1,6 +1,7 @@
 #+TITLE: Onset of Frozen Conflicts
 #+AUTHOR: JLA Krusell
 
+
 *Research question*: /why do conflicts become frozen?/
 
 Re-phrased, why do conflicts not terminate in conclusive victory
@@ -8,6 +9,12 @@ and/or peace agreements? How do rebel groups maintain credible threats
 against the state?
 
 Cunningham - Rebel strength dataset?
+
+* TODO Next research memo
+
+- Frozen conflict definition, conceptualization
+- Datasets
+- Initial models
 
 
 * DONE Descriptive statistics
