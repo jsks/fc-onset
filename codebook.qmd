@@ -1,0 +1,34 @@
+---
+title: Codebook v0.1
+author: J.L.A. Krusell
+format:
+    pdf:
+        header-includes: \renewcommand{\arraystretch}{1.7}
+---
+
+Introduction, coverage
+
+only includes frozen onsets, not all outcomes
+
+only includes first onset
+
+### Definitions
+
+Define a dyadic conflict episode
+
+
+### Variables
+
+
+
+| Variable      | Type    | Description                                                 |
+|:--------------|:--------|:------------------------------------------------------------|
+| `conflict_id` | Integer | Unique conflict-level identifier                            |
+| `dyad_id`     | Integer | Unique dyadic-level identifier                              |
+| `year`        | Integer | Onset year                                                  |
+| `duration`    | Integer | Number of years until the conflict becomes active again     |
+| `side_a`      | String  | Primary state actor in the dyadic-conflict                  |
+| `side_b`      | String  | Primary non-state actor in a conflict dyad                  |
+| `frozen`      | Boolean | Binary value indicating an onset of a frozen civil conflict |
+| `comment`     | String  | Coding notes                                                |
+| `confidence`  | Float   | Self-reported coding confidence falling within $[0.5, 1]$   |

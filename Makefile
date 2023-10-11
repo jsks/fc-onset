@@ -1,8 +1,3 @@
-# Makefile template for Quarto (qmd) files
-#
-# Includes implicit rules to generate docx, pdf, and html versions of
-# qmd files as well as several commands for development workflows.
-#
 # Invoke `make help` to get started.
 #
 # By default, Make will compile the pdf versions of all qmd files
@@ -18,19 +13,21 @@
 
 SHELL = /bin/bash -eo pipefail
 
+data := data
+raw  := $(data)/raw
+
 qmd_files  := $(wildcard *.qmd)
-docx_files := $(qmd_files:%.qmd=%.docx)
-html_files := $(qmd_files:%.qmd=%.html)
-tex_files  := $(qmd_files:%.qmd=%.tex)
 pdf_files  := $(qmd_files:%.qmd=%.pdf)
 
 all: $(pdf_files) ## Default rule generates pdf versions of all qmd files
 .PHONY: clean help todo watch wc
+.SECONDARY:
 
 ###
 # Development commands as PHONY targets
-clean: ## Clean generated html, tex, and pdf files
-	rm -f $(docx_files) $(html_files) $(tex_files) $(pdf_files)
+clean: ## Clean generated files
+	rm -rf $(foreach ext,pdf docx html tex log,$(qmd_files:%.qmd=%.$(ext))) \
+		$(qmd_files:%.qmd=%_files) $(data)/*.{csv,rds,RData}
 
 help:
 	@printf 'Compile a specific document with `make <file.pdf>.`\n\n'
@@ -56,6 +53,20 @@ wc: $(qmd_files) ## Rough estimate of word count per qmd file
 			pandoc -M 'suppress-bibliography=true' --quiet --citeproc \
 				-f markdown -t plain | wc -w; \
 	done
+
+###
+# Onset dataset
+$(data)/dyadic_candidates.csv $(data)/dyadic_episodes.csv &: \
+	$(raw)/ucdp-peace-agreements-221.xlsx \
+	$(raw)/ucdp-term-dyad-3-2021.xlsx
+	Rscript R/dyadic_candidates.R
+
+coding-protocol.pdf: $(data)/dyadic_candidates.csv \
+	$(data)/dyadic_episodes.csv
+
+###
+# Manuscript
+paper.pdf: $(data)/frozen_conflicts.csv
 
 ###
 # Implicit rules for pdf and html generation

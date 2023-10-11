@@ -2,13 +2,7 @@
 title: When Civil Conflicts Freeze
 author: J.L.A. Krusell
 date: "`r Sys.Date()`"
-echo: false
-format:
-    pdf:
-        keep-tex: true
-        mainfont: TeX Gyre Pagella
-        mathfont: TeX Gyre Pagella
-        pdf-engine: lualatex
+format: pdf
 ---
 
 ```{r setup, include = F}
