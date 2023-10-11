@@ -1,0 +1,24 @@
+---
+title: When Civil Conflicts Freeze
+author: J.L.A. Krusell
+date: "`r Sys.Date()`"
+echo: false
+format:
+    pdf:
+        keep-tex: true
+        mainfont: TeX Gyre Pagella
+        mathfont: TeX Gyre Pagella
+        pdf-engine: lualatex
+---
+
+```{r setup, include = F}
+library(dplyr)
+library(ggplot2)
+library(ggthemes)
+library(knitr)
+
+options(knitr.kable.NA = ".", knitr.kable.format = "latex",
+        knitr.kable.linesep = "")
+
+theme_set(theme_tufte(base_family = "TeX Gyre Pagella", base_size = 10))
+```

@@ -1,11 +1,11 @@
 # Makefile template for Rmarkdown projects
 #
 # Includes implicit rules to generate docx, pdf, and html versions of
-# Rmd files as well as several commands for development workflows.
+# qmd files as well as several commands for development workflows.
 #
 # Invoke `make help` to get started.
 #
-# By default, Make will compile the pdf versions of all Rmd files
+# By default, Make will compile the pdf versions of all qmd files
 # found in the current working directory.
 #
 # Note, this Makefile only targets GNU Make + Linux, and requires the
@@ -17,13 +17,13 @@
 
 SHELL = /bin/bash -eo pipefail
 
-rmd_files  := $(wildcard *.Rmd)
-docx_files := $(rmd_files:%.Rmd=%.docx)
-html_files := $(rmd_files:%.Rmd=%.html)
-tex_files  := $(rmd_files:%.Rmd=%.tex)
-pdf_files  := $(rmd_files:%.Rmd=%.pdf)
+qmd_files  := $(wildcard *.qmd)
+docx_files := $(qmd_files:%.qmd=%.docx)
+html_files := $(qmd_files:%.qmd=%.html)
+tex_files  := $(qmd_files:%.qmd=%.tex)
+pdf_files  := $(qmd_files:%.qmd=%.pdf)
 
-all: $(pdf_files) ## Default rule generates pdf versions of all Rmd files
+all: $(pdf_files) ## Default rule generates pdf versions of all qmd files
 .PHONY: clean help todo watch wc
 
 ###
@@ -44,11 +44,11 @@ todo: ## List TODO comments in project files tracked by git
 	@grep --color=always --exclude=Makefile -rni todo $$(git ls-files) | :
 
 watch: ## Auto-rebuild pdf documents (requires the program `entr`)
-	ls *.Rmd | entr -r make -f ./Makefile
+	ls *.qmd | entr -r make -f ./Makefile
 
-wc: $(rmd_files) ## Rough estimate of word count per Rmd file
+wc: $(qmd_files) ## Rough estimate of word count per qmd file
 	@# Strip code blocks and bibliography before word count
-	@for i in $(rmd_files); do \
+	@for i in $(qmd_files); do \
 		printf "$$i: "; \
 		sed -e '/^```/,/^```/d' "$$i" | \
 			awk '/---/ { i++ } /---/ && i == 2 { print "suppress-bibliography: true" } 1' | \
@@ -58,11 +58,11 @@ wc: $(rmd_files) ## Rough estimate of word count per Rmd file
 
 ###
 # Implicit rules for pdf and html generation
-%.docx: %.Rmd
-	Rscript -e "rmarkdown::render('$<', 'word_document', '$@')"
+%.docx: %.qmd
+	quarto render $< --to docx
 
-%.html: %.Rmd
-	Rscript -e "rmarkdown::render('$<', 'html_document', '$@')"
+%.html: %.qmd
+	quarto render $< --to html
 
-%.pdf: %.Rmd
-	Rscript -e "rmarkdown::render('$<', 'pdf_document', '$@')"
+%.pdf: %.qmd
+	quarto render $< --to pdf

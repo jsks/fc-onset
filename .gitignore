@@ -9,6 +9,8 @@ stan/*
 \#*\#
 .\#*
 
+*_files/
+*.docx
 *.html
 *.pdf
 
