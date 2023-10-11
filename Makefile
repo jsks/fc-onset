@@ -1,4 +1,4 @@
-# Makefile template for Rmarkdown projects
+# Makefile template for Quarto (qmd) files
 #
 # Includes implicit rules to generate docx, pdf, and html versions of
 # qmd files as well as several commands for development workflows.
@@ -12,7 +12,8 @@
 # following dependencies:
 #     - entr
 #     - pandoc
-#     - R & Rmarkdown
+#     - R
+#     - quarto-cli
 ###
 
 SHELL = /bin/bash -eo pipefail
@@ -34,26 +35,26 @@ clean: ## Clean generated html, tex, and pdf files
 help:
 	@printf 'Compile a specific document with `make <file.pdf>.`\n\n'
 	@printf 'Additionally, the following commands are available:\n\n'
-	@egrep '^\S+:.*##' $(MAKEFILE_LIST) | \
+	@grep -E '^\S+:.*##' $(MAKEFILE_LIST) | \
 		sort | \
 		awk -F ':.*##' \
 			'{ printf "\t\033[01;34m%-5s \033[00;37m%s\033[0m\n", $$1, $$2 }'
 	@printf '\n'
 
 todo: ## List TODO comments in project files tracked by git
-	@grep --color=always --exclude=Makefile -rni todo $$(git ls-files) | :
+	@grep --color=always --exclude=Makefile -rni todo $$(git ls-files) || :
 
 watch: ## Auto-rebuild pdf documents (requires the program `entr`)
 	ls *.qmd | entr -r make -f ./Makefile
 
 wc: $(qmd_files) ## Rough estimate of word count per qmd file
-	@# Strip code blocks and bibliography before word count
+	@# We could use `quarto render --no-execute` instead of `sed`,
+	@# but quarto is horribly slow...
 	@for i in $(qmd_files); do \
 		printf "$$i: "; \
 		sed -e '/^```/,/^```/d' "$$i" | \
-			awk '/---/ { i++ } /---/ && i == 2 { print "suppress-bibliography: true" } 1' | \
-			pandoc --quiet --citeproc -f markdown -t plain | \
-			wc -w; \
+			pandoc -M 'suppress-bibliography=true' --quiet --citeproc \
+				-f markdown -t plain | wc -w; \
 	done
 
 ###
