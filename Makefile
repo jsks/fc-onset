@@ -11,12 +11,12 @@
 #     - quarto-cli
 ###
 
-SHELL = /bin/bash -eo pipefail
+SHELL = /bin/bash -eo pipefail -O globstar
 
 data := data
 raw  := $(data)/raw
 
-qmd_files  := $(wildcard *.qmd)
+qmd_files  := $(shell ls ./**/*.qmd)
 pdf_files  := $(qmd_files:%.qmd=%.pdf)
 
 all: $(pdf_files) ## Default rule generates pdf versions of all qmd files
@@ -61,12 +61,12 @@ $(data)/dyadic_candidates.csv $(data)/dyadic_episodes.csv &: \
 	$(raw)/ucdp-term-dyad-3-2021.xlsx
 	Rscript R/dyadic_candidates.R
 
-coding-protocol.pdf: $(data)/dyadic_candidates.csv \
+doc/coding-protocol.pdf: $(data)/dyadic_candidates.csv \
 	$(data)/dyadic_episodes.csv
 
 ###
 # Manuscript
-paper.pdf: $(data)/frozen_conflicts.csv
+paper.pdf: $(data)/dataset/frozen_conflicts.csv
 
 ###
 # Implicit rules for pdf and html generation
