@@ -3,5 +3,5 @@
 S3method(consecutive,numeric)
 export(consecutive)
 export(info)
-export(log)
+export(log_msg)
 export(warn)

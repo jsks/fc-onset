@@ -8,10 +8,10 @@
 #' @param type Type of message, either INFO or WARN
 #'
 #' @examples
-#' log(type = "INFO", "Hello %s", "world")
+#' log_msg(type = "INFO", "Hello %s", "world")
 #'
 #' @export
-log <- function(type = c("INFO", "WARN", "ERROR"), ...) {
+log_msg <- function(type = c("INFO", "WARN", "ERROR"), ...) {
     level <- match.arg(type)
     prefix <- sprintf("[%s] [%s]", level, Sys.time())
 
@@ -22,13 +22,13 @@ log <- function(type = c("INFO", "WARN", "ERROR"), ...) {
 #' @examples
 #' info("Information message")
 #'
-#' @rdname log
+#' @rdname log_msg
 #' @export
-info <- function(...) log(type = "INFO", ...)
+info <- function(...) log_msg(type = "INFO", ...)
 
 #' @examples
 #' warn("Warning message")
 #'
-#' @rdname log
+#' @rdname log_msg
 #' @export
-warn <- function(...) log(type = "WARN", ...)
+warn <- function(...) log_msg(type = "WARN", ...)
