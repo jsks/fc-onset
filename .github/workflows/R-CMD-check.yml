@@ -5,6 +5,7 @@ on:
       - main
     paths:
       - 'lib/fc.utils/**'
+  workflow_dispatch:
 
 jobs:
   R-CMD-check:
@@ -16,6 +17,9 @@ jobs:
         with:
           extra-packages: any::rcmdcheck
           needs: check
+          working-directory: lib/fc.utils/
 
       - uses: r-lib/actions/check-r-package@v2
+        with:
+          working-directory: lib/fc.utils/
 
