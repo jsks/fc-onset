@@ -2,10 +2,16 @@
 title: When Civil Conflicts Freeze
 author: J.L.A. Krusell
 date: "`r Sys.Date()`"
+linestretch: 1.25
+bibliography: library.bib
 format: pdf
+execute:
+    echo: false
+    warning: false
 ---
 
 ```{r setup, include = F}
+library(bayesplot)
 library(dplyr)
 library(ggplot2)
 library(ggthemes)
@@ -14,5 +20,124 @@ library(knitr)
 options(knitr.kable.NA = ".", knitr.kable.format = "latex",
         knitr.kable.linesep = "")
 
-theme_set(theme_tufte(base_family = "TeX Gyre Pagella", base_size = 10))
+theme_set(theme_tufte())
 ```
+
+**Research question: to what extent does external state support to conflict actors affect the probability that a civil conflict becomes frozen?**
+
+# Empirics
+
+To empirically assess whether external state support for conflict
+actors affects the probability of a civil conflict episode terminating
+as a frozen conflict a series of bayesian probit models were run
+using original data on frozen civil conflicts. A mixed identification strategy was employed by both conditioning on relevant covariates and instrumenting external support with UN roll call votes.
+
+In what follows, I will first describe the dependent and independent variables, including operationalizations and data sources. I will then present the model specification and results from a conventional probit regression followed by the instrumental variable analysis.
+
+## Data
+
+### Defining Frozen Conflicts
+
+I follow the definition of frozen conflicts offered by @smetana_between_2019 as a "protracted, post-war conflict process, characterized by the absence of stable peace...[where] core issues between the opposing sides remain unresolved, the dispute is in the forefront of mutual relations, and there is a looming threat of the renewal of violence."  Accompanying this definition, @smetana_between_2019 lay forth three criteria determining whether a post-conflict period qualifies as a frozen conflict. First, there needs to be an initial period of active conflict followed by a cessation of large-scale violent hostilities. Isolated, sporadic incidences of violence may continue to occur; however, conflict actors are either unwilling or unable to launch major military offensives. Although not necessary, this may be characterized by the establishment of a general ceasefire and/or presence of external peacekeeping troops.  Second, the core issue underlying the conflict needs to remain salient post-conflict. This entails actors maintaining their claims within a dispute. And, finally, there must be an ongoing threat of violent re-escalation. In other words, post-conflict relations should be characterized by mutual hostility and an unwillingness to abandon violence as a political strategy.
+
+These criteria distinguish frozen conflicts from related concepts such as protracted stalemates or enduring rivalries. In the case of the former, stalemates during a conflict can potentially endure for extended periods of time and offer conditions similar to those of a frozen conflict. However, they do not necessitate a cessation of active fighting. Stalemates can still occur during high intensity periods of a conflict where relatively few gains are made by either side. In the case of the latter, enduring rivalries are characterized in part by repeated onsets of militarized interstate disputes [@Goertz1992; @Goertz1993]; however, this might not entail the actual outbreak of violence. More importantly, enduring rivalries were originally conceptualized in terms of inter-state relations, while the definition of frozen conflicts here can be extended to the intra-state case as well.
+
+### Measuring Frozen Conflicts
+
+In order to measure the onset of frozen civil conflicts I followed the previous three criteria and coded an original dataset using dyadic intra-state conflict episodes drawn from the UCDP/PRIO Armed Conflict Dataset [@gleditsch_armed_2002; @davies_organized_2023] defined as contiguous years with at least 25 battle-related deaths in a violent contest over a government or territory between a state and non-state actor. To address post-conflict issue saliency, I considered an episode to be unresolved if it terminated without either a comprehensive peace treaty addressing the core underlying issues or a one-sided military victory for either the government or rebel group according to the UCDP Peace Agreement and Conflict Termination Datasets [@pettersson_organized_2019; @kreutz_how_2010]. I also filtered out episodes where one or more actors ceased to exist within five years of the conflict termination and where the non-state actor renounces violences. This was done using a manual coding process with a mix of academic and news media sources for different conflicts in order to capture instances where, for example, rebel groups transition into legitimate political parties.
+
+
+```{r}
+dataset <- readRDS("./data/model_data.rds")
+n_frozen <- filter(dataset, frozen == 1) |> nrow()
+n_terr_frozen <- filter(dataset, frozen == 1, incompatibility == 1) |> nrow()
+```
+
+The resulting dataset consists of `r n_frozen` frozen conflicts out
+of `r nrow(dataset)` intra-state episodes, comprising approximately
+`r signif(n_frozen / nrow(dataset), 2) * 100` percent of all observations for the period 1975 to 2019. Of the frozen conflicts, `r n_terr_frozen` are conflicts over territory. (TODO: show world map and time plot)
+
+```{r}
+filter(dataset, frozen == 1) |>
+    ggplot(aes(year)) +
+    geom_bar() +
+    ylab("Frozen Civil Conflict Onsets") +
+    xlab("Year")
+```
+
+Compared to the Frozen Conflict Dataset by @klosek_frozen_2021,
+
+Compared to FCD --- significant more cases
+  - More expansive operationalization
+    - Not only looking at de facto states
+    - Captures frozen moments in civil wars over government, ex Angola
+
+  - Timing of Frozen conflicts
+    - FCD last year in which >= 500 BRD
+    - My datasets follows UCDP last year >25
+      - Captures lower level conflicts
+
+Potential Weaknesses
+  - Low-level long running insurgencies may not be "salient"
+  - Termination year inexact
+  - Potentially capturing shorter stalemates
+
+### Treatments
+
+UCDP external support dataset
+
+### Control Variables
+
+- Conflict Intensity
+- Conflict Duration
+- Incompatibility?
+- e_gdppc
+- e_pop
+- CINC
+
+### Descriptive Statistics
+
+## Observational Models
+
+\begin{align*}
+y_i^\star & = \alpha + X_i' \beta + T_i' \delta + \epsilon_i, \; \epsilon_i \sim \text{N}(0, \sigma^2) \\
+y_i & = \begin{cases}
+1 & \text{if } y_i^\star > 0 \\
+0 & \text{otherwise}
+\end{cases}
+\end{align*}
+
+### Results
+
+```{r}
+fit <- readRDS("./posteriors/probit.rds")
+
+fit$draws("delta") |> mcmc_areas() +
+    scale_y_discrete(labels = c("delta[1]" = "Ext. Sup. to Gov",
+                                "delta[2]" = "Ext. Sup. to Rebel",
+                                "delta[3]" = "Interaction"))
+```
+
+- Parameter Plot
+- Density of predicted probabilities for true success/failure
+- Marginal effects
+- Confusion Matrix + AUR/PRC plots
+
+#### Robustness Checks
+
+- External support only within the last five years of conflict
+- Frozen conflicts with a duration of only 1 year
+- Exclude low intensity conflicts?
+
+Appendix:
+
+- Proportion of episode years with external support
+- Nr of external supporters, maybe weighted by cinc?
+- Territorial conflicts only
+- FCD data
+
+## IV Model
+
+\newpage
+
+# References
