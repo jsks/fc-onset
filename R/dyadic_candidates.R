@@ -48,7 +48,7 @@ outcomes <- group_by(full.df, dyad_id) |>
     group_by(idx, .add = T) |>
     mutate(pax = !is.na(paid),
            next_pax = lead(pax, default = F)) |>
-    filter(!is.na(outcome) & !outcome %in% c(3, 4, 6), between(year, 1975, 2019), !pax, !next_pax)
+    filter(!is.na(outcome) & !outcome %in% c(3, 4, 6), !pax, !next_pax)
 
 final <- group_by(outcomes, dyad_id) |>
     filter(year == min(year)) |>
