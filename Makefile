@@ -65,8 +65,8 @@ $(data)/dyadic_candidates.csv $(data)/dyadic_episodes.csv &: \
 	$(raw)/ucdp-term-dyad-3-2021.xlsx
 	Rscript $<
 
-$(data)/conflict_candidates.csv R/conflict_candidates.R \
-	$(data)/conflict_episodes.csv &: \
+$(data)/conflict_candidates.csv $(data)/conflict_episodes.csv &: \
+	R/conflict_candidates.R \
 	$(raw)/ucdp-peace-agreements-221.xlsx \
 	$(raw)/ucdp-term-acd-3-2021.xlsx \
 	$(raw)/ucdp-esd-dy-181.dta
@@ -88,7 +88,7 @@ dataset: $(dataset)/frozen_conflicts.rds \
 
 ###
 # Probit Models
-data/model_data.rds: R/new_merge.R \
+data/model_data.rds: R/merge.R \
 	$(dataset)/frozen_conflicts.rds \
 	$(raw)/ucdp-esd-ay-181.dta
 	Rscript $<
