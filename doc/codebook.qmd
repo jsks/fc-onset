@@ -1,34 +1,52 @@
 ---
-title: Codebook v0.1
+title: Codebook
 author: J.L.A. Krusell
+date: today
+linestretch: 1.25
+bibliography: ../library.bib
 format:
     pdf:
         header-includes: \renewcommand{\arraystretch}{1.7}
 ---
 
-Introduction, coverage
+# Introduction
 
-only includes frozen onsets, not all outcomes
+This dataset codes the onset of frozen civil conflicts from 1975 until 2019. The unit of analysis is dyadic civil conflict episodes as defined by the UCDP/PRIO Armed Conflict Dataset [@gleditsch_armed_2002; @davies_organized_2023]. The onset of a frozen conflict signifies an episode termination where the underlying issue remained unresolved, and both actors continued to exist post-conflict with a significant threat of a renewal of violence.
 
-only includes first onset
+For a detailed overview of the coding process see the Coding Protocol document.
 
-### Definitions
+# Definitions
 
-Define a dyadic conflict episode
+**State-based armed conflict** is defined according to the UCDP definition as "a contested incompatibility that concerns government and/or territory where the use of armed force between two parties, of which at least one is the government of a state, results in at least 25 battle-related deaths in a calendar year" [@gleditsch_armed_2002]. Civil conflict refers to cases where the opposing side consists of at least one or more non-state actors.
 
+**Conflict episodes** are contiguous years of active conflict as coded by the UCDP/PRIO Armed Conflict Dataset. Termination occurs the first year in which the number of battle-related deaths falls below the UCDP threshold of 25.
 
-### Variables
+**Frozen conflicts** follow the definition offered by @smetana_between_2019 as being "...a protracted, post-war conflict process, characterized by the absence of stable peace between opposing sides." Crucially, this requires that conflict terminations fulfill two criteria in order to be classified as frozen: continued conflict salience and the threat of violent re-escalation. The former in this context means that the core issue underlying the initial conflict remains unresolved. More specifically, the conflict episodes cannot have terminated in a one-sided victory according to the UCDP conflict termination dataset [@kreutz_how_2010] and/or comprehensive peace agreement as recorded by the UCDP peace agreement dataset [@pettersson_organized_2019]. The latter implies that conflict actors need to have survived the initial period active conflict and have not renounced violence as a political strategy.
 
+## Variables
 
+| Variable      | Type    | Description                                                  |
+|:--------------|:--------|:-------------------------------------------------------------|
+| `conflict_id` | Integer | UCDP unique conflict-level identifier                        |
+| `dyad_id`     | Integer | UCDP Unique dyadic-level identifier                          |
+| `year`        | Integer | Onset year                                                   |
+| `duration`    | Integer | Number of years until the conflict becomes active again      |
+| `Intensity`   | Integer | Cumulative intensity?                                        |
+| `side_a`      | String  | Primary state actor in the dyadic-conflict                   |
+| `side_b`      | String  | Primary non-state actor in a conflict dyad                   |
+| `frozen`      | Boolean | Binary value indicating the onset of a frozen civil conflict |
+| `comment`     | String  | Coding notes                                                 |
+| `confidence`  | Float   | Self-reported coding confidence falling within $[0.5, 1]$    |
 
-| Variable      | Type    | Description                                                 |
-|:--------------|:--------|:------------------------------------------------------------|
-| `conflict_id` | Integer | Unique conflict-level identifier                            |
-| `dyad_id`     | Integer | Unique dyadic-level identifier                              |
-| `year`        | Integer | Onset year                                                  |
-| `duration`    | Integer | Number of years until the conflict becomes active again     |
-| `side_a`      | String  | Primary state actor in the dyadic-conflict                  |
-| `side_b`      | String  | Primary non-state actor in a conflict dyad                  |
-| `frozen`      | Boolean | Binary value indicating an onset of a frozen civil conflict |
-| `comment`     | String  | Coding notes                                                |
-| `confidence`  | Float   | Self-reported coding confidence falling within $[0.5, 1]$   |
+# Notes
+
+Only the initial episode terminating in a frozen conflict is coded by this dataset. Subsequent episodes of conflict re-escalation, which may terminate again as frozen conflicts, are not included.
+
+It should be further noted that although this dataset uses the definition of frozen conflicts provided by @smetana_between_2019, it diverges significantly from the operationalization used in the accompanying dataset [@klosek_frozen_2021]. Notably, frozen civil conflicts are *not* restricted to only secessionist conflicts spawning *de facto* independent states. Rather, all civil conflicts as coded by the UCDP are included, inclusive of conflicts over control of government. Furthermore, in following the coding criteria of the UCDP, the threshold for termination is significantly lower. @klosek_frozen_2021 only consider cases reaching a minimum of 500 battle-related fatalities.
+
+For those wishing to apply a more strict coding criteria, the provided cases can be further refined according to the cumulative intensity of the conflict and/or the duration of the post-conflict frozen period.
+
+# References
+
+::: {#refs}
+:::
