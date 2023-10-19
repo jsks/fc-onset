@@ -1,6 +1,7 @@
 data/
 stan/*
 !stan/*.stan
+posteriors/
 
 .DS_Store
 .Rhistory
