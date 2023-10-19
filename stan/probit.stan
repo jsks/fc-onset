@@ -13,8 +13,6 @@ data {
     array[n] int<lower=1, upper=n_countries> country_id;
 
     array[n] int<lower=0, upper=1> y;
-
-    int<lower=0, upper=1> sample_prior;
 }
 
 parameters {
@@ -43,6 +41,5 @@ model {
 
     raw_country ~ std_normal();
 
-    if (sample_prior == 0)
-       target += bernoulli_lpmf(y | theta);
+    target += bernoulli_lpmf(y | theta);
 }
