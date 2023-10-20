@@ -41,9 +41,6 @@ full.df <- filter(pce_collapsed, conflict_id %in% term$conflict_id) |>
 
 info("Finished with %d conflict terminations", sum(!is.na(full.df$outcome)))
 
-filter(full.df, !is.na(gwno_a)) |>
-    write.csv("./data/conflict_episodes.csv", row.names = F)
-
 ###
 # Filter out candidates for being frozen conflicts
 outcomes <- group_by(full.df, conflict_id) |>
@@ -52,7 +49,7 @@ outcomes <- group_by(full.df, conflict_id) |>
     group_by(idx, .add = T) |>
     mutate(pax = !is.na(paid),
            next_pax = lead(pax, default = F)) |>
-    filter(!is.na(outcome) & !outcome %in% c(3, 4, 6), between(year, 1975, 2019), !pax, !next_pax)
+    filter(!is.na(outcome) & !outcome %in% c(3, 4, 6), !pax, !next_pax)
 
 final <- group_by(outcomes, conflict_id) |>
     filter(year == min(year)) |>

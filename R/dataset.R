@@ -5,21 +5,34 @@
 
 library(dplyr)
 library(fc)
+library(readxl)
 
 adj <- read.csv("./data/dataset/adjusted_conflict_candidates.csv") |>
     filter(Correction == 0) |>
     select(conflict_id, year, frozen)
 
-episodes <- read.csv("./data/conflict_episodes.csv") |>
-    select(conflict_id, conflictep_id, year, gwno_a, side_a, side_b, intensity_level,
-           incompatibility, recur)
+###
+# Add cumulative intensity - threshold 1000 BRD
+ucdp <- readRDS("./data/raw/UcdpPrioConflict_v23_1.rds") |>
+    select(conflict_id, year, cumulative_intensity)
 
-cy <- left_join(episodes, adj, by = c("conflict_id", "year")) |>
+df <- left_join(adj, ucdp, by = c("conflict_id", "year"))
+
+###
+# Calculate duration until next active conflict episode
+episodes <- read_excel("./data/raw/ucdp-term-acd-3-2021.xlsx") |>
+    filter(type_of_conflict %in% 3:4) |>
+    select(conflict_id, conflictep_id, year, side_a, side_b, recur)
+
+full.df <- left_join(episodes, df, by = c("conflict_id", "year")) |>
     mutate(frozen = ifelse(!is.na(frozen), 1, 0)) |>
     group_by(conflict_id) |>
-    filter(year <= if (any(frozen == 1)) min(year[frozen == 1]) else max(year))
+    arrange(year) |>
+    mutate(duration = ifelse(frozen == 1, lead(year) - year, 0)) |>
+    filter(frozen == 1)
 
-info("Final dataset has %d conflict episodes of which %d are frozen",
-     n_distinct(cy$conflictep_id), sum(cy$frozen))
+info("Final dataset: %d frozen conflicts", nrow(full.df))
 
-saveRDS(cy, "./data/dataset/frozen_conflicts.rds")
+select(full.df, conflict_id, year, duration, cumulative_intensity,
+       side_a, side_b, frozen, recur) |>
+    saveRDS("./data/dataset/frozen_conflicts.rds")

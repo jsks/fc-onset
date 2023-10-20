@@ -9,9 +9,12 @@
 #     - pandoc
 #     - R
 #     - quarto-cli
+#     - zip
 ###
 
 SHELL = /bin/bash -eo pipefail -O globstar
+
+manuscript := paper.qmd
 
 data	:= data
 dataset := $(data)/dataset
@@ -22,7 +25,7 @@ post    := posteriors
 qmd_files  := $(shell ls ./**/*.qmd)
 pdf_files  := $(qmd_files:%.qmd=%.pdf)
 
-all: $(pdf_files) ## Default rule generates pdf versions of all qmd files
+all: $(manuscript:%.qmd=%.pdf) ## Default rule generates manuscript pdf
 .PHONY: clean dataset help todo watch wc
 .SECONDARY:
 
@@ -38,7 +41,7 @@ help:
 	@grep -E '^\S+:.*##' $(MAKEFILE_LIST) | \
 		sort | \
 		awk -F ':.*##' \
-			'{ printf "\t\033[01;34m%-5s \033[00;37m%s\033[0m\n", $$1, $$2 }'
+			'{ printf "\t\033[01;34m%-10s \033[00;37m%s\033[0m\n", $$1, $$2 }'
 	@printf '\n'
 
 todo: ## List TODO comments in project files tracked by git
@@ -59,38 +62,38 @@ wc: $(qmd_files) ## Rough estimate of word count per qmd file
 
 ###
 # Onset dataset
-$(data)/dyadic_candidates.csv $(data)/dyadic_episodes.csv &: \
-	R/dyadic_candidates.R \
-	$(raw)/ucdp-peace-agreements-221.xlsx \
-	$(raw)/ucdp-term-dyad-3-2021.xlsx
-	Rscript $<
-
-$(data)/conflict_candidates.csv $(data)/conflict_episodes.csv &: \
+$(data)/conflict_candidates.csv: \
 	R/conflict_candidates.R \
 	$(raw)/ucdp-peace-agreements-221.xlsx \
-	$(raw)/ucdp-term-acd-3-2021.xlsx \
-	$(raw)/ucdp-esd-dy-181.dta
+	$(raw)/ucdp-term-acd-3-2021.xlsx
 	Rscript $<
 
 $(dataset)/frozen_conflicts.rds: R/dataset.R \
 	$(dataset)/adjusted_conflict_candidates.csv \
-	$(data)/conflict_episodes.csv
+	$(raw)/UcdpPrioConflict_v23_1.rds \
+	$(raw)/ucdp-term-acd-3-2021.xlsx
 	Rscript $<
 
-doc/coding-protocol.pdf: $(data)/dyadic_candidates.csv \
-	$(data)/dyadic_episodes.csv
-
+doc/coding-protocol.pdf: $(data)/conflict_candidates.csv
 doc/codebook.pdf: library.bib
 
-dataset: $(dataset)/frozen_conflicts.rds \
+dataset.zip: $(dataset)/frozen_conflicts.rds \
 	doc/coding-protocol.pdf \
 	doc/codebook.pdf
+	zip -j $@ $^
+
+dataset: dataset.zip ## Create a zip archive of the dataset
 
 ###
 # Probit Models
 data/model_data.rds: R/merge.R \
-	$(dataset)/frozen_conflicts.rds \
-	$(raw)/ucdp-esd-ay-181.dta
+	$(raw)/frozen_conflicts.rds \
+	$(raw)/ucdp-term-acd-3-2021.xlsx \
+	$(raw)/UcdpPrioConflict_v23_1.rds \
+	$(raw)/ucdp-esd-ay-181.dta \
+	$(raw)/NMC-60-abridged.csv \
+	$(raw)/V-Dem-CY-Full+Others-v13.rds \
+	refs/ucdp_countries.csv
 	Rscript $<
 
 $(post)/probit.rds: R/probit.R \
@@ -99,7 +102,7 @@ $(post)/probit.rds: R/probit.R \
 
 ###
 # Manuscript
-paper.pdf: $(dataset)/frozen_conflicts.rds \
+paper.pdf: $(raw)/frozen_conflicts.rds \
 	$(post)/probit.rds
 
 ###
