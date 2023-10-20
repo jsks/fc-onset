@@ -25,8 +25,11 @@ post    := posteriors
 qmd_files  := $(shell ls ./**/*.qmd)
 pdf_files  := $(qmd_files:%.qmd=%.pdf)
 
+schemas := $(wildcard models/*.yml)
+models  := $(schemas:models/%.yml=$(post)/%/model_output.rds)
+
 all: $(manuscript:%.qmd=%.pdf) ## Default rule generates manuscript pdf
-.PHONY: clean dataset help todo watch wc
+.PHONY: bootstrap clean dataset help run todo watch wc
 .SECONDARY:
 
 ###
@@ -86,6 +89,10 @@ dataset: dataset.zip ## Create a zip archive of the dataset
 
 ###
 # Probit Models
+bootstrap: R/models.R
+	rm -rf models/
+	Rscript $<
+
 data/model_data.rds: R/merge.R \
 	$(raw)/frozen_conflicts.rds \
 	$(raw)/ucdp-term-acd-3-2021.xlsx \
@@ -96,9 +103,14 @@ data/model_data.rds: R/merge.R \
 	refs/ucdp_countries.csv
 	Rscript $<
 
-$(post)/probit.rds: R/probit.R \
+$(post)/%/model_input.RData $(post)/%/model_output.rds &: \
+	R/probit.R \
+	models/%.yml \
+	stan/probit.stan \
 	data/model_data.rds
-	Rscript $<
+	Rscript $< models/$*.yml
+
+run: $(models)
 
 ###
 # Manuscript

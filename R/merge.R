@@ -96,6 +96,7 @@ final.df <- filter(full.df, !is.na(ext_sup_s_state)) |>
               year = last(year),
               side_a = first(side_a),
               side_b = first(side_b),
+              censored = max(censored),
               episode_duration = n(),
               frozen_duration = last(duration),
               recur = max(recur),
@@ -109,13 +110,13 @@ final.df <- filter(full.df, !is.na(ext_sup_s_state)) |>
               across(c(v2x_polyarchy, e_gdppc, e_pop, cinc), ~mean(.x, na.rm = T), .names = "{.col}_avg"),
 
               # At anytime during the episode was external support given?
-              across(starts_with("ext_"), ~max(.x, na.rm = T), .names = "{.col}_max"),
+              across(starts_with("ext_"), ~max(.x, na.rm = T), .names = "{.col}_bin"),
 
               # Proportion of conflict years within an episode with external support
               across(starts_with("ext_"), ~mean(.x, na.rm = T), .names = "{.col}_prop"),
 
               # Whether external support was given in the last five years before termination
-              across(starts_with("ext_"), ~max(tail(.x, 5), na.rm = T), .names = "{.col}_max_5y")) |>
+              across(starts_with("ext_"), ~max(tail(.x, 5), na.rm = T), .names = "{.col}_bin_5y")) |>
     mutate(strict_frozen = ifelse(is.na(frozen_duration) | frozen_duration > 2, frozen, 0))
 
 info("Finished with %d conflict episodes and %d frozen conflicts",
