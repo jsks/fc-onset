@@ -1,5 +1,5 @@
 ---
-title: When Civil Conflicts Freeze
+title: "From Active Hostilities to Frozen Stalemates: Assessing the Role of External Support in Civil Conflict Dynamics"
 author: J.L.A. Krusell
 date: "`r Sys.Date()`"
 linestretch: 1.25
@@ -11,16 +11,19 @@ execute:
 ---
 
 ```{r setup, include = F}
-library(bayesplot)
 library(dplyr)
 library(ggplot2)
 library(ggthemes)
+library(ggdist)
+library(latex2exp)
 library(knitr)
+library(patchwork)
+library(tidyr)
 
 options(knitr.kable.NA = ".", knitr.kable.format = "latex",
         knitr.kable.linesep = "")
 
-theme_set(theme_tufte())
+theme_set(theme_tufte(base_family = "TeX Gyre Pagella", base_size = 10))
 ```
 
 **Research question: to what extent does external state support to conflict actors affect the probability that a civil conflict becomes frozen?**
@@ -110,13 +113,41 @@ y_i & = \begin{cases}
 ### Results
 
 ```{r}
-fit <- readRDS("./posteriors/probit.rds")
+#| fig.cap: Posterior estimates for \delta from a single variate probit model
+fit <- readRDS("./posteriors/frozen-bin-all/model_output.rds")
 
-fit$draws("delta") |> mcmc_areas() +
+delta <- fit$draws("delta", format = "df") |>
+    select(matches("delta")) |>
+    pivot_longer(everything(), names_to = "variable")
+
+ggplot(delta, aes(x = value, y = variable, fill = variable)) +
+    stat_halfeye(alpha = 0.8, show.legend = F) +
+    geom_vline(xintercept = 0, linetype = "dashed", alpha = 0.2) +
+    theme(axis.title.x = element_blank(),
+          axis.title.y = element_blank()) +
     scale_y_discrete(labels = c("delta[1]" = "Ext. Sup. to Gov",
                                 "delta[2]" = "Ext. Sup. to Rebel",
                                 "delta[3]" = "Interaction"))
 ```
+
+```{r}
+#| fig.cap: Average marginal effects for the three treatment conditions on the predicted probability of a frozen conflict onset.[^ame]
+ame <- fit$draws("ame", format = "df") |>
+    select(matches("ame")) |>
+    pivot_longer(everything(), names_to = "variable")
+
+ggplot(ame, aes(x = value, y = variable, fill = variable)) +
+    stat_eye(alpha = 0.8, show.legend = F) +
+    geom_vline(xintercept = 0, linetype = "dashed", alpha = 0.2) +
+    theme(axis.title.x = element_blank()) +
+    labs(x = parse(text = "bold('AME '*Delta)")) +
+    scale_y_discrete(labels = c("ame[1]" = "Ext. Sup. Gov Only",
+                                "ame[2]" = "Ext. Sup. Rebel Only",
+                                "ame[3]" = "Ext. Sup. to Both")) +
+    coord_flip()
+```
+
+[^ame]: Hello World
 
 - Parameter Plot
 - Density of predicted probabilities for true success/failure
@@ -141,3 +172,72 @@ Appendix:
 \newpage
 
 # References
+
+::: {#refs}
+:::
+
+\newpage
+
+# Appendix
+
+## Robust Checks
+
+### Observational Probit Models
+
+```{R}
+#| fig-height: 7
+dirs <- list.files("posteriors", full.names = T)
+
+fits <- lapply(dirs, function(d) {
+    names <- strsplit(basename(d), "-")[[1]]
+    fit <- file.path(d, "model_output.rds") |> readRDS()
+
+    fit$summary("delta", ~quantile(.x, probs = c(0.05, 0.1, 0.5, 0.9, 0.95))) |>
+        rename(median = `50%`,
+               lower90 = `5%`,
+               upper90 = `95%`,
+               lower80 = `10%`,
+               upper80 = `90%`) |>
+        mutate(outcome = names[1],
+               treatment = names[2],
+               episodes = names[3])
+})
+
+full.df <- bind_rows(fits) |>
+    mutate(group = as.factor(outcome))
+
+
+fn <- function(target) {
+    sub.df <- filter(full.df, variable == target)
+    ggplot(sub.df, aes(x = treatment, y = median, color = outcome)) +
+        geom_point(size = 1.5, position = position_dodge(width = 0.25)) +
+        geom_errorbar(aes(ymin = lower90, ymax = upper90), position = position_dodge(0.25), width = 0) +
+        geom_errorbar(aes(ymin = lower80, ymax = upper80), position = position_dodge(0.25), size = 1.25, width = 0) +
+        facet_grid(~episodes) +
+        geom_hline(yintercept = 0, linetype = "dashed", alpha = 0.2) +
+        theme(axis.title.x = element_blank(),
+              axis.title.y = element_blank())
+
+}
+
+p1 <- fn("delta[1]")
+p2 <- fn("delta[2]")
+p3 <- fn("delta[3]")
+
+#    gov_delta <- lapply(fits, \(x) x[, 1]) |> do.call(cbind, args = _)
+#reb_delta <- lapply(fits, \(x) x[, 2]) |> do.call(cbind, args = _)
+#interaction_delta <- lapply(fits, \(x) x[, 3]) |> do.call(cbind, args = _)
+#
+#colnames(gov_delta) <- 1:ncol(gov_delta)
+#p1 <- mcmc_intervals(gov_delta) + coord_flip()
+#
+#
+#colnames(reb_delta) <- 1:ncol(reb_delta)
+#p2 <- mcmc_intervals(reb_delta) + coord_flip()
+#
+#
+#colnames(interaction_delta) <- 1:ncol(interaction_delta)
+#p3 <- mcmc_intervals(interaction_delta) + coord_flip()
+
+p1 / p2 / p3
+```
