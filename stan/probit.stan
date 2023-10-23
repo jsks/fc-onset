@@ -4,6 +4,7 @@ data {
     // Treatment
     int k;
     matrix<lower=0, upper=1>[n, k] T;
+    int<lower=1, upper=k> interaction_id;
 
     // Additional covariates
     int m;
@@ -42,4 +43,20 @@ model {
     raw_country ~ std_normal();
 
     target += bernoulli_lpmf(y | theta);
+}
+
+generated quantities {
+    array[k] real ame;
+    {
+        vector[n] base = alpha + X * beta + Z_country[country_id];
+        vector[n] T0 = Phi_approx(base);
+
+        matrix[n, k] phat;
+        for (i in 1:k) {
+            if (i == interaction_id)
+                ame[i] = mean(Phi_approx(base + sum(delta)) - T0);
+            else
+                ame[i] = mean(Phi_approx(base + delta[i]) - T0);
+        }
+    }
 }
