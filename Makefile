@@ -25,11 +25,11 @@ post    := posteriors
 qmd_files  := $(shell ls ./**/*.qmd)
 pdf_files  := $(qmd_files:%.qmd=%.pdf)
 
-schemas := $(wildcard models/*.yml)
-models  := $(schemas:models/%.yml=$(post)/%/model_output.rds)
+schemas        := $(wildcard models/*.yml)
+model_outputs  := $(schemas:models/%.yml=$(post)/%/model_output.rds)
 
 all: $(manuscript:%.qmd=%.pdf) ## Default rule generates manuscript pdf
-.PHONY: bootstrap clean dataset help run todo watch wc
+.PHONY: bootstrap clean dataset help models todo watch wc
 .SECONDARY:
 
 ###
@@ -110,12 +110,12 @@ $(post)/%/model_input.RData $(post)/%/model_output.rds &: \
 	data/model_data.rds
 	Rscript $< models/$*.yml
 
-run: $(models)
+models: $(model_outputs)
 
 ###
 # Manuscript
 paper.pdf: $(raw)/frozen_conflicts.rds \
-	$(post)/probit.rds
+	$(model_outputs)
 
 ###
 # Implicit rules for pdf and html generation
