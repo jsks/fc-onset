@@ -22,8 +22,10 @@ raw	:= $(data)/raw
 
 post    := posteriors
 
-qmd_files  := $(shell ls ./**/*.qmd)
+qmd_files  != ls ./**/*.qmd
 pdf_files  := $(qmd_files:%.qmd=%.pdf)
+
+cmdstan != Rscript -e 'cat(cmdstanr::cmdstan_path())'
 
 schemas        := $(wildcard models/*.yml)
 model_outputs  := $(schemas:models/%.yml=$(post)/%/fit.rds)
@@ -36,7 +38,10 @@ all: $(manuscript:%.qmd=%.pdf) ## Default rule generates manuscript pdf
 # Development commands
 clean: ## Clean generated files
 	rm -rf $(foreach ext,pdf docx html tex log,$(qmd_files:%.qmd=%.$(ext))) \
-		$(qmd_files:%.qmd=%_files) $(data)/*.{csv,rds,RData}
+		$(qmd_files:%.qmd=%_files) $(data)/*.{csv,rds,RData} \
+		models/
+	$(MAKE) -C $(cmdstan) STANPROG=$(CURDIR)/stan/probit clean-program
+
 
 help:
 	@printf 'Compile a specific document with `make <file.pdf>.`\n\n'
@@ -103,14 +108,20 @@ data/model_data.rds: R/merge.R \
 	refs/ucdp_countries.csv
 	Rscript $<
 
-$(post)/%/model_input.RData $(post)/%/model_output.rds &: \
+stan/%: stan/%.stan
+	$(MAKE) -C $(cmdstan) $(CURDIR)/stan/$*
+
+$(post)/%/labels.rds $(post)/%/probit.json $(post)/%/fit.rds &: \
 	R/probit.R \
 	models/%.yml \
-	stan/probit.stan \
+	stan/probit \
 	data/model_data.rds
 	Rscript $< models/$*.yml
 
 models: $(model_outputs)
+ifndef model_outputs
+	$(error No models found. Run `make bootstrap` to generate model profiles.)
+endif
 
 ###
 # Manuscript
