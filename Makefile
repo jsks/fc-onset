@@ -26,7 +26,7 @@ qmd_files  := $(shell ls ./**/*.qmd)
 pdf_files  := $(qmd_files:%.qmd=%.pdf)
 
 schemas        := $(wildcard models/*.yml)
-model_outputs  := $(schemas:models/%.yml=$(post)/%/model_output.rds)
+model_outputs  := $(schemas:models/%.yml=$(post)/%/fit.rds)
 
 all: $(manuscript:%.qmd=%.pdf) ## Default rule generates manuscript pdf
 .PHONY: bootstrap clean dataset help models todo watch wc

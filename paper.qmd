@@ -10,12 +10,14 @@ execute:
     warning: false
 ---
 
+[//]: # Setup R environment
 ```{r setup, include = F}
 library(dplyr)
 library(ggplot2)
 library(ggthemes)
 library(ggdist)
-library(latex2exp)
+library(modelsummary)
+library(kableExtra)
 library(knitr)
 library(patchwork)
 library(tidyr)
@@ -101,6 +103,8 @@ UCDP external support dataset
 - e_pop
 - CINC
 
+Descriptive statistics split between positive and negative outcomes
+
 ### Descriptive Statistics
 
 ## Observational Models
@@ -117,7 +121,7 @@ y_i & = \begin{cases}
 
 ```{r}
 #| fig.cap: Posterior estimates for \delta from a single variate probit model
-fit <- readRDS("./posteriors/frozen-bin-all/model_output.rds")
+fit <- readRDS("./posteriors/frozen-bin-all/fit.rds")
 
 delta <- fit$draws("delta", format = "df") |>
     select(matches("delta")) |>
@@ -188,59 +192,56 @@ Appendix:
 ### Observational Probit Models
 
 ```{R}
+models <- list.dirs("posteriors", recursive = F)
+stopifnot(length(models) != 0)
+
+fits <- lapply(models, \(dir) file.path(dir, "fit.rds") |> readRDS())
+names(fits) <- basename(models)
+```
+
+```{R}
 #| fig-height: 7
-dirs <- list.files("posteriors", full.names = T)
-
-fits <- lapply(dirs, function(d) {
-    names <- strsplit(basename(d), "-")[[1]]
-    fit <- file.path(d, "model_output.rds") |> readRDS()
-
-    fit$summary("delta", ~quantile(.x, probs = c(0.05, 0.1, 0.5, 0.9, 0.95))) |>
+summary.df <- lapply(fits, function(fit) {
+    post <- post_summarise(fit, "delta", rename = T, model_info = T,
+                           probs = c(0.025, 0.17, 0.5, 0.83, 0.975)) |>
         rename(median = `50%`,
-               lower90 = `5%`,
-               upper90 = `95%`,
-               lower80 = `10%`,
-               upper80 = `90%`) |>
-        mutate(outcome = names[1],
-               treatment = names[2],
-               episodes = names[3])
-})
+               lower95 = `2.5%`,
+               upper95 = `97.5%`,
+               lower66 = `17%`,
+               upper66 = `83%`)
+}) |> bind_rows()
 
-full.df <- bind_rows(fits) |>
-    mutate(group = as.factor(outcome))
+summary.df$variable <- sub("_(prop|bin.*)$", "", summary.df$variable)
 
+ggplot(summary.df, aes(treatment_aggregation, median, color = outcome)) +
+    geom_point(size = 1.5, position = position_dodge(width = 0.25)) +
+    geom_errorbar(aes(ymin = lower95, ymax = upper95), position = position_dodge(0.25), width = 0) +
+    geom_errorbar(aes(ymin = lower66, ymax = upper66), position = position_dodge(0.25), linewidth = 1.25, width = 0) +
+    geom_hline(yintercept = 0, linetype = "dashed", alpha = 0.2) +
+    facet_grid(variable ~ episodes)
 
-fn <- function(target) {
-    sub.df <- filter(full.df, variable == target)
-    ggplot(sub.df, aes(x = treatment, y = median, color = outcome)) +
-        geom_point(size = 1.5, position = position_dodge(width = 0.25)) +
-        geom_errorbar(aes(ymin = lower90, ymax = upper90), position = position_dodge(0.25), width = 0) +
-        geom_errorbar(aes(ymin = lower80, ymax = upper80), position = position_dodge(0.25), size = 1.25, width = 0) +
-        facet_grid(~episodes) +
-        geom_hline(yintercept = 0, linetype = "dashed", alpha = 0.2) +
-        theme(axis.title.x = element_blank(),
-              axis.title.y = element_blank())
+```
 
-}
+```{R}
+models <- list.dirs("posteriors", recursive = F)
+stopifnot(length(models) != 0)
 
-p1 <- fn("delta[1]")
-p2 <- fn("delta[2]")
-p3 <- fn("delta[3]")
+fits <- lapply(models, \(dir) file.path(dir, "fit.rds") |> readRDS())
 
-#    gov_delta <- lapply(fits, \(x) x[, 1]) |> do.call(cbind, args = _)
-#reb_delta <- lapply(fits, \(x) x[, 2]) |> do.call(cbind, args = _)
-#interaction_delta <- lapply(fits, \(x) x[, 3]) |> do.call(cbind, args = _)
-#
-#colnames(gov_delta) <- 1:ncol(gov_delta)
-#p1 <- mcmc_intervals(gov_delta) + coord_flip()
-#
-#
-#colnames(reb_delta) <- 1:ncol(reb_delta)
-#p2 <- mcmc_intervals(reb_delta) + coord_flip()
-#
-#
-#colnames(interaction_delta) <- 1:ncol(interaction_delta)
-#p3 <- mcmc_intervals(interaction_delta) + coord_flip()
+frozen <- fits[grepl("/frozen", models)]
+strict_frozen <- fits[grepl("/strict_frozen", models)]
 
-p1 / p2 / p3
+modelsummary(frozen, pars = c("alpha", "delta", "beta"),
+             statistic = "conf.int", title = "Frozen Conflicts") |>
+    add_header_above(c(" " = 1, "All Episodes" = 3, "High Intensity Only" = 3)) |>
+    kable_styling(font_size = 8, full_width = F) |>
+    landscape()
+```
+
+```{R}
+modelsummary(strict_frozen, pars = c("alpha", "delta", "beta"),
+             statistic = "conf.int", title = "Frozen Conflicts Lasting >2 Years") |>
+    add_header_above(c(" " = 1, "All Episodes" = 3, "High Intensity Only" = 3)) |>
+    kable_styling(font_size = 8, full_width = F) |>
+    landscape()
 ```
