@@ -2,7 +2,7 @@
 
 library(cmdstanr)
 library(dplyr)
-library(fc)
+library(fc.utils)
 library(yaml)
 
 options(mc.cores = parallel::detectCores() - 1)

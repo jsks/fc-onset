@@ -1,7 +1,7 @@
 #!/usr/bin/env Rscript
 
 library(dplyr)
-library(fc)
+library(fc.utils)
 library(haven)
 library(readxl)
 library(tidyr)

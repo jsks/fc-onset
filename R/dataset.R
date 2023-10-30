@@ -4,7 +4,7 @@
 ###
 
 library(dplyr)
-library(fc)
+library(fc.utils)
 library(readxl)
 
 adj <- read.csv("./data/dataset/adjusted_conflict_candidates.csv") |>

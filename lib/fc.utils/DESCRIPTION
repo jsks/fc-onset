@@ -1,7 +1,7 @@
-Package: fc
+Package: fc.utils
 Title: Utility Functions
 Version: 0.0.0.9000
-Authors@R: 
+Authors@R:
     person("Joshua", "Krusell", , "joshua.krusell@gu.se", role = c("aut", "cre"))
 Description: Collection of helpers functions used in the construction of the
     fc-dataset and analysis of frozen conflict onsets.

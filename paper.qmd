@@ -20,6 +20,9 @@ library(knitr)
 library(patchwork)
 library(tidyr)
 
+# Project specific utility package
+library(fc.utils)
+
 options(knitr.kable.NA = ".", knitr.kable.format = "latex",
         knitr.kable.linesep = "")
 
