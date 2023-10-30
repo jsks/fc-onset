@@ -8,7 +8,7 @@ library(yaml)
 options(mc.cores = parallel::detectCores() - 1)
 
 input <- commandArgs(trailingOnly = T)
-schema_file <- if (length(input) == 0) "models/frozen-bin-all.yml" else input
+schema_file <- if (!exists("input") || length(input) == 0) "models/frozen-bin-all.yml" else input
 
 stopifnot(file.exists(schema_file))
 
@@ -53,13 +53,22 @@ data <- list(n = sum(cases),
              y = df$strict_frozen[cases])
 str(data)
 
-sprintf("posteriors/%s/model_input.RData", schema$name) |> save.image()
-
 mod <- cmdstan_model("./stan/probit.stan")
 fit <- mod$sample(data = data)
 
+# Treatment coefficients
 fit$summary("delta")
 
+fit$save_data_file(file.path("posteriors", schema$name), timestamp = F, random = F)
+
+# cmdstanr won't save the column names when serializing the data
+# object to json.
+variables <- c("alpha", sprintf("delta[%d]", 1:ncol(treatments)),
+                sprintf("beta[%d]", 1:ncol(X)))
+names(variables) <- c("intercept", colnames(treatments), colnames(X))
+
+file.path("posteriors", schema$name, "labels.rds") |> saveRDS(variables, file = _)
+
 # Save, save, save!
-sprintf("posteriors/%s/model_output.rds", schema$name) |>
+sprintf("posteriors/%s/fit.rds", schema$name) |>
     fit$save_object()
