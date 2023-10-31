@@ -15,20 +15,17 @@
 SHELL = /bin/bash -eo pipefail -O globstar
 
 manuscript := paper.qmd
+qmd_files  != ls ./**/*.qmd
 
 data	:= data
 dataset := $(data)/dataset
 raw	:= $(data)/raw
-
 post    := posteriors
-
-qmd_files  != ls ./**/*.qmd
-pdf_files  := $(qmd_files:%.qmd=%.pdf)
 
 cmdstan != Rscript -e 'cat(cmdstanr::cmdstan_path())'
 
-schemas        := $(wildcard models/*.yml)
-model_outputs  := $(schemas:models/%.yml=$(post)/%/fit.rds)
+schemas     := $(wildcard models/*.yml)
+model_fits  := $(schemas:models/%.yml=$(post)/%/fit.rds)
 
 all: $(manuscript:%.qmd=%.pdf) ## Default rule generates manuscript pdf
 .PHONY: bootstrap clean dataset help models todo watch wc
@@ -41,7 +38,6 @@ clean: ## Clean generated files
 		$(qmd_files:%.qmd=%_files) $(data)/*.{csv,rds,RData} \
 		models/
 	$(MAKE) -C $(cmdstan) STANPROG=$(CURDIR)/stan/probit clean-program
-
 
 help:
 	@printf 'Compile a specific document with `make <file.pdf>.`\n\n'
@@ -94,7 +90,7 @@ dataset: dataset.zip ## Create a zip archive of the dataset
 
 ###
 # Probit Models
-bootstrap: R/models.R
+bootstrap: R/models.R ## Generate yaml model profiles
 	rm -rf models/
 	Rscript $<
 
@@ -118,15 +114,17 @@ $(post)/%/labels.rds $(post)/%/probit.json $(post)/%/fit.rds &: \
 	data/model_data.rds
 	Rscript $< models/$*.yml
 
-models: $(model_outputs)
-ifndef model_outputs
+models: $(model_fits) ## Run all Stan models
+ifndef model_fits
 	$(error No models found. Run `make bootstrap` to generate model profiles.)
 endif
 
 ###
-# Manuscript
-paper.pdf: $(raw)/frozen_conflicts.rds \
-	$(model_outputs)
+# Manuscript dependencies
+$(foreach ext, pdf docx html, $(manuscript:%.qmd=%.$(ext))): \
+	$(raw)/frozen_conflicts.rds \
+	$(data)/model_data.rds \
+	$(model_fits)
 
 ###
 # Implicit rules for pdf and html generation
