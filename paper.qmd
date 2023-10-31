@@ -17,7 +17,6 @@ library(ggplot2)
 library(ggthemes)
 library(ggdist)
 library(modelsummary)
-library(kableExtra)
 library(knitr)
 library(patchwork)
 library(tidyr)
@@ -223,25 +222,26 @@ ggplot(summary.df, aes(treatment_aggregation, median, color = outcome)) +
 ```
 
 ```{R}
-models <- list.dirs("posteriors", recursive = F)
-stopifnot(length(models) != 0)
+regtable <- function(fits, ...) {
+    names(fits) <- NULL
+    modelsummary(fits, pars = c("delta", "beta", "alpha"), statistic = "conf.int", ...)
+}
 
-fits <- lapply(models, \(dir) file.path(dir, "fit.rds") |> readRDS())
-
-frozen <- fits[grepl("/frozen", models)]
-strict_frozen <- fits[grepl("/strict_frozen", models)]
-
-modelsummary(frozen, pars = c("alpha", "delta", "beta"),
-             statistic = "conf.int", title = "Frozen Conflicts") |>
-    add_header_above(c(" " = 1, "All Episodes" = 3, "High Intensity Only" = 3)) |>
-    kable_styling(font_size = 8, full_width = F) |>
-    landscape()
+m <- c("frozen-bin-all", "strict_frozen-bin-all",
+       "frozen-bin-high_intensity", "strict_frozen-bin-high_intensity")
+regtable(fits[m], title = "Binary Treatments")
 ```
 
+
 ```{R}
-modelsummary(strict_frozen, pars = c("alpha", "delta", "beta"),
-             statistic = "conf.int", title = "Frozen Conflicts Lasting >2 Years") |>
-    add_header_above(c(" " = 1, "All Episodes" = 3, "High Intensity Only" = 3)) |>
-    kable_styling(font_size = 8, full_width = F) |>
-    landscape()
+m <- c("frozen-bin_5y-all", "strict_frozen-bin_5y-all",
+       "frozen-bin_5y-high_intensity", "strict_frozen-bin_5y-high_intensity")
+regtable(fits[m], title = "Binary Treatments - Last 5 Years")
+```
+
+
+```{R}
+m <- c("frozen-prop-all", "strict_frozen-prop-all",
+       "frozen-prop-high_intensity", "strict_frozen-prop-high_intensity")
+regtable(fits[m], title = "Proportion Treatments")
 ```
