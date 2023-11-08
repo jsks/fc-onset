@@ -13,6 +13,7 @@ execute:
 [//]: # Setup R environment
 ```{r setup, include = F}
 library(dplyr)
+library(flextable)
 library(ggplot2)
 library(ggthemes)
 library(ggdist)
@@ -32,27 +33,84 @@ theme_set(theme_tufte(base_family = "TeX Gyre Pagella", base_size = 10))
 
 **Research question: to what extent does external state support to conflict actors affect the probability that a civil conflict becomes frozen?**
 
-# Empirics
+**Motivation**
 
-To empirically assess whether external state support for conflict
-actors affects the probability of a civil conflict episode terminating
-as a frozen conflict a series of bayesian probit models were run
-using original data on frozen civil conflicts. A mixed identification strategy was employed by both conditioning on relevant covariates and instrumenting external support with UN roll call votes.
+Contribution: (*conceptual* and *empirical*)
 
-In what follows, I will first describe the dependent and independent variables, including operationalizations and data sources. I will then present the model specification and results from a conventional probit regression followed by the instrumental variable analysis.
+- *Original Data*, conceptual/descriptive claim about prevalence of frozen conflicts
+- Novel empirical analysis, provide a more nuanced analysis of *conflict termination* and contributes to our understanding of how external support can shape the dynamics of conflicts
 
-## Data
+The paper will argue that there exists both a theoretical and empirical gap. Studies on conflict termination have generally considered military victory and peace agreements as the only outcome. I further disaggregate the notion of termination to cover also the situation where conflicts are not conclusively termination and instead become "frozen."
 
-### Defining Frozen Conflicts
+In doing so, I show that frozen conflicts are more prevalent than thought and conceptually can and should cover a greater range of cases than just /de facto/ states. I also distinguish the concept of frozen conflicts from the related notions of stalemates and protracted conflicts (and maybe intractable rivalries?).
+
+I provide a novel quantitative analysis on the likelihood of a conflict becoming frozen. Specifically, I examine the effect of support by external state actors to belligerents in the course of a conflict episode. This will contribute both to our understanding of different types of conflict termination as well as the ways in which external support can shape the dynamics of conflicts.
+
+- Potential shortcoming: what I am not doing is taking into account the preferences of external supporters and motivation for offering support. Nor am I distinguishing between different external support types.
+
+**Why should we care about frozen conflicts?**
+
+# Defining Frozen Conflicts
 
 I follow the definition of frozen conflicts offered by @smetana_between_2019 as a "protracted, post-war conflict process, characterized by the absence of stable peace...[where] core issues between the opposing sides remain unresolved, the dispute is in the forefront of mutual relations, and there is a looming threat of the renewal of violence."  Accompanying this definition, @smetana_between_2019 lay forth three criteria determining whether a post-conflict period qualifies as a frozen conflict. First, there needs to be an initial period of active conflict followed by a cessation of large-scale violent hostilities. Isolated, sporadic incidences of violence may continue to occur; however, conflict actors are either unwilling or unable to launch major military offensives. Although not necessary, this may be characterized by the establishment of a general ceasefire and/or presence of external peacekeeping troops.  Second, the core issue underlying the conflict needs to remain salient post-conflict. This entails actors maintaining their claims within a dispute. And, finally, there must be an ongoing threat of violent re-escalation. In other words, post-conflict relations should be characterized by mutual hostility and an unwillingness to abandon violence as a political strategy.
 
 These criteria distinguish frozen conflicts from related concepts such as protracted stalemates or enduring rivalries. In the case of the former, stalemates during a conflict can potentially endure for extended periods of time and offer conditions similar to those of a frozen conflict. However, they do not necessitate a cessation of active fighting. Stalemates can still occur during high intensity periods of a conflict where relatively few gains are made by either side. In the case of the latter, enduring rivalries are characterized in part by repeated onsets of militarized interstate disputes [@Goertz1992; @Goertz1993]; however, this might not entail the actual outbreak of violence. More importantly, enduring rivalries were originally conceptualized in terms of inter-state relations, while the definition of frozen conflicts here can be extended to the intra-state case as well.
 
+
+# Theory
+
+*The fundamental question*: why would actors accept a frozen conflict over a comprehensive peace agreement?
+
+This mirrors the "why fight" question underlying bargaining theory where fighting is assumed to be costly such that with perfect information rational actors should prefer a "bargained solution." Is there a similar parallel to frozen conflicts?
+
+What is the cost of perpetuating a frozen conflict? How does this play in with the traditional, bargaining theory approach to conflict termination. Namely, actors become willing to terminate a conflict as information is revealed through fighting and the payoff from victory diminishes, based on the subjective probability of winning and the accumulated costs both past and future.
+
+Is there a situation in which rational actors would prefer to leave a conflict unresolved with the future threat of violent re-escalation? Clearly, the rebel side faces a credible commitment dilemma in that they can never guarantee that the government won't renege in the future.
+
+Literature on ceasefires (ex Clayton and Stitcher (2021)) emphasize the strategic logic underlying actors' decisions to accept or reject a ceasefire. More specifically, actors may be willing to enter into a ceasefire either as a signaling mechanism to demonstrate an intent to peacefully resolve the conflict or as a delaying mechanism to allow them to temporarily pause fighting in order to rebuild their strength. The decision to accept a frozen conflict, despite the ongoing costs, may be similar to this latter mechanism. Conflict actors may not be willing to completely abandon their war aims; however, due to a variety of factors are unable to win an outright victory. By letting the conflict become frozen, either through a ceasefire, partial peace agreement, or a stalemate, actors can temporarily halt the ongoing costs of fighting in hopes of a future favourable shift in the balance of power. This probably requires actors to have long time horizons and be willing to burden the costs of not fully resolving the conflict. Specifically, letting a conflict become frozen means that there is always a threat of re-escalation so actors need to continue to commit to military spending, while suffer ongoing economic costs from lost territory.
+
+"...Leeds (1999) and Walter (2002) suggest that once negotiation begins because of a hurting stalemate, any warring group would prefer to have those negotiations be successful rather than to return to their group members without a settlement." --- from Park (2015)
+
+This is a potential theoretical contribution to the bargaining literature in that I could argue a comprehensive peace agreement does not necessarily always result from a hurting stalemate. Letting conflicts freeze could be one way that actors ease the costs of a hurting stalemate without being forced to commit to a settlement. This could be especially attractive in scenarios where there is such a high degree of mutual distrust, with few international guarantees for a negotiated settlement, where credible commitment problems could lead to a frozen conflict. Especially when actors receive external support, which a) is more likely to lead to the type of stalemate scenario where neither side can outright win militarily and b) allow actors to sustain the military threat required for a frozen conflict to perpetuate.
+
+Note, extensive literature arguing that external actors also increase the number of veto players which decrease the likelihood of a negotiated settlement (ex Cunningham 2006).
+
+- Differentiating the theoretical mechanisms for the different treatment conditions: no external support, both sides receive external support, government only, rebel only
+
+- States tend to be fairly conservative about sovereignty claims (see Hutchinson f.ex.). The best that separatists can hope for is a *de facto* state.
+
+- Big difference compared to ceasefires, frozen conflicts are not /a priori/ agreed upon by belligerents. Even if an actor prefers a conflict to become frozen, there is no guarantee that the opposing side won't attempt a re-escalation at any time.
+
+  - Even if actors prefer a frozen conflict over a comprehensive peace agreement; why not codify the status quo and formalized a ceasefire? (I think the key here is to emphasize that actors **cannot** win militarily, in other words they are stalemated into a frozen conflicts and refuse to give up their war aims. The question then is not, why do conflict actors prefer frozen conflicts, but rather in the face of a frozen conflict, why do conflict actors refuse a negotiated settlement?)
+
+# Empirics
+
+To empirically assess whether external state support for conflict actors affects the probability of a civil conflict episode terminating as a frozen conflict a series of bayesian probit models were run using original data on frozen civil conflicts. A mixed identification strategy was employed by both conditioning on relevant covariates and instrumenting external support with UN roll call votes.
+
+In what follows, I will first present the model specification and results from a probit regression predicting the onset of a frozen conflict. I will then decrease the dependent and independent variables, including operationalizations and data sources.
+
+## Probit Model
+
+TODO: eventually I would like to move towards a dyadic analysis, rather than conflict level
+
+- Unit of analysis: conflict episodes, ie consecutive years of active fighting (above UCDP threshold of 25 battle deaths)
+- Binary outcome, binary treatment, while conditioning on a number of relevant covariates
+
+\begin{align*}
+y_i^\star & = \alpha + X_i' \beta + T_i' \delta + \epsilon_i, \; \epsilon_i \sim \text{N}(0, \sigma^2) \\
+y_i & = \begin{cases}
+1 & \text{if } y_i^\star > 0 \\
+0 & \text{otherwise}
+\end{cases}
+\end{align*}
+
+- Estimate with Stan, weakly informative priors, $\delta \sim \text{Normal}(1, 1)$
+
+## Data
+
 ### Measuring Frozen Conflicts
 
 In order to measure the onset of frozen civil conflicts I followed the previous three criteria and coded an original dataset using dyadic intra-state conflict episodes drawn from the UCDP/PRIO Armed Conflict Dataset [@gleditsch_armed_2002; @davies_organized_2023] defined as contiguous years with at least 25 battle-related deaths in a violent contest over a government or territory between a state and non-state actor. To address post-conflict issue saliency, I considered an episode to be unresolved if it terminated without either a comprehensive peace treaty addressing the core underlying issues or a one-sided military victory for either the government or rebel group according to the UCDP Peace Agreement and Conflict Termination Datasets [@pettersson_organized_2019; @kreutz_how_2010]. I also filtered out episodes where one or more actors ceased to exist within five years of the conflict termination and where the non-state actor renounces violences. This was done using a manual coding process with a mix of academic and news media sources for different conflicts in order to capture instances where, for example, rebel groups transition into legitimate political parties.
-
 
 ```{r}
 dataset <- readRDS("./data/model_data.rds")
@@ -91,16 +149,24 @@ Potential Weaknesses
 
 ### Treatments
 
-UCDP external support dataset
+UCDP external support dataset, binary variable for whether an external
+state actor offered either fungible or non-fungible support at least
+once to either the rebels or government side in a conflict episode.
+
+- Include interaction term, three treatment conditions:
+
+1. No support (control group)
+2. Gov. support only
+3. Reb. support only
+4. Both support
 
 ### Control Variables
 
-- Conflict Intensity
-- Conflict Duration
-- Incompatibility?
-- e_gdppc
-- e_pop
-- CINC
+- Episode Intensity
+- Episode Duration
+- Incompatibility? (ie separatist conflict over territory)
+- Recurrent episode
+- Right censored
 
 Descriptive statistics split between positive and negative outcomes
 
@@ -108,15 +174,9 @@ Descriptive statistics split between positive and negative outcomes
 
 ## Observational Models
 
-\begin{align*}
-y_i^\star & = \alpha + X_i' \beta + T_i' \delta + \epsilon_i, \; \epsilon_i \sim \text{N}(0, \sigma^2) \\
-y_i & = \begin{cases}
-1 & \text{if } y_i^\star > 0 \\
-0 & \text{otherwise}
-\end{cases}
-\end{align*}
-
 ### Results
+
+Figure 1 shows the parameter estimates for $\delta$.
 
 ```{r}
 #| fig.cap: Posterior estimates for \delta from a single variate probit model
@@ -135,6 +195,13 @@ ggplot(delta, aes(x = value, y = variable, fill = variable)) +
                                 "delta[2]" = "Ext. Sup. to Rebel",
                                 "delta[3]" = "Interaction"))
 ```
+
+Figure 2 shows the average marginal effects, *i.e.* the change in the posterior predicted probability between each treatment condition and the control condition averaged across the sample.
+
+\begin{equation}
+\text{AME}_j = \sum_{i=1}^N \Phi(\alpha + X_i' \beta + \delta_i) - \Phi(\alpha + X_i' \beta)
+\end{equation}
+
 
 ```{r}
 #| fig.cap: Average marginal effects for the three treatment conditions on the predicted probability of a frozen conflict onset.[^ame]
@@ -186,9 +253,16 @@ Appendix:
 
 # Appendix
 
-## Robust Checks
+## Robustness Checks
 
-### Observational Probit Models
+Different combinations of the following...
+
+- Aggregation of the treatments: binary treatment, binary treatment in the last 5 years of the conflict episode, and proportional treatment. The latter is calculated as the proportion of conflict-years in an episode where one side received external support
+
+- All conflict episodes and only high intensity episodes --- try to distinguish between low-level insurgencies and actual civil wars
+
+- Normal definition for frozen conflicts and a strict definition that requires a duration of at least 2 years in order to exclude temporary one-year pauses in fighting that may be more the result of UCDP's coding decision rather than representing actual frozen conflict.
+
 
 ```{R}
 models <- list.dirs("posteriors", recursive = F)

@@ -4,6 +4,10 @@ author: J.L.A. Krusell
 format: pdf
 ---
 
+TODO: manual coding, specific criteria for determining when an actor ceases to exist
+TODO: how to handle actor fragmentation? Ex: Sendero Luminoso
+TODO: Be specific about sources that will be used, reference list?
+
 The dataset was created using a mix of programmatic and manual coding in a two-stage process. The first stage filtered out dyadic civil conflict episode outcomes according to a preset list of rules listed in detail below. This candidate list was then manually corrected in the second stage to form the final list of frozen conflict onsets.
 
 ## Coding Procedure
