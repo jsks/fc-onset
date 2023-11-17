@@ -25,7 +25,7 @@ if (schema$episodes == "high_intensity")
 
 ###
 # Select control variables - currently this is static across all models
-X <- select(df, censored, episode_duration, recur, max_intensity, incompatibility) |>
+X <- select(df, censored, episode_duration, recur, max_intensity, incompatibility, cold_war) |>
     mutate(episode_duration = log(episode_duration)) |>
     data.matrix()
 
@@ -50,11 +50,13 @@ data <- list(n = sum(cases),
              X = X[cases, ],
              n_countries = n_distinct(df$gwno_a),
              country_id = as.factor(df$gwno_a[cases]) |> as.integer(),
+             n_conflict_types = 2,
+             conflict_type = df$incompatibility[cases] + 1,
              y = df$strict_frozen[cases])
 str(data)
 
 mod <- cmdstan_model("./stan/probit.stan")
-fit <- mod$sample(data = data)
+fit <- mod$sample(data = data, adapt_delta = 0.99)
 
 # Treatment coefficients
 fit$summary("delta")
