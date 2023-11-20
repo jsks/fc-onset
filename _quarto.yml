@@ -9,6 +9,6 @@ format:
     mainfont: TeX Gyre Pagella
     mathfont: TeX Gyre Pagella
     pdf-engine: lualatex
-knitr:
-    opts_chunk:
-        dev: cairo_pdf
+    knitr:
+        opts_chunk:
+            dev: cairo_pdf
