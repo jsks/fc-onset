@@ -42,7 +42,7 @@ treatments <- select(df, {{ state_sup }}, {{ rebel_sup }}) |>
 
 ###
 # Assemble model input
-data <- list(n = sum(cases),
+stan_data <- list(n = sum(cases),
              k = ncol(treatments),
              T = treatments[cases, ],
              interaction_id = which(colnames(treatments) == "interaction"),
@@ -50,13 +50,13 @@ data <- list(n = sum(cases),
              X = X[cases, ],
              n_countries = n_distinct(df$gwno_a),
              country_id = as.factor(df$gwno_a[cases]) |> as.integer(),
-             n_conflict_types = 2,
-             conflict_type = df$incompatibility[cases] + 1,
+             n_contest_types = 2,
+             contest_id = df$incompatibility[cases] + 1,
              y = df$strict_frozen[cases])
-str(data)
+str(stan_data)
 
 mod <- cmdstan_model("./stan/probit.stan")
-fit <- mod$sample(data = data, adapt_delta = 0.99)
+fit <- mod$sample(data = stan_data, adapt_delta = 0.95)
 
 # Treatment coefficients
 fit$summary("delta")
