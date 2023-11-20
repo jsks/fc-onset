@@ -1,34 +1,44 @@
+functions {
+    vector colSums(matrix m) {
+        vector[cols(m)] sums;
+        for (i in 1:cols(m))
+            sums[i] = sum(m[, i]);
+
+        return sums;
+    }
+}
+
 data {
-    int n;
+    int N;
 
     // Treatment
-    int k;
-    matrix<lower=0, upper=1>[n, k] T;
-    int<lower=1, upper=k> interaction_id;
+    int K;
+    matrix<lower=0, upper=1>[N, K] T;
+    int<lower=1, upper=K> interaction_id;
 
     // Additional covariates
-    int m;
-    matrix[n, m] X;
+    int M;
+    matrix[N, M] X;
 
     int<lower=1> n_countries;
-    array[n] int<lower=1, upper=n_countries> country_id;
+    array[N] int<lower=1, upper=n_countries> country_id;
 
     int<lower=1> n_contest_types;
-    array[n] int<lower=1, upper=n_contest_types> contest_id;
+    array[N] int<lower=1, upper=n_contest_types> contest_id;
 
-    array[n] int<lower=0, upper=1> y;
+    array[N] int<lower=0, upper=1> y;
 }
 
 parameters {
     real alpha;
-    vector[m] beta;
+    vector[M] beta;
 
     vector[n_countries] raw_country;
     real<lower=0> sigma;
 
-    matrix[k, n_contest_types] raw_delta;
-    vector[k] mu;
-    vector<lower=0>[k] tau;
+    matrix[K, n_contest_types] raw_delta;
+    vector[K] mu;
+    vector<lower=0>[K] tau;
 }
 
 transformed parameters {
@@ -36,11 +46,11 @@ transformed parameters {
     vector[n_countries] gamma = raw_country * sigma;
 
     // delta[i, j] ~ normal(mu_i, tau_i)
-    matrix[k, n_contest_types] delta;
+    matrix[K, n_contest_types] delta;
     for (i in 1:n_contest_types)
         delta[, i] = mu + raw_delta[, i] .* tau;
 
-    vector<lower=0, upper=1>[n] theta = Phi_approx(alpha + X * beta + gamma[country_id] +
+    vector<lower=0, upper=1>[N] theta = Phi_approx(alpha + X * beta + gamma[country_id] +
                                                    rows_dot_product(T, delta[, contest_id]'));
 }
 
@@ -61,21 +71,35 @@ model {
 }
 
 generated quantities {
-    // Average marginal effects per treatment condition
-    array[k] real ame;
+    // AME per treatment condition by incompatibility group
+    matrix[K, n_contest_types] ame = rep_matrix(0, K, n_contest_types);
     {
-        vector[n] base = alpha + X * beta + gamma[country_id];
-        vector[n] T0 = Phi_approx(base);
+        // First, calculate the marginal effects for each observation
+        array[K] vector[N] margins;
+        vector[N] base = alpha + X * beta + gamma[country_id];
+        vector[N] T0 = Phi_approx(base);
 
-        vector[n_contest_types] T3;
-        for (i in 1:n_contest_types)
-            T3[i] = sum(delta[, i]);
-
-        for (i in 1:k) {
+        for (i in 1:K) {
             if (i == interaction_id)
-                ame[i] = mean(Phi_approx(base + T3[contest_id]) - T0);
+                margins[i] = Phi_approx(base + colSums(delta[, contest_id])) - T0;
             else
-                ame[i] = mean(Phi_approx(base + to_vector(delta[i, contest_id])) - T0);
+                margins[i] = Phi_approx(base + to_vector(delta[i, contest_id])) - T0;
         }
+
+        // Average over each type of incompatibility
+        for (i in 1:n_contest_types) {
+            int count = 0;
+
+            for (j in 1:N) {
+                if (contest_id[j] != i)
+                   continue;
+
+                count += 1;
+                for (k in 1:K)
+                    ame[k, i] += margins[k][j];
+             }
+
+             ame[, i] /= count;
+         }
     }
 }
