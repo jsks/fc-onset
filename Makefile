@@ -90,6 +90,13 @@ dataset: dataset.zip ## Create a zip archive of the dataset
 
 ###
 # Probit Models
+$(post)/sbc.rds: R/sbc.R \
+	stan/probit.stan \
+	stan/sim.stan
+	Rscript $<
+
+sbc: $(post)/sbc.rds ## Run simulation-based calibration
+
 bootstrap: R/models.R ## Generate yaml model profiles
 	rm -rf models/
 	Rscript $<
@@ -124,7 +131,8 @@ endif
 $(foreach ext, pdf docx html, $(manuscript:%.qmd=%.$(ext))): \
 	$(raw)/frozen_conflicts.rds \
 	$(data)/model_data.rds \
-	$(model_fits)
+	$(model_fits) \
+	.WAIT $(post)/sbc.rds
 
 ###
 # Implicit rules for pdf and html generation

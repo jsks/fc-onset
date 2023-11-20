@@ -1,61 +1,55 @@
 #!/usr/bin/env Rscript
+#
+# Quick simulation script to check the implementation of the probit
+# model. For a more robust (and computationally intensitive) check see
+# sbc.R.
+###
 
 library(bayesplot)
 library(cmdstanr)
 library(dplyr)
-library(extraDistr)
-library(MASS, include.only = "mvrnorm")
 
-set.seed(43)
+options(mc.cores = parallel::detectCores() - 1)
 
-n <- 200
+n <- 300
+k <- 3
 m <- 2
-k <- 1
 
-alpha <- rnorm(1, 0, 5)
-beta <- rnorm(m, 0, 2.5)
-delta <- rnorm(k, 0, 2.5)
+n_countries <- 2
+n_contest_types <- 2
 
-X <- mvrnorm(n, rep(0, m), diag(rep(2, m), nrow = m, ncol = m))
-treatment <- sapply(k, \(i) rbinom(n, 1, runif(1, max = 0.75)))
+stan_data <- list(n = n,
+                  k = k,
+                  m = m,
+                  n_countries = n_countries,
+                  n_contest_types = n_contest_types,
+                  X = rnorm(n * m, 0, 3) |> matrix(nrow = n, ncol = m),
+                  T = sample(0:1, n * k, replace = TRUE) |> matrix(nrow = n, ncol = k),
+                  country_id = sample(1:n_countries, n, replace = TRUE),
+                  contest_id = sample(1:n_contest_types, n, replace = TRUE))
+str(stan_data)
 
-n_countries <- 4L
-sigma <- rhcauchy(1, 1)
-countries <- rep(rnorm(n_countries, 0, sigma), n / n_countries)
+###
+# Simulate a fake dataset
+sim <- cmdstan_model("./stan/sim.stan")
+sim_data <- sim$sample(data = stan_data, fixed_param = TRUE, chains = 1, iter_sampling = 1)
 
-theta <- pnorm(alpha + X %*% beta + treatment %*% delta + countries) |> as.vector()
-summary(theta)
+stan_data$y <- as.vector(sim_data$draws("y_sim", format = "matrix"))
+stan_data$interaction_id <- 1
 
-y <- rbinom(n, 1, theta)
-table(y)
-
-data <- list(n = n,
-             m = m,
-             k = k,
-             X = X,
-             T = treatment,
-             n_countries = n_countries,
-             country_id = as.factor(countries) |> as.integer(),
-             sample_prior = 1,
-             y = y)
-str(data)
-
+###
+# Fit our fake dataset and see if we can recover the true parameter
+# values
 mod <- cmdstan_model("./stan/probit.stan")
-
-# Sample from prior
-data <- list(n = n, m = m, k = k, X = X, T = treatment, n_countries = n_countries,
-             country_id = rep(1, n), sample_prior = 1, y = rep(1, n))
-
-fit <- mod$sample(data = data, chains = 1)
-
-
-
-fit <- mod$sample(data = data, parallel_chains = 4, max_treedepth = 12, adapt_delta = 0.95)
+fit <- mod$sample(data = stan_data, adapt_delta = 0.99)
 
 # Parameter plots
-fit$draws(c("alpha", "beta", "delta", "sigma")) |>
-    mcmc_recover_intervals(c(alpha, beta, delta, sigma))
+parameters <- c("alpha", "beta", "sigma", "gamma", "mu", "tau", "delta")
+true_values <- as.vector(sim_data$draws(parameters, format = "matrix"))
+
+fit$draws(parameters) |> mcmc_recover_intervals(true_values)
 
 # Predicted probabilities
+theta <- sim_data$draws("theta", format = "matrix")
 theta_hat <- fit$draws("theta", format = "draws_matrix")
 ppc_dens_overlay(as.vector(theta), theta_hat[1:100, ])
