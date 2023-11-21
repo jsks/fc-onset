@@ -25,7 +25,8 @@ if (schema$episodes == "high_intensity")
 
 ###
 # Select control variables - currently this is static across all models
-X <- select(df, censored, episode_duration, recur, max_intensity, incompatibility, cold_war) |>
+X <- select(df, censored, episode_duration, recur, max_intensity, incompatibility,
+            cold_war, ongoing_intrastate, ongoing_interstate) |>
     mutate(episode_duration = log(episode_duration)) |>
     data.matrix()
 
@@ -42,17 +43,17 @@ treatments <- select(df, {{ state_sup }}, {{ rebel_sup }}) |>
 
 ###
 # Assemble model input
-stan_data <- list(n = sum(cases),
-             k = ncol(treatments),
-             T = treatments[cases, ],
-             interaction_id = which(colnames(treatments) == "interaction"),
-             m = ncol(X),
-             X = X[cases, ],
-             n_countries = n_distinct(df$gwno_a),
-             country_id = as.factor(df$gwno_a[cases]) |> as.integer(),
-             n_contest_types = 2,
-             contest_id = df$incompatibility[cases] + 1,
-             y = df$strict_frozen[cases])
+stan_data <- list(N = sum(cases),
+                  K = ncol(treatments),
+                  T = treatments[cases, ],
+                  interaction_id = which(colnames(treatments) == "interaction"),
+                  M = ncol(X),
+                  X = X[cases, ],
+                  n_countries = n_distinct(df$gwno_a),
+                  country_id = as.factor(df$gwno_a[cases]) |> as.integer(),
+                  n_contest_types = 2,
+                  contest_id = df$incompatibility[cases] + 1,
+                  y = df$strict_frozen[cases])
 str(stan_data)
 
 mod <- cmdstan_model("./stan/probit.stan")

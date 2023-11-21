@@ -20,13 +20,34 @@ term <- read_excel("./data/raw/ucdp-term-acd-3-2021.xlsx") |>
            gwno_a = as.numeric(gwno_a)) |>
     ungroup()
 
-ucdp <- readRDS("./data/raw/UcdpPrioConflict_v23_1.rds") |>
-    select(conflict_id, year, cumulative_intensity)
+ucdp <- readRDS("./data/raw/UcdpPrioConflict_v23_1.rds")
+
+# Total number of ongoing high intensity interstate and intrastate
+# conflicts per year. Note, ongoing intrastate will need to be later
+# adjusted for double counting.
+ongoing <- filter(ucdp, intensity_level == 2) |>
+    select(conflict_id, year, gwno_a, gwno_b, type_of_conflict) |>
+    separate_rows(gwno_a, sep = ",") |>
+    separate_rows(gwno_b, sep = ",") |>
+    pivot_longer(c(gwno_a, gwno_b), names_to = "side", values_to = "gwno") |>
+    mutate(gwno = as.numeric(gwno)) |>
+    filter(!is.na(gwno)) |>
+    group_by(gwno, year) |>
+    summarise(ongoing_interstate = sum(type_of_conflict == 2),
+              ongoing_intrastate = sum(type_of_conflict != 2))
+
+# Cumulative intensity per conflict
+intensity <- select(ucdp, conflict_id, year, cumulative_intensity)
 
 ep <- filter(term, between(year, 1975, 2019)) |>
     full_join(frozen, by = c("conflict_id", "year")) |>
-    left_join(ucdp, by = c("conflict_id", "year")) |>
-    mutate(frozen = ifelse(is.na(frozen), 0, 1))
+    left_join(intensity, by = c("conflict_id", "year")) |>
+    left_join(ongoing, by = c("gwno_a" = "gwno", "year")) |>
+    mutate(frozen = ifelse(is.na(frozen), 0, 1),
+           ongoing_interstate = ifelse(is.na(ongoing_interstate), 0, ongoing_interstate),
+           ongoing_intrastate = case_when(intensity_level == 2 ~ ongoing_intrastate - 1,
+                                          is.na(ongoing_intrastate) ~ 0,
+                                          T ~ ongoing_intrastate))
 
 # Exclude subsequent episodes after onset of a frozen conflict
 reduced <- group_by(ep, conflict_id) |>
@@ -101,7 +122,10 @@ final.df <- filter(full.df, !is.na(ext_sup_s_state)) |>
               frozen_duration = last(duration),
               recur = max(recur),
               incompatibility = max(incompatibility == 1),
-              cold_war = ifelse(max(year) > 1991, 0, 1),
+              cold_war = ifelse(max(year) < 1989, 1, 0),
+              ongoing_interstate = max(ongoing_interstate) > 0,
+              ongoing_intrastate = max(ongoing_intrastate) > 0,
+              ongoing_conflict = ongoing_interstate | ongoing_intrastate,
               cumulative_intensity = max(cumulative_intensity),
               max_intensity = max(intensity_level, na.rm = T),
               avg_intensity = mean(intensity_level, na.rm = T),
