@@ -1,0 +1,234 @@
+---
+title: "Frozen Civil Conflicts"
+subtitle: "The Role of External State Support"
+author:
+    - name: J.L.A. Krusell
+institute: "Department of Political Science"
+format:
+    revealjs:
+        theme: solarized
+        footer: "Department of Political Science --- University of Gothenburg"
+suppress-bibliography: true
+---
+
+```{r setup, include F}
+library(dplyr)
+library(fc.utils)
+library(ggdist)
+library(ggplot2)
+library(ggthemes)
+library(tidyr)
+
+theme_set(theme_solarized())
+```
+
+## Defining Frozen Conflicts
+
+"...protracted, post-war conflict process, characterized by the absence of stable peace...[where] core issues between the opposing sides remain unresolved, the dispute is in the forefront of mutual relations, and there is a looming threat of the renewal of violence." [@smetana_between_2019]
+
+## Research Question {auto-animate=true}
+
+Why do some civil conflicts become frozen?
+
+## Research Question {auto-antimate=true}
+
+To what extent does external state support affect the likelihood of a civil conflict becoming frozen?
+
+. . .
+
+::: {.absolute bottom=50%}
+$\text{External State Support} \rightarrow \text{Frozen Civil Conflict Onset}$
+:::
+
+## Methods
+
+Two strategies: bayesian probit model and instrumental variable analysis
+
+. . .
+
+- Unit of Analysis: Civil conflict episodes [@gleditsch_armed_2002]
+
+- Outcome: Frozen conflict onset
+
+- Treatment:
+  1. External state support for *rebels*
+  2. External state support for *government*
+  3. Interaction
+
+## Measuring Frozen Conflicts
+
+Civil conflict episodes were coded as becoming frozen conflicts if the following conditions were satisfied:
+
+- Episode did **not** terminate with either a one-sided military victory or comprehensive peace agreement
+
+- Non-state actor continued to exist for at least 5 years following episode termination without renouncing political violence
+
+## Measuring Frozen Conflicts
+
+248 civil conflict episodes spanning 1975-2017, of which 69 became frozen
+
+```{r}
+dataset <- readRDS("../data/model_data.rds")
+
+filter(dataset, frozen == 1) |>
+ggplot(aes(year)) +
+    geom_bar() +
+    xlab("Year") +
+    ylab("Frozen Civil Conflict Onsets")
+```
+
+## Measuring Frozen Conflicts {.smaller}
+
+```{r}
+conditions <- dataset |>
+    mutate(treatment = case_when(ext_sup_s_rebel_bin == 1 & ext_sup_s_state_bin == 1 ~ "Ext. Sup. to Both",
+                                 ext_sup_s_rebel_bin == 1 & ext_sup_s_state_bin == 0 ~ "Ext. Sup. Rebel Only",
+                                 ext_sup_s_rebel_bin == 0 & ext_sup_s_state_bin == 1 ~ "Ext. Sup. Gov Only",
+                                 ext_sup_s_rebel_bin == 0 & ext_sup_s_state_bin == 0 ~ "Ext. Sup. to Neither"))
+
+m <- table(conditions$frozen, conditions$treatment)
+rownames(m) <- c("Not Frozen", "Frozen")
+knitr::kable(m)
+```
+
+## Additional Covariates
+
+:::{.incremental}
+- Conflict dynamics: duration, intensity, recurrence
+- Incompatibility
+- Ongoing intra/inter-state conflict
+- Cold war
+- Censoring
+:::
+
+## Probit Model
+
+\begin{align*}
+y^\star_i & = \alpha + X_i' \beta + T_i' \delta_{k_i} + \gamma_{c_i} + \epsilon_i, \: \epsilon_i \sim \text{N}(0, 1) \\
+y_i & = \begin{cases}
+1 & \text{if } y_i^\star > 0 \\
+0
+\end{cases}
+\end{align*}
+
+. . .
+
+:::: {.columns}
+
+::: {.column width="30%"}
+\begin{align*}
+\alpha & \sim \text{N}(0, 2.5) \\
+\beta & \sim \text{N}(0, 1) \\
+\end{align*}
+:::
+
+::: {.column width="40%"}
+\begin{align*}
+\delta_j & \sim \text{N}(\mu_j, \tau_j) \\
+\mu_j & \sim \text{N}(0, 1) \\
+\tau_j & \sim \text{N}_{+}(0, 1)
+\end{align*}
+:::
+
+::: {.column width="30%"}
+\begin{align*}
+\gamma_c & \sim \text{N}(0, \sigma) \\
+\sigma & \sim \text{N}_{+}(0, 1)
+\end{align*}
+:::
+
+:::
+
+## Parameter Estimates
+
+```{r}
+
+fit <- readRDS("../posteriors/frozen-bin-all/fit.rds")
+
+delta <- fit$draws("delta", format = "df") |>
+    select(matches("delta")) |>
+    pivot_longer(everything(), names_to = "variable")
+
+ll <- extract_digits(delta$variable)
+delta$variable <- sprintf("delta[%s]", sapply(ll, `[`, 1))
+delta$group <- ifelse(sapply(ll, `[`, 2) == 1, "Government Incompatibility",
+                      "Territorial Incompatibility")
+
+ggplot(delta, aes(x = value, y = variable, fill = variable)) +
+    stat_halfeye(alpha = 0.8, show.legend = F) +
+    geom_vline(xintercept = 0, linetype = "dashed", alpha = 0.2) +
+    theme(axis.title.x = element_blank(),
+          axis.title.y = element_blank()) +
+    scale_y_discrete(labels = c("delta[1]" = "Ext. Sup. to Gov",
+                                "delta[2]" = "Ext. Sup. to Rebel",
+                                "delta[3]" = "Interaction")) +
+    facet_grid(. ~ group) +
+    scale_fill_solarized()
+
+```
+
+
+## Average Marginal Effects {.smaller}
+
+Three treatment conditions:
+
+#. External state support for the **government only**
+#. External state support for the **rebels only**
+#. External state support for **both sides**
+
+\begin{equation}
+\text{AME}_{jk} = \frac{1}{N_k} \sum_{i=1}^{N_k} \Phi(\alpha + X_i' \beta + W_j' \delta_k + \gamma_{c_i}) - \Phi\left(\alpha + X_i' \beta + \gamma_{c_i}\right)
+\end{equation}
+
+
+## Average Marginal Effects
+
+```{r}
+ame <- fit$draws("ame", format = "df") |>
+    select(matches("ame")) |>
+    pivot_longer(everything(), names_to = "variable")
+
+ll <- extract_digits(ame$variable)
+ame$variable <- sprintf("ame[%s]", sapply(ll, `[`, 1))
+ame$group <- ifelse(sapply(ll, `[`, 2) == 1, "Government Incompatibility",
+                    "Territorial Incompatibility")
+
+ggplot(ame, aes(x = value, y = variable, fill = variable)) +
+    stat_eye(alpha = 0.8, show.legend = F) +
+    geom_vline(xintercept = 0, linetype = "dashed", alpha = 0.2) +
+    theme(axis.title.x = element_blank()) +
+    labs(x = parse(text = "bold('AME '*Delta)")) +
+    scale_y_discrete(labels = c("ame[1]" = "Ext. Sup. Gov Only",
+                                "ame[2]" = "Ext. Sup. Rebel Only",
+                                "ame[3]" = "Ext. Sup. to Both")) +
+    coord_flip() +
+    facet_grid(. ~ group) +
+    scale_fill_solarized()
+
+```
+
+# Part II
+
+## Instrument
+
+UN General Assembly voting 10 years prior to a conflict onset
+
+. . .
+
+**Pros**:
+
+- No measurement error, unlikely to have a direct effect on civil conflict
+
+. . .
+
+**Cons**:
+
+- Cannot exclude possibility of additional systematic confounders
+
+## I.V. Model
+
+\begin{align*}
+T^\star_i & = \alpha_1 + X_i' \beta_1 + Z_i' \lambda + \upsilon_{c_i} + \eta_i \\
+y^\star_i & = \alpha_2 + X_i' \beta_2 + T_i' \delta_{k_i} + \gamma_{c_i} + \epsilon_i \\
+\eta_i, \epsilon_i & \sim \text{MVN}(0, \Sigma)
+\end{align*}
