@@ -1,3 +1,10 @@
+#' @export
+extract_digits <- function(x) {
+    m <- gregexpr("\\d", x)
+    regmatches(x, m)
+}
+
+
 #' Find consecutive elements
 #'
 #' Given a NumericVector, return the grouping indices for consecutive

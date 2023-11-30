@@ -186,14 +186,20 @@ delta <- fit$draws("delta", format = "df") |>
     select(matches("delta")) |>
     pivot_longer(everything(), names_to = "variable")
 
+ll <- extract_digits(delta$variable)
+delta$variable <- sprintf("delta[%s]", sapply(ll, `[`, 1))
+delta$group <- sapply(ll, `[`, 2) |> as.factor()
+
 ggplot(delta, aes(x = value, y = variable, fill = variable)) +
-    stat_halfeye(alpha = 0.8, show.legend = F) +
+    stat_halfeye(alpha = 0.8) +
     geom_vline(xintercept = 0, linetype = "dashed", alpha = 0.2) +
     theme(axis.title.x = element_blank(),
           axis.title.y = element_blank()) +
     scale_y_discrete(labels = c("delta[1]" = "Ext. Sup. to Gov",
                                 "delta[2]" = "Ext. Sup. to Rebel",
-                                "delta[3]" = "Interaction"))
+                                "delta[3]" = "Interaction")) +
+    facet_grid(. ~ group)
+
 ```
 
 Figure 2 shows the average marginal effects, *i.e.* the change in the posterior predicted probability between each treatment condition and the control condition averaged across the sample.
@@ -209,6 +215,10 @@ ame <- fit$draws("ame", format = "df") |>
     select(matches("ame")) |>
     pivot_longer(everything(), names_to = "variable")
 
+ll <- extract_digits(ame$variable)
+ame$variable <- sprintf("ame[%s]", sapply(ll, `[`, 1))
+ame$group <- sapply(ll, `[`, 2) |> as.factor()
+
 ggplot(ame, aes(x = value, y = variable, fill = variable)) +
     stat_eye(alpha = 0.8, show.legend = F) +
     geom_vline(xintercept = 0, linetype = "dashed", alpha = 0.2) +
@@ -217,7 +227,8 @@ ggplot(ame, aes(x = value, y = variable, fill = variable)) +
     scale_y_discrete(labels = c("ame[1]" = "Ext. Sup. Gov Only",
                                 "ame[2]" = "Ext. Sup. Rebel Only",
                                 "ame[3]" = "Ext. Sup. to Both")) +
-    coord_flip()
+    coord_flip() +
+    facet_grid(. ~ group)
 ```
 
 [^ame]: Hello World
@@ -264,7 +275,7 @@ Different combinations of the following...
 - Normal definition for frozen conflicts and a strict definition that requires a duration of at least 2 years in order to exclude temporary one-year pauses in fighting that may be more the result of UCDP's coding decision rather than representing actual frozen conflict.
 
 
-```{R}
+```{R eval = F}
 models <- list.dirs("posteriors", recursive = F)
 stopifnot(length(models) != 0)
 
@@ -272,7 +283,7 @@ fits <- lapply(models, \(dir) file.path(dir, "fit.rds") |> readRDS())
 names(fits) <- basename(models)
 ```
 
-```{R}
+```{R eval = F}
 #| fig-height: 7
 summary.df <- lapply(fits, function(fit) {
     post <- post_summarise(fit, "delta", rename = T, model_info = T,
@@ -295,7 +306,7 @@ ggplot(summary.df, aes(treatment_aggregation, median, color = outcome)) +
 
 ```
 
-```{R}
+```{R eval = F}
 regtable <- function(fits, ...) {
     names(fits) <- NULL
     modelsummary(fits, pars = c("delta", "beta", "alpha"), statistic = "conf.int", ...)
@@ -307,14 +318,14 @@ regtable(fits[m], title = "Binary Treatments")
 ```
 
 
-```{R}
+```{R eval = F}
 m <- c("frozen-bin_5y-all", "strict_frozen-bin_5y-all",
        "frozen-bin_5y-high_intensity", "strict_frozen-bin_5y-high_intensity")
 regtable(fits[m], title = "Binary Treatments - Last 5 Years")
 ```
 
 
-```{R}
+```{R  eval = F}
 m <- c("frozen-prop-all", "strict_frozen-prop-all",
        "frozen-prop-high_intensity", "strict_frozen-prop-high_intensity")
 regtable(fits[m], title = "Proportion Treatments")
