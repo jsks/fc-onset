@@ -141,7 +141,8 @@ slides: $(qmd_slides:slides/%.qmd=slides/%.html) ## Generate presentation slides
 $(foreach ext, pdf docx html, $(manuscript:%.qmd=%.$(ext))): \
 	$(raw)/frozen_conflicts.rds \
 	$(data)/model_data.rds \
-	$(model_fits)
+	$(model_fits) \
+	.WAIT $(post)/sbc.rds
 
 ###
 # Implicit rules for pdf and html generation
