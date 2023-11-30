@@ -1,0 +1,502 @@
+---
+title: "Frozen Civil Conflicts"
+subtitle: "The Role of External State Support"
+author:
+    - name: J.L.A. Krusell
+institute: "Department of Political Science"
+format:
+    revealjs:
+        theme: solarized
+        footer: "Department of Political Science --- University of Gothenburg"
+        title-slide-attributes:
+            data-background-image: ../assets/LO_GUeng_CMYK_flag.png
+            data-background-size: 10%
+            data-background-position: 2% 0%
+suppress-bibliography: true
+---
+
+```{r setup, include F}
+library(dplyr)
+library(fc.utils)
+library(ggdist)
+library(ggplot2)
+library(ggthemes)
+library(tidyr)
+
+theme_set(theme_solarized())
+```
+
+## Introduction {.smaller}
+
+*To what extent does external state support affect the likelihood of a civil conflict becoming frozen?*
+
+::: {.incremental}
+
+- Previous research on the link between external support and conflict termination [@mason1996civil; @balch2008third; @karlen2017legacy; @sawyer2017role]
+
+    - Generally assumes two possible outcomes: military victory or peace agreement
+
+    - Very little scholarly work on frozen conflicts
+
+- **My contribution**:
+
+    - Theoretical, extending bargaining theory to the domain of frozen conflicts
+    - Empirical, novel dataset to examine relationship between external support and frozen civil conflict onset
+
+:::
+
+## Defining Frozen Conflicts
+
+"...protracted, post-war conflict process, characterized by the absence of stable peace...[where] core issues between the opposing sides remain unresolved, the dispute is in the forefront of mutual relations, and there is a looming threat of the renewal of violence." [@smetana_between_2019]
+
+# Theory
+
+## Government Contestation
+
+::: {.incremental}
+
+- External support shifts the balance of power
+
+    - Often assumed that the rebel side is the weaker party in civil conflicts
+
+- Introduces additional veto players that complicates peace negotiations
+
+:::
+
+## Territorial Contestation {.smaller}
+
+::: {.incremental}
+
+**For the rebels**:
+
+- Opportunity to consolidate power, and establish a *de facto* state free from credible committments issues arising from negotiated solutions
+
+    - External support should be decisive in aiding rebels to seize territory
+
+**For the government**:
+
+- Future prospect of forcible reintegration
+
+    - External support extends time horizon and offsets accumulated costs
+
+:::
+
+# Empirics
+
+## Methods
+
+Two strategies: bayesian probit model and instrumental variable analysis
+
+. . .
+
+- Unit of Analysis: Civil conflict episodes [@gleditsch_armed_2002]
+
+- Binary outcome: Frozen conflict onset
+
+- Binary treatments:
+  1. External state support for *rebels*
+  2. External state support for *government*
+  3. Interaction
+
+## Measuring Frozen Conflicts
+
+Civil conflict episodes were coded as becoming frozen conflicts if the following conditions were satisfied:
+
+- Episode did **not** terminate with either a one-sided military victory or comprehensive peace agreement
+
+- Non-state actor continued to exist for at least 5 years following episode termination without renouncing political violence
+
+## Measuring Frozen Conflicts {.smaller}
+
+248 civil conflict episodes spanning 1975-2017, of which 69 became frozen
+
+:::: {.columns}
+
+::: {.column}
+```{r}
+#| fig-height: 7
+dataset <- readRDS("../data/model_data.rds")
+frozen <- filter(dataset, frozen == 1) |>
+    mutate(country = sub("Government of ", "", side_a),
+           country = case_when(country == "Russia (Soviet Union)" ~ "Russia",
+                               country == "United Kingdom" ~ "UK",
+                               country == "Congo" ~ "Republic of Congo",
+                               country == "Myanmar (Burma)" ~ "Myanmar",
+                               country == "Bosnia-Herzegovina" ~ "Bosnia and Herzegovina",
+                               country == "Serbia (Yugoslavia)" ~ "Serbia",
+                               country == "DR Congo (Zaire)" ~ "Democratic Republic of the Congo",
+                               T ~ country))
+
+sub.df <- group_by(frozen, country) |> count(frozen)
+
+world <- map_data("world") |>
+    left_join(sub.df, by = c("region" = "country")) |>
+    mutate(n = ifelse(is.na(n), 0, 1) )
+
+ggplot(world, aes(long, lat, map_id = region, fill= n, group = group)) +
+    geom_map(map = world) +
+    theme(legend.position = "none") +
+    scale_color_solarized()
+```
+:::
+
+::: {.column}
+```{r}
+#| fig-height: 7
+filter(dataset, frozen == 1) |>
+ggplot(aes(year)) +
+    geom_bar() +
+    xlab("Year") +
+    ylab("Frozen Civil Conflict Onsets")
+```
+:::
+::::
+
+## Measuring Frozen Conflicts {.smaller}
+
+```{r}
+conditions <- dataset |>
+    mutate(treatment = case_when(ext_sup_s_rebel_bin == 1 & ext_sup_s_state_bin == 1 ~ "Ext. Sup. to Both",
+                                 ext_sup_s_rebel_bin == 1 & ext_sup_s_state_bin == 0 ~ "Ext. Sup. Rebel Only",
+                                 ext_sup_s_rebel_bin == 0 & ext_sup_s_state_bin == 1 ~ "Ext. Sup. Gov Only",
+                                 ext_sup_s_rebel_bin == 0 & ext_sup_s_state_bin == 0 ~ "Ext. Sup. to Neither"))
+
+m <- table(conditions$frozen, conditions$treatment)
+rownames(m) <- c("Not Frozen", "Frozen")
+knitr::kable(m)
+```
+
+## Additional Covariates
+
+:::{.incremental}
+- Conflict dynamics: duration, intensity, recurrence
+- Incompatibility
+- Ongoing intra/inter-state conflict
+- Cold war
+- Censoring
+:::
+
+# Probit Analysis
+
+## Probit Model {auto-animate=true}
+
+\begin{align*}
+y^\star_i & = \alpha + X_i' \beta + T_i' \delta_{k_i} + \gamma_{c_i} + \epsilon_i, \: \epsilon_i \sim \text{N}(0, 1) \\
+y_i & = \begin{cases}
+1 & \text{if } y_i^\star > 0 \\
+0
+\end{cases}
+\end{align*}
+
+## Probit Model {auto-animate=true}
+
+\begin{align*}
+y^\star_i & = \alpha + X_i' \beta + T_i' \delta_{k_i} + \gamma_{c_i} + \epsilon_i, \: \epsilon_i \sim \text{N}(0, 1) \\
+y_i & = \begin{cases}
+1 & \text{if } y_i^\star > 0 \\
+0
+\end{cases}
+\end{align*}
+
+\begin{align*}
+\alpha & \sim \text{N}(0, 2.5) \\
+\beta & \sim \text{N}(0, 1) \\
+\end{align*}
+
+## Probit Model {auto-animate=true}
+
+\begin{align*}
+y^\star_i & = \alpha + X_i' \beta + T_i' \delta_{k_i} + \gamma_{c_i} + \epsilon_i, \: \epsilon_i \sim \text{N}(0, 1) \\
+y_i & = \begin{cases}
+1 & \text{if } y_i^\star > 0 \\
+0
+\end{cases}
+\end{align*}
+
+
+:::: {.columns}
+
+::: {.column}
+\begin{align*}
+\alpha & \sim \text{N}(0, 2.5) \\
+\beta & \sim \text{N}(0, 1) \\
+\end{align*}
+:::
+
+::: {.column}
+\begin{align*}
+\delta_j & \sim \text{N}(\mu_j, \tau_j) \\
+\mu_j & \sim \text{N}(0, 1) \\
+\tau_j & \sim \text{N}_{+}(0, 1)
+\end{align*}
+:::
+
+::::
+
+## Probit Model {auto-animate=true}
+
+\begin{align*}
+y^\star_i & = \alpha + X_i' \beta + T_i' \delta_{k_i} + \gamma_{c_i} + \epsilon_i, \: \epsilon_i \sim \text{N}(0, 1) \\
+y_i & = \begin{cases}
+1 & \text{if } y_i^\star > 0 \\
+0
+\end{cases}
+\end{align*}
+
+:::: {.columns}
+
+::: {.column width="30%"}
+\begin{align*}
+\alpha & \sim \text{N}(0, 2.5) \\
+\beta & \sim \text{N}(0, 1) \\
+\end{align*}
+:::
+
+::: {.column width="40%"}
+\begin{align*}
+\delta_j & \sim \text{N}(\mu_j, \tau_j) \\
+\mu_j & \sim \text{N}(0, 1) \\
+\tau_j & \sim \text{N}_{+}(0, 1)
+\end{align*}
+:::
+
+::: {.column width="30%"}
+\begin{align*}
+\gamma_c & \sim \text{N}(0, \sigma) \\
+\sigma & \sim \text{N}_{+}(0, 1)
+\end{align*}
+:::
+
+::::
+
+## Parameter Estimates
+
+```{r}
+
+fit <- readRDS("../posteriors/frozen-bin-all/fit.rds")
+
+delta <- fit$draws("delta", format = "df") |>
+    select(matches("delta")) |>
+    pivot_longer(everything(), names_to = "variable")
+
+ll <- extract_digits(delta$variable)
+delta$variable <- sprintf("delta[%s]", sapply(ll, `[`, 1))
+delta$group <- ifelse(sapply(ll, `[`, 2) == 1, "Government Incompatibility",
+                      "Territorial Incompatibility")
+
+ggplot(delta, aes(x = value, y = variable, fill = variable)) +
+    stat_halfeye(alpha = 0.8, show.legend = F) +
+    geom_vline(xintercept = 0, linetype = "dashed", alpha = 0.2) +
+    theme(axis.title.x = element_blank(),
+          axis.title.y = element_blank()) +
+    scale_y_discrete(labels = c("delta[1]" = "Ext. Sup. to Gov",
+                                "delta[2]" = "Ext. Sup. to Rebel",
+                                "delta[3]" = "Interaction")) +
+    facet_grid(. ~ group) +
+    scale_fill_solarized()
+
+```
+
+
+## Average Marginal Effects {.smaller}
+
+Three treatment conditions:
+
+#. External state support for the **government only**
+#. External state support for the **rebels only**
+#. External state support for **both sides**
+
+\begin{equation}
+\text{AME}_{jk} = \frac{1}{N_k} \sum_{i=1}^{N_k} \Phi(\alpha + X_i' \beta + W_j' \delta_k + \gamma_{c_i}) - \Phi\left(\alpha + X_i' \beta + \gamma_{c_i}\right)
+\end{equation}
+
+where $W_j$ is the corresponding treatment vector for treatment condition $j$.
+
+## Average Marginal Effects
+
+```{r}
+ame <- fit$draws("ame", format = "df") |>
+    select(matches("ame")) |>
+    pivot_longer(everything(), names_to = "variable")
+
+ll <- extract_digits(ame$variable)
+ame$variable <- sprintf("ame[%s]", sapply(ll, `[`, 1))
+ame$group <- ifelse(sapply(ll, `[`, 2) == 1, "Government Incompatibility",
+                    "Territorial Incompatibility")
+
+ggplot(ame, aes(x = value, y = variable, fill = variable)) +
+    stat_eye(alpha = 0.8, show.legend = F) +
+    geom_vline(xintercept = 0, linetype = "dashed", alpha = 0.2) +
+    theme(axis.title.x = element_blank()) +
+    labs(x = parse(text = "bold('AME '*Delta)")) +
+    scale_y_discrete(labels = c("ame[1]" = "Ext. Sup. Gov Only",
+                                "ame[2]" = "Ext. Sup. Rebel Only",
+                                "ame[3]" = "Ext. Sup. to Both")) +
+    coord_flip() +
+    facet_grid(. ~ group) +
+    scale_fill_solarized()
+
+```
+
+# I.V. Analysis
+
+## Instrument {.smaller .nostretch}
+
+:::: {.columns}
+
+::: {.column}
+UN General Assembly voting 10 years prior to a conflict onset
+
+- Captures foreign policy homophily/heterophily
+:::
+
+::: {.column}
+![](../assets/diagram.png)
+:::
+
+::::
+
+
+## Instrument {.smaller auto-animate=true}
+
+- Multiple approaches to measurement:
+
+    - Average S-score (Signorino and Ritter 1999):
+
+       \begin{align*}
+        S_{ab} = 1 - \cfrac{\sum | Y_{av} - Y_{bv} |}{V}
+        \end{align*}
+
+        where $Y_{av}$ denotes the recorded vote for country $a$ on resolution $v$ for $v = 1, \ldots V$ within the target time period. Then, for a subset of countries, $\mathcal{F}$, relevant to country $a$,
+
+        \begin{align*}
+        Z_a = \frac{1}{|\mathcal{F}|} \sum_{i \in \mathcal{F}} S_{ai}
+        \end{align*}
+
+## Instrument {.smaller auto-animate=true}
+
+- Multiple approaches to measurement:
+
+    - IRT latent scores (Bailey et al 2017):
+
+        \begin{align*}
+        P(Y_{itv} = k) = \Phi(\gamma_{kv} - \beta_v \theta_{it}) - \Phi(\gamma_{k-1,v} - \beta_v \theta_{it})
+        \end{align*}
+
+        where $i = 1, \ldots, N$ now indexes the country. Then,
+
+        \begin{align*}
+        Z_a = \frac{1}{|\mathcal{F}| + |\mathcal{G}|} \sum_{i \in \mathcal{F}, t \in \mathcal{G}} \lVert \theta_{at} - \theta_{it} \rVert
+        \end{align*}
+
+        for the restricted time period $\mathcal{G}$.
+
+
+## Instrument {.smaller}
+
+:::: {.columns}
+
+::: {.column width="60%"}
+
+UN General Assembly voting
+
+
+**Pros**:
+
+- Unlikely to have a direct effect on civil conflict
+
+:::
+
+::: {.column width="40%"}
+```{r}
+#| fig-height: 4
+#| fig-width: 4
+library(dagitty)
+library(ggdag)
+
+dag <- dagitty("dag {
+Z [pos=\"0,0.5\"];
+T [pos=\"0,0\"];
+Y [pos=\"1,0\"];
+U [pos=\"0.5,-0.5\"];
+Z -> T; T -> Y; U -> Y; U -> T
+}")
+
+ggdag(dag) +
+    theme(panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          axis.text = element_blank(),
+          axis.title = element_blank(),
+          axis.ticks = element_blank(),
+          axis.line = element_blank(),
+          panel.background = element_blank())
+```
+:::
+
+::::
+
+## Instrument {.smaller}
+
+:::: {.columns}
+
+::: {.column width="60%"}
+UN General Assembly voting
+
+**Pros**:
+
+- Unlikely to have a direct effect on civil conflict
+
+**Cons**:
+
+- Cannot exclude possibility of additional systematic confounders
+- Difficult to instrumentize *both* treatments
+:::
+
+::: {.column width="40%"}
+```{r}
+#| fig-height: 4
+#| fig-width: 4
+library(dagitty)
+library(ggdag)
+
+dag <- dagitty("dag {
+W [pos=\"0.5,1\"];
+Z [pos=\"0,0.5\"];
+T [pos=\"0,0\"];
+Y [pos=\"1,0\"];
+U [pos=\"0.5,-0.5\"];
+Z -> T; T -> Y; U -> Y; U -> T; W -> Z; W -> Y
+}")
+
+ggdag(dag) +
+    theme(panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          axis.text = element_blank(),
+          axis.title = element_blank(),
+          axis.ticks = element_blank(),
+          axis.line = element_blank(),
+          panel.background = element_blank())
+```
+:::
+
+::::
+
+## I.V. Model
+
+\begin{align*}
+T^\star_i & = \alpha_1 + X_i' \beta_1 + Z_i' \lambda + \gamma_{1c_i} + \eta_i \\
+y^\star_i & = \alpha_2 + X_i' \beta_2 + T_i \delta + \gamma_{2c_i} + \epsilon_i \\
+\eta_i, \epsilon_i & \sim \text{MVN}(0, \Sigma)
+\end{align*}
+
+Assumptions:
+
+1. $\lambda \neq 0$
+2. $Z \perp\!\!\!\perp Y \mid T$
+3. $Z \perp\!\!\!\perp \epsilon \mid T, X$
+
+# Conclusion
+
+. . .
+
+Should the instrument be completely abandoned?

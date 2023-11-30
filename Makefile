@@ -16,10 +16,11 @@ SHELL = /bin/bash -eo pipefail -O globstar
 
 manuscript := paper.qmd
 qmd_files  != ls ./**/*.qmd
+qmd_slides := $(wildcard slides/*.qmd)
 
 data    := data
 dataset := $(data)/dataset
-raw	    := $(data)/raw
+raw     := $(data)/raw
 post    := posteriors
 
 cmdstan    != Rscript -e 'cat(cmdstanr::cmdstan_path())'
@@ -55,15 +56,13 @@ todo: ## List TODO comments in project files tracked by git
 watch: ## Auto-rebuild pdf documents (requires the program `entr`)
 	ls *.qmd | entr -r make -f ./Makefile
 
-wc: $(qmd_files) ## Rough estimate of word count per qmd file
+wc: paper.qmd ## Rough estimate of word count for $(manuscript)
 	@# We could use `quarto render --no-execute` instead of `sed`,
 	@# but quarto is horribly slow...
-	@for i in $(qmd_files); do \
-		printf "$$i: "; \
-		sed -e '/^```/,/^```/d' "$$i" | \
-			pandoc -M 'suppress-bibliography=true' --quiet --citeproc \
-				-f markdown -t plain | wc -w; \
-	done
+	@printf "$(manuscript): "; \
+	sed -e '/^```/,/^```/d' "$(manuscript)" | \
+		pandoc -M 'suppress-bibliography=true' --quiet --citeproc \
+			-f markdown -t plain | wc -w; \
 
 ###
 # Onset dataset
@@ -128,6 +127,16 @@ ifndef model_fits
 endif
 
 ###
+# Presentation slides
+slides/%.html: slides/%.qmd
+	quarto render $< --to revealjs
+
+slides/%.pdf: slides/%.qmd
+	quarto render $< --to beamer
+
+slides: $(qmd_slides:slides/%.qmd=slides/%.html) ## Generate presentation slides
+
+###
 # Manuscript dependencies
 $(foreach ext, pdf docx html, $(manuscript:%.qmd=%.$(ext))): \
 	$(raw)/frozen_conflicts.rds \
@@ -138,9 +147,6 @@ $(foreach ext, pdf docx html, $(manuscript:%.qmd=%.$(ext))): \
 # Implicit rules for pdf and html generation
 %.docx: %.qmd
 	quarto render $< --to docx
-
-slides/%.html: slides/%.qmd
-	quarto render $< --to revealjs
 
 %.html: %.qmd
 	quarto render $< --to html
