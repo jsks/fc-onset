@@ -17,12 +17,13 @@ SHELL = /bin/bash -eo pipefail -O globstar
 manuscript := paper.qmd
 qmd_files  != ls ./**/*.qmd
 
-data	:= data
+data    := data
 dataset := $(data)/dataset
-raw	:= $(data)/raw
+raw	    := $(data)/raw
 post    := posteriors
 
-cmdstan != Rscript -e 'cat(cmdstanr::cmdstan_path())'
+cmdstan    != Rscript -e 'cat(cmdstanr::cmdstan_path())'
+stan_model := stan/hierarchical_probit
 
 schemas     := $(wildcard models/*.yml)
 model_fits  := $(schemas:models/%.yml=$(post)/%/fit.rds)
@@ -37,7 +38,7 @@ clean: ## Clean generated files
 	rm -rf $(foreach ext,pdf docx html tex log,$(qmd_files:%.qmd=%.$(ext))) \
 		$(qmd_files:%.qmd=%_files) $(data)/*.{csv,rds,RData} \
 		models/
-	$(MAKE) -C $(cmdstan) STANPROG=$(CURDIR)/stan/probit clean-program
+	$(MAKE) -C $(cmdstan) STANPROG=$(CURDIR)/$(stan_model) clean-program
 
 help:
 	@printf 'Compile a specific document with `make <file.pdf>.`\n\n'
@@ -91,8 +92,8 @@ dataset: dataset.zip ## Create a zip archive of the dataset
 ###
 # Probit Models
 $(post)/sbc.rds: R/sbc.R \
-	stan/probit.stan \
-	stan/sim.stan
+	$(stan_model) \
+	stan/sim
 	Rscript $<
 
 sbc: $(post)/sbc.rds ## Run simulation-based calibration
@@ -117,7 +118,7 @@ stan/%: stan/%.stan
 $(post)/%/labels.rds $(post)/%/probit.json $(post)/%/fit.rds &: \
 	R/probit.R \
 	models/%.yml \
-	stan/probit \
+	$(stan_model) \
 	data/model_data.rds
 	Rscript $< models/$*.yml
 
@@ -131,8 +132,7 @@ endif
 $(foreach ext, pdf docx html, $(manuscript:%.qmd=%.$(ext))): \
 	$(raw)/frozen_conflicts.rds \
 	$(data)/model_data.rds \
-	$(model_fits) \
-	.WAIT $(post)/sbc.rds
+	$(model_fits)
 
 ###
 # Implicit rules for pdf and html generation

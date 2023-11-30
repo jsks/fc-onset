@@ -37,6 +37,8 @@ cases <- rowSums(is.na(X)) == 0
 state_sup <- paste0("ext_sup_s_state_", schema$treatment)
 rebel_sup <- paste0("ext_sup_s_rebel_", schema$treatment)
 
+info("Treatment variables: %s and %s", state_sup, rebel_sup)
+
 treatments <- select(df, {{ state_sup }}, {{ rebel_sup }}) |>
     mutate(interaction = .data[[{{ state_sup }}]] * .data[[{{ rebel_sup }}]]) |>
     data.matrix()
@@ -56,8 +58,8 @@ stan_data <- list(N = sum(cases),
                   y = df$strict_frozen[cases])
 str(stan_data)
 
-mod <- cmdstan_model("./stan/probit.stan")
-fit <- mod$sample(data = stan_data, adapt_delta = 0.95)
+mod <- cmdstan_model("./stan/hierarchical_probit.stan")
+fit <- mod$sample(data = stan_data, sig_figs = 3, adapt_delta = 0.95)
 
 # Treatment coefficients
 fit$summary("delta")

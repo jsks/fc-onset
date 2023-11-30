@@ -20,14 +20,15 @@ generated quantities {
     for (i in 1:m)
         beta[i] = normal_rng(0, 1);
 
-    real<lower=0> sigma = abs(normal_rng(0, 2));
+    real<lower=0> sigma = abs(normal_rng(0, 1));
     array[n_countries] real gamma;
     for (i in 1:n_countries)
         gamma[i] = normal_rng(0, sigma);
 
     array[k] real mu;
-    for (i in 1:k)
-        mu[i] = normal_rng(1, 1);
+    mu[1] = normal_rng(0.5, 1);
+    mu[2] = normal_rng(0.5, 1);
+    mu[3] = normal_rng(0, 1);
 
     array[k] real<lower=0> tau;
     for (i in 1:k)
