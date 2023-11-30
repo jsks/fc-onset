@@ -83,6 +83,8 @@ Note, extensive literature arguing that external actors also increase the number
 
   - Even if actors prefer a frozen conflict over a comprehensive peace agreement; why not codify the status quo and formalized a ceasefire? (I think the key here is to emphasize that actors **cannot** win militarily, in other words they are stalemated into a frozen conflicts and refuse to give up their war aims. The question then is not, why do conflict actors prefer frozen conflicts, but rather in the face of a frozen conflict, why do conflict actors refuse a negotiated settlement?)
 
+- Frozen conflicts as a suboptimal solution to the contest between an incumbent and challenger.
+
 # Empirics
 
 To empirically assess whether external state support for conflict actors affects the probability of a civil conflict episode terminating as a frozen conflict a series of bayesian probit models were run using original data on frozen civil conflicts. A mixed identification strategy was employed by both conditioning on relevant covariates and instrumenting external support with UN roll call votes.
@@ -90,6 +92,9 @@ To empirically assess whether external state support for conflict actors affects
 In what follows, I will first present the model specification and results from a probit regression predicting the onset of a frozen conflict. I will then decrease the dependent and independent variables, including operationalizations and data sources.
 
 ## Probit Model
+
+I model the onset of a frozen civil conflict using a bayesian probit regression where the unit analysis is civil conflict episodes, *i.e.*, contiguous years of active fighting within a conflict. The outcome variable, $y \in \{ 1, 2 \}$, is a binary indicator denoting the
+
 
 TODO: eventually I would like to move towards a dyadic analysis, rather than conflict level
 
@@ -263,6 +268,10 @@ Appendix:
 \newpage
 
 # Appendix
+
+## List of Frozen Conflicts
+
+## Simulation Based Calibration
 
 ## Robustness Checks
 
