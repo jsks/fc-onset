@@ -139,6 +139,9 @@ $(foreach ext, pdf docx html, $(manuscript:%.qmd=%.$(ext))): \
 %.docx: %.qmd
 	quarto render $< --to docx
 
+slides/%.html: slides/%.qmd
+	quarto render $< --to revealjs
+
 %.html: %.qmd
 	quarto render $< --to html
 
