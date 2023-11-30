@@ -127,11 +127,7 @@ final.df <- filter(full.df, !is.na(ext_sup_s_state)) |>
               ongoing_intrastate = max(ongoing_intrastate) > 0,
               ongoing_conflict = ongoing_interstate | ongoing_intrastate,
               cumulative_intensity = max(cumulative_intensity),
-              max_intensity = max(intensity_level, na.rm = T),
-              avg_intensity = mean(intensity_level, na.rm = T),
-              wavg_intensity = weighted.mean(intensity_level, 1:n(), na.rm = T),
-
-              across(c(v2x_polyarchy, e_gdppc, e_pop, cinc), ~mean(.x, na.rm = T), .names = "{.col}_avg"),
+              high_intensity = max(intensity_level) == 2,
 
               # At anytime during the episode was external support given?
               across(starts_with("ext_"), ~max(.x, na.rm = T), .names = "{.col}_bin"),

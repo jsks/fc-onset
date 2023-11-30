@@ -25,9 +25,9 @@ if (schema$episodes == "high_intensity")
 
 ###
 # Select control variables - currently this is static across all models
-X <- select(df, censored, episode_duration, recur, max_intensity, incompatibility,
+X <- select(df, censored, episode_duration, recur, high_intensity, incompatibility,
             cold_war, ongoing_intrastate, ongoing_interstate) |>
-    mutate(episode_duration = log(episode_duration)) |>
+    mutate(episode_duration = log(episode_duration) |> scale()) |>
     data.matrix()
 
 cases <- rowSums(is.na(X)) == 0
