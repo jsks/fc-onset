@@ -149,4 +149,4 @@ info("%d high intensity episodes, with %d frozen onsets and %d >2 onsets",
      sum(high_intensity$frozen),
      sum(high_intensity$strict_frozen))
 
-saveRDS(final.df, "./data/model_data.rds")
+saveRDS(final.df, "./data/merged_data.rds")

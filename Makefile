@@ -18,16 +18,17 @@ manuscript := paper.qmd
 qmd_files  != ls ./**/*.qmd
 qmd_slides := $(wildcard slides/*.qmd)
 
-data    := data
-dataset := $(data)/dataset
-raw     := $(data)/raw
-post    := posteriors
+data       := data
+model_data := $(data)/models
+dataset    := $(data)/dataset
+raw        := $(data)/raw
+post       := posteriors
 
 cmdstan    != Rscript -e 'cat(cmdstanr::cmdstan_path())'
 stan_model := stan/hierarchical_probit
 
-schemas     := $(wildcard models/*.yml)
-model_fits  := $(schemas:models/%.yml=$(post)/%/fit.rds)
+schemas     := $(wildcard $(model_data)/*.rds)
+model_fits  := $(schemas:$(model_data)/%.rds=$(post)/%/fit.rds)
 
 all: $(manuscript:%.qmd=%.pdf) ## Default rule generates manuscript pdf
 .PHONY: bootstrap clean dataset help models todo watch wc
@@ -38,7 +39,7 @@ all: $(manuscript:%.qmd=%.pdf) ## Default rule generates manuscript pdf
 clean: ## Clean generated files
 	rm -rf $(foreach ext,pdf docx html tex log,$(qmd_files:%.qmd=%.$(ext))) \
 		$(qmd_files:%.qmd=%_files) $(data)/*.{csv,rds,RData} \
-		models/
+		$(model_data)
 	$(MAKE) -C $(cmdstan) STANPROG=$(CURDIR)/$(stan_model) clean-program
 
 help:
@@ -98,10 +99,10 @@ $(post)/sbc.rds: R/sbc.R \
 sbc: $(post)/sbc.rds ## Run simulation-based calibration
 
 bootstrap: R/models.R ## Generate yaml model profiles
-	rm -rf models/
+	rm -rf $(model_data)
 	Rscript $<
 
-data/model_data.rds: R/merge.R \
+data/merged_data.rds: R/merge.R \
 	$(raw)/frozen_conflicts.rds \
 	$(raw)/ucdp-term-acd-3-2021.xlsx \
 	$(raw)/UcdpPrioConflict_v23_1.rds \
@@ -114,12 +115,12 @@ data/model_data.rds: R/merge.R \
 stan/%: stan/%.stan
 	$(MAKE) -C $(cmdstan) $(CURDIR)/stan/$*
 
-$(post)/%/labels.rds $(post)/%/probit.json $(post)/%/fit.rds &: \
+$(post)/%/fit.rds: \
 	R/probit.R \
-	models/%.yml \
+	$(model_data)/%.rds \
 	$(stan_model) \
-	data/model_data.rds
-	Rscript $< models/$*.yml
+	data/merged_data.rds
+	Rscript $< $(model_data)/$*.rds
 
 models: $(model_fits) ## Run all Stan models
 ifndef model_fits
@@ -140,7 +141,7 @@ slides: $(qmd_slides:slides/%.qmd=slides/%.html) ## Generate presentation slides
 # Manuscript dependencies
 $(foreach ext, pdf docx html, $(manuscript:%.qmd=%.$(ext))): \
 	$(raw)/frozen_conflicts.rds \
-	$(data)/model_data.rds \
+	$(data)/merged_data.rds \
 	$(model_fits) \
 	.WAIT $(post)/sbc.rds
 
