@@ -1,5 +1,6 @@
 ---
-title: "From Active Hostilities to Frozen Stalemates: Assessing the Role of External Support in Civil Conflict Dynamics"
+title: "Frozen Civil Conflicts"
+subtitle: "The Role of External State Support"
 author: J.L.A. Krusell
 date: "`r Sys.Date()`"
 linestretch: 1.25
@@ -8,6 +9,30 @@ format: pdf
 execute:
     echo: false
     warning: false
+abstract: |
+    Frozen conflicts are among some of the most pernicious, difficult to
+    resolve conflicts. Surprisingly, little scholarly attention has been
+    paid to the factors influencing their emergence. This paper addresses
+    one possible dimension, namely the effect of external state support to
+    conflict actors on the probability of an ongoing civil conflict
+    becoming frozen. I use an original dataset coding frozen conflicts as
+    an outcome among UCDP civil conflict episodes from 1975 to 2019 in
+    order to construct a series of bayesian, hierarchical probit models
+    motivated by an application of bargaining theory to the domain of
+    frozen conflicts. Results indicate that directed support to rebels in
+    the absence of similar support to the government side increases the
+    probability that a civil conflict episode terminates as a frozen
+    conflict. All other treatment conditions --- specifically, directed
+    support provided only to the government and directed supported given
+    to both sides --- are found to be inconsequential. Taken together,
+    these findings help provide a more nuanced understanding of conflict
+    termination beyond the common assumption that conflicts either
+    conclude through a negotiated settlement or a one-sided military
+    victory. Furthermore, this paper also helps shed light on the
+    conditions under which actors may prefer a sub-optimal solution,
+    allowing a conflict to transition into a state of unstable peace with
+    an ever present threat of violent re-escalation, rather than a
+    conclusive termination.
 ---
 
 [//]: # Setup R environment
@@ -31,6 +56,8 @@ options(knitr.kable.NA = ".", knitr.kable.format = "latex",
 theme_set(theme_tufte(base_family = "TeX Gyre Pagella", base_size = 10))
 ```
 
+# Introduction
+
 **Research question: to what extent does external state support to conflict actors affect the probability that a civil conflict becomes frozen?**
 
 **Motivation**
@@ -38,17 +65,24 @@ theme_set(theme_tufte(base_family = "TeX Gyre Pagella", base_size = 10))
 Contribution: (*conceptual* and *empirical*)
 
 - *Original Data*, conceptual/descriptive claim about prevalence of frozen conflicts
-- Novel empirical analysis, provide a more nuanced analysis of *conflict termination* and contributes to our understanding of how external support can shape the dynamics of conflicts
+- Novel empirical analysis, provides a more nuanced analysis of *conflict termination* and contributes to our understanding of how external support can shape the dynamics of conflicts
 
 The paper will argue that there exists both a theoretical and empirical gap. Studies on conflict termination have generally considered military victory and peace agreements as the only outcome. I further disaggregate the notion of termination to cover also the situation where conflicts are not conclusively termination and instead become "frozen."
 
-In doing so, I show that frozen conflicts are more prevalent than thought and conceptually can and should cover a greater range of cases than just /de facto/ states. I also distinguish the concept of frozen conflicts from the related notions of stalemates and protracted conflicts (and maybe intractable rivalries?).
+In doing so, I show that frozen conflicts are more prevalent than thought and conceptually can and should cover a greater range of cases than just /de facto/ states. I also distinguish the concept of frozen conflicts from the related notions of stalemates and intractable rivalries.
 
-I provide a novel quantitative analysis on the likelihood of a conflict becoming frozen. Specifically, I examine the effect of support by external state actors to belligerents in the course of a conflict episode. This will contribute both to our understanding of different types of conflict termination as well as the ways in which external support can shape the dynamics of conflicts.
+I provide a novel quantitative analysis on the likelihood of a conflict becoming frozen. Specifically, I examine the effect of support by external state actors to belligerents in the course of a civil conflict episode. This will contribute both to our understanding of different types of conflict termination as well as the ways in which external support can shape the dynamics of conflicts.
 
 - Potential shortcoming: what I am not doing is taking into account the preferences of external supporters and motivation for offering support. Nor am I distinguishing between different external support types.
 
 **Why should we care about frozen conflicts?**
+
+# Previous Literature
+
+There exists extensive work on the impact of external third party interventions on civil conflict outcomes [@regan_third-party_2002; @balch-lindsay_third-party_2008; @gent_going_2008]. This literature has emphasised the importance of targeted interventions, either military or economic, in favor of the opposition as increasing the probability of either a negotiated settlement or rebel military victory. The opposition is generally assumed to be the weaker side at the onset of fighting such that biased interventions in favor of the opposition can result in a much larger shift in the balance of power, allowing the opposition to credibly challenge the government. Subsequent research has further disaggregated the types of support that are offered to conflict belligerents, arguing in contrast that fungible support in particular actually decreases the likelihood of a negotiated settlement and increases conflict duration by contributing to information uncertainty over the true strength of the opposition [@sawyer_role_2017; @karlen_escalate_2023]. Furthermore, external support has been found to also increase the likelihood of conflict recurrence by possibly creating an expectation of renewed assistance which may cause actors to be less risk averse and willing to militarily relitigate past conflicts [@karlen_legacy_2017].
+
+The common thread across these works is a general assumption that
+conflicts terminate either with a one-sided military victory or a negotiated settlement. Frozen conflicts, however, represent a qualitatively different type of conflict termination. Unlike a one-sided military victory, there is no clear victor when a conflict freezes, rather the conflict stalemates with both sides either unwilling or unable to continue large-scale hostilities. And, compared to a negotiated settlement, although frozen conflicts can be preceded by a ceasefire or partial settlement, they crucially do not encompass comprehensive peace agreements which would otherwise conclusively terminate a conflict. Thus, frozen conflicts represent a unique outcome; one that has previously not been examined, especially in regards to international dynamics such as external state support.
 
 # Defining Frozen Conflicts
 
@@ -56,34 +90,27 @@ I follow the definition of frozen conflicts offered by @smetana_between_2019 as 
 
 These criteria distinguish frozen conflicts from related concepts such as protracted stalemates or enduring rivalries. In the case of the former, stalemates during a conflict can potentially endure for extended periods of time and offer conditions similar to those of a frozen conflict. However, they do not necessitate a cessation of active fighting. Stalemates can still occur during high intensity periods of a conflict where relatively few gains are made by either side. In the case of the latter, enduring rivalries are characterized in part by repeated onsets of militarized interstate disputes [@Goertz1992; @Goertz1993]; however, this might not entail the actual outbreak of violence. More importantly, enduring rivalries were originally conceptualized in terms of inter-state relations, while the definition of frozen conflicts here can be extended to the intra-state case as well.
 
-
 # Theory
 
-*The fundamental question*: why would actors accept a frozen conflict over a comprehensive peace agreement?
+**Fundamental question**: why would actors accept a frozen conflict over a comprehensive peace agreement?
 
-This mirrors the "why fight" question underlying bargaining theory where fighting is assumed to be costly such that with perfect information rational actors should prefer a "bargained solution." Is there a similar parallel to frozen conflicts?
+When a conflict freezes, actors elide the ongoing costs of fighting; however, there remains an ever-present threat of violent re-escalation. Thus, actors continue to bear the cost of militarization, lest there is an unfavourable shift in the balance of power enabling the opposing side to re-launch the conflict.[^recurrence] The question then is, why bear the cost of an ongoing frozen conflict, as well as the uncertainty of re-escalation which ensures that war spoils remain transient? A comprehensive peace agreement, especially with international guarantees, solidifies the current status quo and allows actors to translate war spoils to permanent gains.
 
-What is the cost of perpetuating a frozen conflict? How does this play in with the traditional, bargaining theory approach to conflict termination. Namely, actors become willing to terminate a conflict as information is revealed through fighting and the payoff from victory diminishes, based on the subjective probability of winning and the accumulated costs both past and future.
+[^recurrence]: Conflict recurrence can still be a threat even in the case of a conclusive termination, *i.e.*, one-sided military victory or comprehensive peace agreement. However, the uncertainty around future violence in a frozen conflict is higher since there is neither a *de jure* agreement settling the underlying issue or the payoff of a total victory where the victor can dictate the post-conflict status quo.
 
-Is there a situation in which rational actors would prefer to leave a conflict unresolved with the future threat of violent re-escalation? Clearly, the rebel side faces a credible commitment dilemma in that they can never guarantee that the government won't renege in the future.
+Three possible reasons for why actors may prefer to let a civil conflict freeze:
 
-Literature on ceasefires (ex Clayton and Stitcher (2021)) emphasize the strategic logic underlying actors' decisions to accept or reject a ceasefire. More specifically, actors may be willing to enter into a ceasefire either as a signaling mechanism to demonstrate an intent to peacefully resolve the conflict or as a delaying mechanism to allow them to temporarily pause fighting in order to rebuild their strength. The decision to accept a frozen conflict, despite the ongoing costs, may be similar to this latter mechanism. Conflict actors may not be willing to completely abandon their war aims; however, due to a variety of factors are unable to win an outright victory. By letting the conflict become frozen, either through a ceasefire, partial peace agreement, or a stalemate, actors can temporarily halt the ongoing costs of fighting in hopes of a future favourable shift in the balance of power. This probably requires actors to have long time horizons and be willing to burden the costs of not fully resolving the conflict. Specifically, letting a conflict become frozen means that there is always a threat of re-escalation so actors need to continue to commit to military spending, while suffer ongoing economic costs from lost territory.
+1. **Issue Indivisibility**: Issue indivisibility is often times downplayed in bargaining theory --- it is often assumed that there exists a possible division of contested goods even in the most intractable conflicts --- however, it could play an important role in frozen conflicts. Particularly from the perspective of the government when a negotiated settlement may involve the loss of territory to a rebel group. There exists strong norms around territorial integrity as well as domestic pressure which make it difficult for states to acquiesce to secession. Furthermore, in highly fractionalized states, the government has a strong incentive to refuse a negotiated settlement in order to deter future sovereignty claims by other groups.
 
-"...Leeds (1999) and Walter (2002) suggest that once negotiation begins because of a hurting stalemate, any warring group would prefer to have those negotiations be successful rather than to return to their group members without a settlement." --- from Park (2015)
+2. **Credible Committments**: For separatist conflicts it is often difficult for the government to credibly commit to an agreement granting greater autonomy to a separatist region. For the rebels, *de facto* independence as a half-way measure, achieved through a frozen conflict, can be the best possible outcome given that the international community tends to be fairly conservative regarding sovereignty claims. Even in the case of conflicts where the core contestation is over control of the central government, there exists a significant amount of literature pointing to the difficulties of guaranteeing the integrity of the incumbent, especially in authoritarian contexts were there is a fear of retribution.
 
-This is a potential theoretical contribution to the bargaining literature in that I could argue a comprehensive peace agreement does not necessarily always result from a hurting stalemate. Letting conflicts freeze could be one way that actors ease the costs of a hurting stalemate without being forced to commit to a settlement. This could be especially attractive in scenarios where there is such a high degree of mutual distrust, with few international guarantees for a negotiated settlement, where credible commitment problems could lead to a frozen conflict. Especially when actors receive external support, which a) is more likely to lead to the type of stalemate scenario where neither side can outright win militarily and b) allow actors to sustain the military threat required for a frozen conflict to perpetuate.
+3. **Time Horizons**: Probably the most significant mechanism concerns actors with forward-looking time horizons. Frozen conflicts, much like ceasefires which are often times involved in creating the conditions for a frozen conflict, can be a delaying tactic if an actor believes that future shifts in the distribution of power will be favourable to their cause. This can be especially important for separatist conflicts where maintaining sovereignty claims over a territory allows for an easy pretext for future escalations. International norms against wars of territorial conquest make relitigating a separatist war where the rebels have achieved a *de jure* independent state significantly more difficult, as compared to a conflict that remains a civil war within the eyes of the international community.
 
-Note, extensive literature arguing that external actors also increase the number of veto players which decrease the likelihood of a negotiated settlement (ex Cunningham 2006).
+How does external support affect this calculus?
 
-- Differentiating the theoretical mechanisms for the different treatment conditions: no external support, both sides receive external support, government only, rebel only
+1. Balance of power. This mirrors the theoretical arguments made in the previous literature on external support and conflict outcomes. Essentially, support to a belligerent increases their fighting capacity, and especially in the case of a rebel group that is severely outmatched by a government, increases the likelihood of a military stalemate. This does not mean that the conflict will automatically become frozen, but it is an important first step. Furthermore, the involvement of third party actors can complicate peace negotiations since interests may not also be aligned between the donor and recipient, or even between donor states.
 
-- States tend to be fairly conservative about sovereignty claims (see Hutchinson f.ex.). The best that separatists can hope for is a *de facto* state.
-
-- Big difference compared to ceasefires, frozen conflicts are not /a priori/ agreed upon by belligerents. Even if an actor prefers a conflict to become frozen, there is no guarantee that the opposing side won't attempt a re-escalation at any time.
-
-  - Even if actors prefer a frozen conflict over a comprehensive peace agreement; why not codify the status quo and formalized a ceasefire? (I think the key here is to emphasize that actors **cannot** win militarily, in other words they are stalemated into a frozen conflicts and refuse to give up their war aims. The question then is not, why do conflict actors prefer frozen conflicts, but rather in the face of a frozen conflict, why do conflict actors refuse a negotiated settlement?)
-
-- Frozen conflicts as a suboptimal solution to the contest between an incumbent and challenger.
+2. External support may also create an expectation that support will continue in the future such that an actor can offset the costs of an ongoing frozen conflict. For example, the post-Soviet separatist states are entirely reliant on Russian support, which allows them to maintain a state of militarization that deters re-escalation by the incumbent state.
 
 # Empirics
 
@@ -128,11 +155,35 @@ of `r nrow(dataset)` intra-state episodes, comprising approximately
 `r signif(n_frozen / nrow(dataset), 2) * 100` percent of all observations for the period 1975 to 2019. Of the frozen conflicts, `r n_terr_frozen` are conflicts over territory. (TODO: show world map and time plot)
 
 ```{r}
+frozen <- filter(dataset, frozen == 1) |>
+    mutate(country = sub("Government of ", "", side_a),
+           country = case_when(country == "Russia (Soviet Union)" ~ "Russia",
+                               country == "United Kingdom" ~ "UK",
+                               country == "Congo" ~ "Republic of Congo",
+                               country == "Myanmar (Burma)" ~ "Myanmar",
+                               country == "Bosnia-Herzegovina" ~ "Bosnia and Herzegovina",
+                               country == "Serbia (Yugoslavia)" ~ "Serbia",
+                               country == "DR Congo (Zaire)" ~ "Democratic Republic of the Congo",
+                               T ~ country))
+
+sub.df <- group_by(frozen, country) |> count(frozen)
+
+world <- map_data("world") |>
+    left_join(sub.df, by = c("region" = "country")) |>
+    mutate(n = ifelse(is.na(n), 0, 1) )
+
+ggplot(world, aes(long, lat, map_id = region, fill= n, group = group)) +
+    geom_map(map = world) +
+    theme(legend.position = "none") +
+    scale_color_solarized()
+```
+
+```{r}
 filter(dataset, frozen == 1) |>
-    ggplot(aes(year)) +
+ggplot(aes(year)) +
     geom_bar() +
-    ylab("Frozen Civil Conflict Onsets") +
-    xlab("Year")
+    xlab("Year") +
+    ylab("Frozen Civil Conflict Onsets")
 ```
 
 Compared to the Frozen Conflict Dataset by @klosek_frozen_2021,
@@ -165,6 +216,18 @@ once to either the rebels or government side in a conflict episode.
 3. Reb. support only
 4. Both support
 
+```{r}
+conditions <- dataset |>
+    mutate(treatment = case_when(ext_sup_s_rebel_bin == 1 & ext_sup_s_state_bin == 1 ~ "Ext. Sup. to Both",
+                                 ext_sup_s_rebel_bin == 1 & ext_sup_s_state_bin == 0 ~ "Ext. Sup. Rebel Only",
+                                 ext_sup_s_rebel_bin == 0 & ext_sup_s_state_bin == 1 ~ "Ext. Sup. Gov Only",
+                                 ext_sup_s_rebel_bin == 0 & ext_sup_s_state_bin == 0 ~ "Ext. Sup. to Neither"))
+
+m <- table(conditions$frozen, conditions$treatment)
+rownames(m) <- c("Not Frozen", "Frozen")
+knitr::kable(m)
+```
+
 ### Control Variables
 
 - Episode Intensity
@@ -193,18 +256,19 @@ delta <- fit$draws("delta", format = "df") |>
 
 ll <- extract_digits(delta$variable)
 delta$variable <- sprintf("delta[%s]", sapply(ll, `[`, 1))
-delta$group <- sapply(ll, `[`, 2) |> as.factor()
+delta$group <- ifelse(sapply(ll, `[`, 2) == 1, "Government Incompatibility",
+                      "Territorial Incompatibility")
 
 ggplot(delta, aes(x = value, y = variable, fill = variable)) +
-    stat_halfeye(alpha = 0.8) +
+    stat_halfeye(alpha = 0.8, show.legend = F) +
     geom_vline(xintercept = 0, linetype = "dashed", alpha = 0.2) +
     theme(axis.title.x = element_blank(),
           axis.title.y = element_blank()) +
     scale_y_discrete(labels = c("delta[1]" = "Ext. Sup. to Gov",
                                 "delta[2]" = "Ext. Sup. to Rebel",
                                 "delta[3]" = "Interaction")) +
-    facet_grid(. ~ group)
-
+    facet_grid(. ~ group) +
+    scale_fill_solarized()
 ```
 
 Figure 2 shows the average marginal effects, *i.e.* the change in the posterior predicted probability between each treatment condition and the control condition averaged across the sample.
@@ -216,13 +280,15 @@ Figure 2 shows the average marginal effects, *i.e.* the change in the posterior 
 
 ```{r}
 #| fig.cap: Average marginal effects for the three treatment conditions on the predicted probability of a frozen conflict onset.[^ame]
+
 ame <- fit$draws("ame", format = "df") |>
     select(matches("ame")) |>
     pivot_longer(everything(), names_to = "variable")
 
 ll <- extract_digits(ame$variable)
 ame$variable <- sprintf("ame[%s]", sapply(ll, `[`, 1))
-ame$group <- sapply(ll, `[`, 2) |> as.factor()
+ame$group <- ifelse(sapply(ll, `[`, 2) == 1, "Government Incompatibility",
+                    "Territorial Incompatibility")
 
 ggplot(ame, aes(x = value, y = variable, fill = variable)) +
     stat_eye(alpha = 0.8, show.legend = F) +
@@ -233,7 +299,8 @@ ggplot(ame, aes(x = value, y = variable, fill = variable)) +
                                 "ame[2]" = "Ext. Sup. Rebel Only",
                                 "ame[3]" = "Ext. Sup. to Both")) +
     coord_flip() +
-    facet_grid(. ~ group)
+    facet_grid(. ~ group) +
+    scale_fill_solarized()
 ```
 
 [^ame]: Hello World
@@ -271,6 +338,14 @@ Appendix:
 
 ## List of Frozen Conflicts
 
+```{r}
+filter(dataset, frozen == 1) |>
+    arrange(side_a, year) |>
+    select(Government = side_a, `Rebel Group(s)` = side_b, Year = year) |>
+    mutate(Government = sub("Government of", "", Government) |> trimws()) |>
+    kable(longtable = T)
+```
+
 ## Simulation Based Calibration
 
 ## Robustness Checks
@@ -290,6 +365,16 @@ stopifnot(length(models) != 0)
 
 fits <- lapply(models, \(dir) file.path(dir, "fit.rds") |> readRDS())
 names(fits) <- basename(models)
+
+ll <- lapply(fits, function(fit) {
+    fit$summary("ame[2,2]", pzero, quantile2, median)
+}) |> bind_rows()
+
+
+ggplot(ll, aes(pzero, median)) +
+    geom_point() +
+    geom_errorbar(aes(ymin = q5, ymax = q95))
+
 ```
 
 ```{R eval = F}
