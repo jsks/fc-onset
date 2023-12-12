@@ -55,7 +55,7 @@ stan_data <- list(N = sum(cases),
                   country_id = as.factor(df$gwno_a[cases]) |> as.integer(),
                   n_contest_types = 2,
                   contest_id = df$incompatibility[cases] + 1,
-                  y = df$strict_frozen[cases])
+                  y = df[[schema$outcome]][cases])
 str(stan_data)
 
 mod <- cmdstan_model("./stan/hierarchical_probit.stan")
