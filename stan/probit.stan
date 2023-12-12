@@ -46,4 +46,19 @@ generated quantities {
     vector[N] log_lik;
     for (i in 1:N)
         log_lik[i] = bernoulli_lpmf(y[i] | theta[i]);
+
+    // AME per treatment condition
+    array[K] real ame;
+    {
+        vector[N] base = alpha + X * beta;
+        vector[N] T0 = Phi_approx(base);
+
+        for (i in 1:K) {
+            if (i == interaction_id)
+                ame[i] = mean(Phi_approx(base + sum(delta)) - T0);
+            else
+                ame[i] = mean(Phi_approx(base + delta[i]) - T0);
+        }
+    }
 }
+
