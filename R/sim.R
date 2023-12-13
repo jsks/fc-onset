@@ -11,9 +11,9 @@ library(dplyr)
 
 options(mc.cores = parallel::detectCores() - 1)
 
-n <- 300
+n <- 248
+m <- 8
 k <- 3
-m <- 2
 
 n_countries <- 2
 n_contest_types <- 2
