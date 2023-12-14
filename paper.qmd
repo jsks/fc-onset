@@ -118,6 +118,37 @@ To empirically assess whether external state support for conflict actors affects
 
 In what follows, I will first present the model specification and results from a probit regression predicting the onset of a frozen conflict. I will then decrease the dependent and independent variables, including operationalizations and data sources.
 
+## Skeleton
+
+Bayesian probit model
+
+Let $y_i \in \{ 0, 1 \}$ be abinary indicator
+
+- Unit of analysis - civil conflict episodes
+
+  - Contiguous years of active fighting according to the UCDP definition
+
+  - Justification --- not interested in duration or predicting
+    __when__ a conflict terminates
+
+- X a matrix of control covariates
+
+- T a binary treatment matrix consisting of 3 variables:
+
+    1. External state support for rebels
+    2. External state support for the government
+    3. Interaction between previous two indicators to capture the
+       differential effect of both sides receiving external state
+       support.
+
+- Let $y^\star$ be a latent dependent variable such that ... regression equation ... and $P(y_i = 1) = \Phi(...)$ where $\Phi(\cdot)$ is the standard normal CDF.
+
+    Then $\delta_{k_i}$ is the vector of group varying treatment effects. $\gamma_{c_i}$ is a country specific intercept to capture heterogeneity
+
+I place weakly information priors with hierarchical priors on $\delta$ and $\gamma$ in order to partially pool the estimators.
+
+... prior equations ...
+
 ## Probit Model
 
 I model the onset of a frozen civil conflict using a bayesian probit regression where the unit analysis is civil conflict episodes, *i.e.*, contiguous years of active fighting within a conflict. The outcome variable, $y \in \{ 1, 2 \}$, is a binary indicator denoting the
