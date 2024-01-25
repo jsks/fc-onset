@@ -92,6 +92,8 @@ These criteria distinguish frozen conflicts from related concepts such as protra
 
 # Theory
 
+Why do external states intervene in civil conflicts? To further their national interests. Interveners face constraints, strategic decisions over limited resources, as well as from other interveners (ex: Anderson 2019)
+
 **Fundamental question**: why would actors accept a frozen conflict over a comprehensive peace agreement?
 
 When a conflict freezes, actors elide the ongoing costs of fighting; however, there remains an ever-present threat of violent re-escalation. Thus, actors continue to bear the cost of militarization, lest there is an unfavourable shift in the balance of power enabling the opposing side to re-launch the conflict.[^recurrence] The question then is, why bear the cost of an ongoing frozen conflict, as well as the uncertainty of re-escalation which ensures that war spoils remain transient? A comprehensive peace agreement, especially with international guarantees, solidifies the current status quo and allows actors to translate war spoils to permanent gains.
@@ -143,7 +145,7 @@ Let $y_i \in \{ 0, 1 \}$ be abinary indicator
 
 - Let $y^\star$ be a latent dependent variable such that ... regression equation ... and $P(y_i = 1) = \Phi(...)$ where $\Phi(\cdot)$ is the standard normal CDF.
 
-    Then $\delta_{k_i}$ is the vector of group varying treatment effects. $\gamma_{c_i}$ is a country specific intercept to capture heterogeneity
+Then $\delta_{k_i}$ is the vector of group varying treatment effects. $\gamma_{c_i}$ is a country specific intercept to capture heterogeneity
 
 I place weakly information priors with hierarchical priors on $\delta$ and $\gamma$ in order to partially pool the estimators.
 
