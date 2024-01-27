@@ -11,7 +11,7 @@ df <- readRDS("./data/merged_data.rds") |> ungroup()
 treatments <- c("bin", "bin_5y", "prop")
 outcomes <- c("frozen", "strict_frozen")
 units <- c("all", "high_intensity")
-censored <- c("no_censored", "with_censored")
+censored <- c("no_censored", "no_recurring_censored", "with_censored")
 
 design <- expand.grid("outcome" = outcomes, "treatment" = treatments,
                       "episodes" = units, "censored" = censored) |>
@@ -28,8 +28,11 @@ for (row in 1:nrow(design)) {
 
     # Filter out censored observations if necessary, ie conflicts
     # beginning before 1975
-    if (design[row, "censored"] == "no_censored")
+    if (design[row, "censored"] == "no_censored") {
         sub.df <- filter(sub.df, censored == 0)
+    } else if (design[row, "censored"] == "no_recurring_censored") {
+        sub.df <- filter(sub.df, !(censored == 1 | recur == 1))
+    }
 
     # Select control variables - this is mostly static across models
     X <- select(sub.df, censored, episode_duration, recur, high_intensity, incompatibility,
@@ -37,7 +40,7 @@ for (row in 1:nrow(design)) {
 
     # If we've dropped censored episodes, no need for binary control
     # var
-    if (design[row, "censored"] == "no_censored")
+    if (design[row, "censored"] != "with_censored")
         X <- select(X, -censored)
 
     X <- mutate(X, episode_duration = log(episode_duration) |> scale()) |>

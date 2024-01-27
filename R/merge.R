@@ -17,6 +17,7 @@ term <- read_excel("./data/raw/ucdp-term-acd-3-2021.xlsx") |>
            intensity_level, incompatibility, recur) |>
     group_by(conflictep_id) |>
     mutate(censored = ifelse(min(year) < 1975, 1, 0),
+           recur = max(recur),
            gwno_a = as.numeric(gwno_a)) |>
     ungroup()
 
