@@ -8,7 +8,7 @@ library(tools)
 options(mc.cores = parallel::detectCores() - 1)
 
 input <- commandArgs(trailingOnly = T)
-default <- "data/models/frozen-bin-all-with_censored.RData"
+default <- "data/models/data_001.RData"
 model_data <- if (!exists("input") || length(input) == 0) default else input
 
 stopifnot(file.exists(model_data))

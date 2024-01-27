@@ -15,10 +15,13 @@ censored <- c("no_censored", "no_recurring_censored", "with_censored")
 
 design <- expand.grid("outcome" = outcomes, "treatment" = treatments,
                       "episodes" = units, "censored" = censored) |>
-    mutate(name = sprintf("%s-%s-%s-%s", outcome, treatment, episodes, censored))
+    mutate(id = sprintf("%04d", row_number()))
+
+# Save the design matrix
+saveRDS(design, "./data/models/design.rds")
 
 for (row in 1:nrow(design)) {
-    info("Model %s", design[row, "name"])
+    info("Model %s", design[row, "id"])
 
     # Start off by setting the unit of analysis
     sub.df <- if (design[row, "episodes"] == "high_intensity")
@@ -59,6 +62,6 @@ for (row in 1:nrow(design)) {
     # Set the outcome variable
     y <- sub.df[[design[row, "outcome"]]]
 
-    f <- sprintf("./data/models/%s.RData", design[row, "name"])
+    f <- sprintf("./data/models/data_%s.RData", design[row, "id"])
     save(sub.df, cases, treatments, X, y, file = f)
 }

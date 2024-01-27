@@ -66,7 +66,7 @@ wc: paper.qmd ## Rough estimate of word count for $(manuscript)
 			-f markdown -t plain | wc -w; \
 
 ###
-# Onset dataset
+# Frozen conflict dataset
 $(data)/conflict_candidates.csv: \
 	R/conflict_candidates.R \
 	$(raw)/ucdp-peace-agreements-221.xlsx \
@@ -98,7 +98,8 @@ $(post)/sbc.rds: R/sbc.R \
 
 sbc: $(post)/sbc.rds ## Run simulation-based calibration
 
-bootstrap: R/models.R ## Generate yaml model profiles
+bootstrap: R/models.R \ ## Generate datasets for each model run
+		data/merged_data.rds
 	rm -rf $(model_data)
 	Rscript $<
 
@@ -117,10 +118,10 @@ stan/%: stan/%.stan
 
 $(post)/%/fit.rds: \
 	R/probit.R \
-	$(model_data)/%.rds \
+	$(model_data)/%.RData \
 	$(stan_model) \
 	data/merged_data.rds
-	Rscript $< $(model_data)/$*.rds
+	Rscript $< $(model_data)/$*.RData
 
 models: $(model_fits) ## Run all Stan models
 ifndef model_fits
