@@ -43,7 +43,10 @@ clean: ## Clean generated files
 	$(MAKE) -C $(cmdstan) STANPROG=$(CURDIR)/$(stan_model) clean-program
 
 help:
-	@printf 'Compile a specific document with `make <file.pdf>.`\n\n'
+	@printf 'To run all models and compile $(manuscript):\n\n'
+	@printf '\t$$ make bootstrap\n'
+	@printf '\t$$ make -j $(shell nproc)\n\n'
+	@printf 'Compile a specific document or output format with `make <file.[html|pdf|docx]>.`\n'
 	@printf 'Additionally, the following commands are available:\n\n'
 	@grep -E '^\S+:.*##' $(MAKEFILE_LIST) | \
 		sort | \
@@ -57,7 +60,7 @@ todo: ## List TODO comments in project files tracked by git
 watch: ## Auto-rebuild pdf documents (requires the program `entr`)
 	ls *.qmd | entr -r make -f ./Makefile
 
-wc: paper.qmd ## Rough estimate of word count for $(manuscript)
+wc: paper.qmd ## Rough estimate of word count for manuscript
 	@# We could use `quarto render --no-execute` instead of `sed`,
 	@# but quarto is horribly slow...
 	@printf "$(manuscript): "; \

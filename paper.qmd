@@ -92,6 +92,8 @@ These criteria distinguish frozen conflicts from related concepts such as protra
 
 # Theory
 
+Why do external states intervene in civil conflicts? To further their national interests. Interveners face constraints, strategic decisions over limited resources, as well as from other interveners (ex: Anderson 2019)
+
 **Fundamental question**: why would actors accept a frozen conflict over a comprehensive peace agreement?
 
 When a conflict freezes, actors elide the ongoing costs of fighting; however, there remains an ever-present threat of violent re-escalation. Thus, actors continue to bear the cost of militarization, lest there is an unfavourable shift in the balance of power enabling the opposing side to re-launch the conflict.[^recurrence] The question then is, why bear the cost of an ongoing frozen conflict, as well as the uncertainty of re-escalation which ensures that war spoils remain transient? A comprehensive peace agreement, especially with international guarantees, solidifies the current status quo and allows actors to translate war spoils to permanent gains.
@@ -117,6 +119,37 @@ How does external support affect this calculus?
 To empirically assess whether external state support for conflict actors affects the probability of a civil conflict episode terminating as a frozen conflict a series of bayesian probit models were run using original data on frozen civil conflicts. A mixed identification strategy was employed by both conditioning on relevant covariates and instrumenting external support with UN roll call votes.
 
 In what follows, I will first present the model specification and results from a probit regression predicting the onset of a frozen conflict. I will then decrease the dependent and independent variables, including operationalizations and data sources.
+
+## Skeleton
+
+Bayesian probit model
+
+Let $y_i \in \{ 0, 1 \}$ be abinary indicator
+
+- Unit of analysis - civil conflict episodes
+
+  - Contiguous years of active fighting according to the UCDP definition
+
+  - Justification --- not interested in duration or predicting
+    __when__ a conflict terminates
+
+- X a matrix of control covariates
+
+- T a binary treatment matrix consisting of 3 variables:
+
+    1. External state support for rebels
+    2. External state support for the government
+    3. Interaction between previous two indicators to capture the
+       differential effect of both sides receiving external state
+       support.
+
+- Let $y^\star$ be a latent dependent variable such that ... regression equation ... and $P(y_i = 1) = \Phi(...)$ where $\Phi(\cdot)$ is the standard normal CDF.
+
+Then $\delta_{k_i}$ is the vector of group varying treatment effects. $\gamma_{c_i}$ is a country specific intercept to capture heterogeneity
+
+I place weakly information priors with hierarchical priors on $\delta$ and $\gamma$ in order to partially pool the estimators.
+
+... prior equations ...
 
 ## Probit Model
 
