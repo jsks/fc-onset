@@ -27,8 +27,8 @@ post       := posteriors
 cmdstan    != Rscript -e 'cat(cmdstanr::cmdstan_path())'
 stan_model := stan/hierarchical_probit
 
-schemas     := $(wildcard $(model_data)/*.rds)
-model_fits  := $(schemas:$(model_data)/%.rds=$(post)/%/fit.rds)
+schemas     := $(wildcard $(model_data)/*.RData)
+model_fits  := $(schemas:$(model_data)/%.RData=$(post)/%/fit.rds)
 
 all: $(manuscript:%.qmd=%.pdf) ## Default rule generates manuscript pdf
 .PHONY: bootstrap clean dataset help models todo watch wc
@@ -45,7 +45,7 @@ clean: ## Clean generated files
 help:
 	@printf 'To run all models and compile $(manuscript):\n\n'
 	@printf '\t$$ make bootstrap\n'
-	@printf '\t$$ make -j $(shell nproc)\n\n'
+	@printf '\t$$ make -j$(shell nproc)\n\n'
 	@printf 'Compile a specific document or output format with `make <file.[html|pdf|docx]>.`\n'
 	@printf 'Additionally, the following commands are available:\n\n'
 	@grep -E '^\S+:.*##' $(MAKEFILE_LIST) | \
@@ -65,8 +65,7 @@ wc: paper.qmd ## Rough estimate of word count for manuscript
 	@# but quarto is horribly slow...
 	@printf "$(manuscript): "; \
 	sed -e '/^```/,/^```/d' "$(manuscript)" | \
-		pandoc -M 'suppress-bibliography=true' --quiet --citeproc \
-			-f markdown -t plain | wc -w; \
+		pandoc --quiet --citeproc -f markdown -t plain | wc -w;
 
 ###
 # Frozen conflict dataset
@@ -101,8 +100,9 @@ $(post)/sbc.rds: R/sbc.R \
 
 sbc: $(post)/sbc.rds ## Run simulation-based calibration
 
-bootstrap: R/models.R \ ## Generate datasets for each model run
-		data/merged_data.rds
+bootstrap: $(model_data)
+
+bootstrap: R/models.R data/merged_data.rds ## Generate datasets for each model run
 	rm -rf $(model_data)
 	Rscript $<
 
