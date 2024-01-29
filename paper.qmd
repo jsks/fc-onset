@@ -376,6 +376,7 @@ Appendix:
 ## List of Frozen Conflicts
 
 ```{r}
+
 filter(dataset, frozen == 1) |>
     arrange(side_a, year) |>
     select(Government = side_a, `Rebel Group(s)` = side_b, Year = year) |>
@@ -384,6 +385,18 @@ filter(dataset, frozen == 1) |>
 ```
 
 ## Simulation Based Calibration
+
+```{R}
+sbc <- readRDS("./posteriors/sbc.rds") |>
+    select(-.chain, -.iteration, -.draw) |>
+    pivot_longer(everything())
+
+ggplot(sbc, aes(x = value)) +
+    geom_histogram(bins = 10) +
+    facet_wrap(~ name, scales = "free") +
+    theme(axis.title.y = element_blank(),
+          axis.title.x = element_blank())
+```
 
 ## Robustness Checks
 
