@@ -396,68 +396,34 @@ Different combinations of the following...
 - Normal definition for frozen conflicts and a strict definition that requires a duration of at least 2 years in order to exclude temporary one-year pauses in fighting that may be more the result of UCDP's coding decision rather than representing actual frozen conflict.
 
 
-```{R eval = F}
+```{R}
+pzero <- function(x) mean(x > 0)
+
 models <- list.dirs("posteriors", recursive = F)
 stopifnot(length(models) != 0)
 
 fits <- lapply(models, \(dir) file.path(dir, "fit.rds") |> readRDS())
 names(fits) <- basename(models)
 
-ll <- lapply(fits, function(fit) {
-    fit$summary("ame[2,2]", pzero, quantile2, median)
+model_ames <- lapply(fits, function(fit) {
+    fit$summary("ame", pzero, posterior::quantile2, median)
 }) |> bind_rows()
 
+ll <- extract_digits(model_ames$variable)
+ame_keys <- sprintf("ame[%s]", sapply(ll, `[`, 1))
 
-ggplot(ll, aes(pzero, median)) +
-    geom_point() +
-    geom_errorbar(aes(ymin = q5, ymax = q95))
+model_ames$variable <- case_when(ame_keys == "ame[1]" ~ "Ext. Sup. Gov Only",
+                                 ame_keys == "ame[2]" ~ "Ext. Sup. Rebel Only",
+                                 ame_keys == "ame[3]" ~ "Ext. Sup. to Both")
+model_ames$group <- ifelse(sapply(ll, `[`, 2) == 1, "Government Incompatibility",
+                           "Territorial Incompatibility")
 
-```
-
-```{R eval = F}
-#| fig-height: 7
-summary.df <- lapply(fits, function(fit) {
-    post <- post_summarise(fit, "delta", rename = T, model_info = T,
-                           probs = c(0.025, 0.17, 0.5, 0.83, 0.975)) |>
-        rename(median = `50%`,
-               lower95 = `2.5%`,
-               upper95 = `97.5%`,
-               lower66 = `17%`,
-               upper66 = `83%`)
-}) |> bind_rows()
-
-summary.df$variable <- sub("_(prop|bin.*)$", "", summary.df$variable)
-
-ggplot(summary.df, aes(treatment_aggregation, median, color = outcome)) +
-    geom_point(size = 1.5, position = position_dodge(width = 0.25)) +
-    geom_errorbar(aes(ymin = lower95, ymax = upper95), position = position_dodge(0.25), width = 0) +
-    geom_errorbar(aes(ymin = lower66, ymax = upper66), position = position_dodge(0.25), linewidth = 1.25, width = 0) +
+ggplot(model_ames, aes(pzero, median)) +
+    geom_point(alpha = 0.2) +
+    geom_errorbar(aes(ymin = q5, ymax = q95), alpha = 0.25) +
     geom_hline(yintercept = 0, linetype = "dashed", alpha = 0.2) +
-    facet_grid(variable ~ episodes)
+    facet_grid(variable ~ group) +
+    labs(y = parse(text = "tilde(Delta)"), x = parse(text = "P(tilde(Delta) > 0)")) +
+    theme(legend.position = "none")
 
-```
-
-```{R eval = F}
-regtable <- function(fits, ...) {
-    names(fits) <- NULL
-    modelsummary(fits, pars = c("delta", "beta", "alpha"), statistic = "conf.int", ...)
-}
-
-m <- c("frozen-bin-all", "strict_frozen-bin-all",
-       "frozen-bin-high_intensity", "strict_frozen-bin-high_intensity")
-regtable(fits[m], title = "Binary Treatments")
-```
-
-
-```{R eval = F}
-m <- c("frozen-bin_5y-all", "strict_frozen-bin_5y-all",
-       "frozen-bin_5y-high_intensity", "strict_frozen-bin_5y-high_intensity")
-regtable(fits[m], title = "Binary Treatments - Last 5 Years")
-```
-
-
-```{R  eval = F}
-m <- c("frozen-prop-all", "strict_frozen-prop-all",
-       "frozen-prop-high_intensity", "strict_frozen-prop-high_intensity")
-regtable(fits[m], title = "Proportion Treatments")
 ```
