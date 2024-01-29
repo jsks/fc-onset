@@ -5,7 +5,7 @@ library(dplyr)
 library(fc.utils)
 library(tools)
 
-options(mc.cores = parallel::detectCores() - 1)
+options(mc.cores = 1)
 
 input <- commandArgs(trailingOnly = T)
 default <- "data/models/data_0001.RData"
