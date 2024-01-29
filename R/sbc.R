@@ -33,11 +33,10 @@ conflict_id <- sample(1:n_conflict_types, n, replace = T)
 treatments <- sample(0:1, n*2, replace = T) |> matrix(nrow = n, ncol = 2)
 treatments <- cbind(treatments, treatments[, 1] * treatments[, 2])
 
-
-data <- list(n = n,
-             k = k,
+data <- list(N = n,
+             K = k,
              T = treatments,
-             m = m,
+             M = m,
              X = X,
              n_countries = n_countries,
              country_id = country_id,
