@@ -45,7 +45,7 @@ clean: ## Clean generated files
 help:
 	@printf 'To run all models and compile $(manuscript):\n\n'
 	@printf '\t$$ make bootstrap\n'
-	@printf '\t$$ make -j$(shell nproc)\n\n'
+	@printf '\t$$ make -O -j$(shell nproc)\n\n'
 	@printf 'Compile a specific document or output format with `make <file.[html|pdf|docx]>.`\n'
 	@printf 'Additionally, the following commands are available:\n\n'
 	@grep -E '^\S+:.*##' $(MAKEFILE_LIST) | \
@@ -99,8 +99,6 @@ $(post)/sbc.rds: R/sbc.R \
 	Rscript $<
 
 sbc: $(post)/sbc.rds ## Run simulation-based calibration
-
-bootstrap: $(model_data)
 
 bootstrap: R/models.R data/merged_data.rds ## Generate datasets for each model run
 	rm -rf $(model_data)
