@@ -7,6 +7,8 @@ library(tools)
 
 options(mc.cores = 1)
 
+design <- readRDS("./data/models/design.rds")
+
 input <- commandArgs(trailingOnly = T)
 default <- "data/models/data_0001.RData"
 model_data <- if (!exists("input") || length(input) == 0) default else input
@@ -16,7 +18,10 @@ stopifnot(file.exists(model_data))
 load(model_data)
 model_name <- basename(model_data) |> file_path_sans_ext()
 
-info("Running model: %s", model_name)
+with(filter(design, id == model_name),
+     info("Model %s => outcome: %s, treatment: %s, episodes: %s, censored: %s",
+          id, outcome, treatment, episodes, censored))
+
 sprintf("posteriors/%s", model_name) |> dir.create(showWarnings = F, recursive = T)
 
 stan_data <- list(N = sum(cases),
@@ -33,7 +38,7 @@ stan_data <- list(N = sum(cases),
 str(stan_data)
 
 mod <- cmdstan_model("./stan/hierarchical_probit.stan")
-fit <- mod$sample(data = stan_data, sig_figs = 3, adapt_delta = 0.99)
+fit <- mod$sample(data = stan_data, refresh = 0, sig_figs = 3, adapt_delta = 0.99)
 
 # Treatment coefficients
 fit$summary("delta")
