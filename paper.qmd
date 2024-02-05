@@ -180,7 +180,7 @@ y_i & = \begin{cases}
 In order to measure the onset of frozen civil conflicts I followed the previous three criteria and coded an original dataset using dyadic intra-state conflict episodes drawn from the UCDP/PRIO Armed Conflict Dataset [@gleditsch_armed_2002; @davies_organized_2023] defined as contiguous years with at least 25 battle-related deaths in a violent contest over a government or territory between a state and non-state actor. To address post-conflict issue saliency, I considered an episode to be unresolved if it terminated without either a comprehensive peace treaty addressing the core underlying issues or a one-sided military victory for either the government or rebel group according to the UCDP Peace Agreement and Conflict Termination Datasets [@pettersson_organized_2019; @kreutz_how_2010]. I also filtered out episodes where one or more actors ceased to exist within five years of the conflict termination and where the non-state actor renounces violences. This was done using a manual coding process with a mix of academic and news media sources for different conflicts in order to capture instances where, for example, rebel groups transition into legitimate political parties.
 
 ```{r}
-dataset <- readRDS("./data/model_data.rds")
+dataset <- readRDS("./data/merged_data.rds")
 n_frozen <- filter(dataset, frozen == 1) |> nrow()
 n_terr_frozen <- filter(dataset, frozen == 1, incompatibility == 1) |> nrow()
 ```
@@ -418,10 +418,14 @@ stopifnot(length(models) != 0)
 fits <- lapply(models, \(dir) file.path(dir, "fit.rds") |> readRDS())
 names(fits) <- basename(models)
 
-model_ames <- lapply(fits, function(fit) {
-    fit$summary("ame", pzero, posterior::quantile2, median)
-}) |> bind_rows()
+model_ames <- lapply(names(fits), function(model) {
+    fits[[model]]$summary("ame", pzero, posterior::quantile2, median) |>
+                    mutate(id = sub("data_", "", model))
+}) |>
+    bind_rows() |>
+    left_join(design, by = "id")
 
+# Assign the correct variable names/groups
 ll <- extract_digits(model_ames$variable)
 ame_keys <- sprintf("ame[%s]", sapply(ll, `[`, 1))
 
