@@ -14,7 +14,6 @@ data {
     // Treatment
     int K;
     matrix<lower=0, upper=1>[N, K] T;
-    int<lower=1, upper=K> interaction_id;
 
     // Additional covariates
     int M;
@@ -77,19 +76,16 @@ generated quantities {
         log_lik[i] = bernoulli_lpmf(y[i] | theta[i]);
 
     // AME per treatment condition by incompatibility group
-    matrix[K, n_contest_types] ame = rep_matrix(0, K, n_contest_types);
+    matrix[K+1, n_contest_types] ame = rep_matrix(0, K+1, n_contest_types);
     {
         // First, calculate the marginal effects for each observation
-        array[K] vector[N] margins;
+        array[K+1] vector[N] margins;
         vector[N] base = alpha + X * beta + gamma[country_id];
         vector[N] T0 = Phi_approx(base);
 
-        for (i in 1:K) {
-            if (i == interaction_id)
-                margins[i] = Phi_approx(base + colSums(delta[, contest_id])) - T0;
-            else
-                margins[i] = Phi_approx(base + to_vector(delta[i, contest_id])) - T0;
-        }
+        margins[K+1] = Phi_approx(base + colSums(delta[, contest_id])) - T0;
+        for (k in 1:K)
+            margins[k] = Phi_approx(base + to_vector(delta[k, contest_id])) - T0;
 
         // Average over each type of incompatibility
         for (i in 1:n_contest_types) {
@@ -100,7 +96,7 @@ generated quantities {
                    continue;
 
                 count += 1;
-                for (k in 1:K)
+                for (k in 1:(K+1))
                     ame[k, i] += margins[k][j];
              }
 
