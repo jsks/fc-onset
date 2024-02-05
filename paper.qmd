@@ -7,6 +7,7 @@ linestretch: 1.25
 bibliography: library.bib
 format: pdf
 execute:
+    cache: true
     echo: false
     warning: false
 abstract: |
@@ -122,56 +123,28 @@ To empirically assess whether external state support for conflict actors affects
 
 In what follows, I will first present the model specification and results from a probit regression predicting the onset of a frozen conflict. I will then decrease the dependent and independent variables, including operationalizations and data sources.
 
-## Skeleton
-
-Bayesian probit model
-
-Let $y_i \in \{ 0, 1 \}$ be abinary indicator
-
-- Unit of analysis - civil conflict episodes
-
-  - Contiguous years of active fighting according to the UCDP definition
-
-  - Justification --- not interested in duration or predicting
-    __when__ a conflict terminates
-
-- X a matrix of control covariates
-
-- T a binary treatment matrix consisting of 3 variables:
-
-    1. External state support for rebels
-    2. External state support for the government
-    3. Interaction between previous two indicators to capture the
-       differential effect of both sides receiving external state
-       support.
-
-- Let $y^\star$ be a latent dependent variable such that ... regression equation ... and $P(y_i = 1) = \Phi(...)$ where $\Phi(\cdot)$ is the standard normal CDF.
-
-Then $\delta_{k_i}$ is the vector of group varying treatment effects. $\gamma_{c_i}$ is a country specific intercept to capture heterogeneity
-
-I place weakly information priors with hierarchical priors on $\delta$ and $\gamma$ in order to partially pool the estimators.
-
-... prior equations ...
-
 ## Probit Model
 
-I model the onset of a frozen civil conflict using a bayesian probit regression where the unit analysis is civil conflict episodes, *i.e.*, contiguous years of active fighting within a conflict. The outcome variable, $y \in \{ 1, 2 \}$, is a binary indicator denoting the
-
-
-TODO: eventually I would like to move towards a dyadic analysis, rather than conflict level
-
-- Unit of analysis: conflict episodes, ie consecutive years of active fighting (above UCDP threshold of 25 battle deaths)
-- Binary outcome, binary treatment, while conditioning on a number of relevant covariates
+I model the onset of frozen civil conflicts using a hierarchical bayesian probit model. The unit of analysis is conflict episodes --- contiguous years of active fighting according  to the UCDP definition of armed conflict as a "contested incompatibility that concerns a government and/or territory where the use of armed forced between two parties, of which at least one is the government of a state, results in at least 25 battle-related deaths within a calendar year" [@UCDP]. The outcome, $y_i \in \{0, 1\}$ for $i = 1, 2, \ldots, N$ episodes, is a binary indicator denoting whether a given episode terminates in a frozen state modeled as a function of a matrix of treatment variables, $T$, and a set of additional control covariates, $X$, such that
 
 \begin{align*}
-y_i^\star & = \alpha + X_i' \beta + T_i' \delta + \epsilon_i, \; \epsilon_i \sim \text{N}(0, \sigma^2) \\
-y_i & = \begin{cases}
-1 & \text{if } y_i^\star > 0 \\
-0 & \text{otherwise}
-\end{cases}
+y_i | \pi_i & \sim \text{Bernoulli}(\pi_i) \\
+\pi_i & = \Phi\left(\alpha + X_i' \beta + T_i' \delta_{k_i} + \gamma_{c_i}\right)
 \end{align*}
 
-- Estimate with Stan, weakly informative priors, $\delta \sim \text{Normal}(1, 1)$
+where $\Phi(\cdot)$ is the standard normal cumulative density function. Then, $\delta_k$ is the group specific vector of treatment effects. I allow the treatment effects to vary according to whether the underlying incompatibility for the given conflict episode concerns territory or control of the central government in order to account for potential differential effects, thus $\delta \in \mathbb{R}^{D \times K}$ for $D$ treatment variables. Finally, $\gamma_c$ represents a varying intercept for each country in order to capture unmodeled time invariant heterogeneity between countries.
+
+In the case of the global intercept and slope coefficients for the control variables, $X$, I select fairly conservative, weakly informative priors given the restricted sample size and moderate number of predictors. Specifically, I set $\alpha \sim \text{N}(0, 5)$ and $\beta \sim \text{N}(0, 1)$ to improve sampling efficiency by placing less prior probability density on unlikely large values on the probit scale and to provide a degree of regularization.
+
+For $\delta_k$ and $\gamma$ I use hierarchical priors that allow for varying effects while partially pooling information across groups to prevent overfitting. Regarding the latter, this means $\delta_{jk} \sim \text{N}(\mu_j, \tau_j)$ for $j = 1, 2, \ldots, D$ where $\mu_j \sim \text{N}(0, 1)$ and $\tau_j \sim \text{N}(0, 2.5)$. And for the former, $\gamma_c \sim \text{N}(0, \sigma)$ and $\sigma \sim \text{N}(0, 1)$. The particularly restrictive hyperprior on $\sigma$ shrinks the posterior $\gamma$ estimates towards zero and encodes a significant degree of skepticism towards country-specific deviations.[^country-intercepts]
+
+[^country-intercepts]: The risk for overfitting is especially high for the country-specific intercepts since the number of observations per country is relatively small with the median country only experiencing two episodes within the time period under study.
+
+Due to the non-linear nature of a probit regression model, in order to interpret the estimated association between the treatments and outcome, the target empirical estimands are the group-specific average marginal effects, *i.e.* the changes in the conditional expectation of the outcome variable given the various treatment states versus the baseline control averaged over the relevant subgroup sample. Let $\theta$ denote the vector of all unknown parameters in the regression model, then the average marginal effect (AME) for the $j^{th}$ treatment state represented by vector $w_j$ for subsample $k$ can be approximated using $m = 1, 2, \ldots, M$ posterior draws from $\theta$ such that
+
+\begin{align*}
+\text{AME}_{jk}^{(m)} = \frac{1}{N_k} \sum_{i \in S_k} P\left(y_i = 1 | T = w_j, X_i, \theta^{(m)}\right) - P\left(y_i = 1 | T = 0_{D}, X_i, \theta^{(m)}\right)
+\end{align*}
 
 ## Data
 
