@@ -16,11 +16,20 @@ term <- read_excel("./data/raw/ucdp-term-acd-3-2021.xlsx") |>
     select(conflict_id, conflictep_id, year, gwno_a = gwno_loc, side_a, side_b,
            intensity_level, incompatibility, recur) |>
     group_by(conflictep_id) |>
-    mutate(censored = ifelse(min(year) < 1975, 1, 0),
+    mutate(episode_censored = ifelse(min(year) < 1975, 1, 0),
            recur = max(recur),
            gwno_a = as.numeric(gwno_a)) |>
     ungroup()
 
+# Censored indicates if the conflict began before 1975
+censored <- group_by(term, conflict_id, conflictep_id) |>
+    summarise(year = last(year)) |>
+    mutate(censored = any(year < 1975) |> as.integer()) |>
+    select(-year)
+
+term <- left_join(term, censored, by = c("conflict_id", "conflictep_id"))
+
+# UCDP - Conflict Data
 ucdp <- readRDS("./data/raw/UcdpPrioConflict_v23_1.rds")
 
 # Total number of ongoing high intensity interstate and intrastate
@@ -118,15 +127,20 @@ final.df <- filter(full.df, !is.na(ext_sup_s_state)) |>
               year = last(year),
               side_a = first(side_a),
               side_b = first(side_b),
+
               censored = max(censored),
+              episode_censored = max(episode_censored),
               episode_duration = n(),
               frozen_duration = last(duration),
               recur = max(recur),
+
               incompatibility = max(incompatibility == 1),
               cold_war = ifelse(max(year) < 1989, 1, 0),
+
               ongoing_interstate = max(ongoing_interstate) > 0,
               ongoing_intrastate = max(ongoing_intrastate) > 0,
               ongoing_conflict = ongoing_interstate | ongoing_intrastate,
+
               cumulative_intensity = max(cumulative_intensity),
               high_intensity = max(intensity_level) == 2,
 

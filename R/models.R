@@ -10,8 +10,8 @@ df <- readRDS("./data/merged_data.rds") |> ungroup()
 # Create a design matrix with all possible analysis combinations
 treatments <- c("bin", "bin_5y", "prop")
 outcomes <- c("frozen", "strict_frozen")
-units <- c("all", "high_intensity")
-censored <- c("no_censored", "no_recurring_censored", "with_censored")
+units <- c("all", "cumulative_intensity")
+censored <- c("no_censored", "no_episode_censored", "with_censored")
 
 design <- expand.grid("outcome" = outcomes, "treatment" = treatments,
                       "episodes" = units, "censored" = censored) |>
@@ -24,7 +24,7 @@ for (row in 1:nrow(design)) {
     info("Model %s", design[row, "id"])
 
     # Start off by setting the unit of analysis
-    sub.df <- if (design[row, "episodes"] == "high_intensity")
+    sub.df <- if (design[row, "episodes"] == "cumulative_intensity")
         filter(df, cumulative_intensity == 1)
     else
         df
@@ -33,18 +33,18 @@ for (row in 1:nrow(design)) {
     # beginning before 1975
     if (design[row, "censored"] == "no_censored") {
         sub.df <- filter(sub.df, censored == 0)
-    } else if (design[row, "censored"] == "no_recurring_censored") {
-        sub.df <- filter(sub.df, !(censored == 1 | recur == 1))
+    } else if (design[row, "censored"] == "no_episode_censored") {
+        sub.df <- filter(sub.df, episode_censored == 0)
     }
 
     # Select control variables - this is mostly static across models
-    X <- select(sub.df, censored, episode_duration, recur, high_intensity, incompatibility,
-                cold_war, ongoing_intrastate, ongoing_interstate)
+    X <- select(sub.df, episode_censored, episode_duration, recur, cumulative_intensity,
+                incompatibility, cold_war, ongoing_intrastate, ongoing_interstate)
 
     # If we've dropped censored episodes, no need for binary control
     # var
     if (design[row, "censored"] != "with_censored")
-        X <- select(X, -censored)
+        X <- select(X, -episode_censored)
 
     X <- mutate(X, episode_duration = log(episode_duration) |> scale()) |>
         data.matrix()
