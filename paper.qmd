@@ -42,6 +42,7 @@ library(dplyr)
 library(ggplot2)
 library(ggthemes)
 library(ggdist)
+library(latex2exp)
 library(knitr)
 library(patchwork)
 library(tidyr)
@@ -291,14 +292,16 @@ filter(dataset, frozen == 1) |>
 
 ```{R}
 sbc <- readRDS("./posteriors/sbc.rds") |>
-    select(-.chain, -.iteration, -.draw) |>
-    pivot_longer(everything())
+    select(-.chain, -.iteration, -.draw)
 
-ggplot(sbc, aes(x = value)) +
-    geom_histogram(bins = 10) +
-    facet_wrap(~ name, scales = "free") +
-    theme(axis.title.y = element_blank(),
-          axis.title.x = element_blank())
+# I really, really hate ggplot histograms
+par(family = "TeX Gyre Pagella", mfrow = c(5, 5),
+    mai = c(0.35, 0.2, 0.1, 0.2), mgp = c(1.75, 0.5, 0))
+for (i in seq_along(sbc)) {
+    # I also hate tibbles with every fiber of my being
+    label <- colnames(sbc)[i] |> stanvar_latex()
+    sbc[[i]] |> hist(main = "", xlab = TeX(label), ylab = "")
+}
 ```
 
 ## Robustness Checks
@@ -313,8 +316,6 @@ Different combinations of the following...
 
 
 ```{R}
-pzero <- function(x) mean(x > 0)
-
 models <- list.dirs("posteriors", recursive = F)
 stopifnot(length(models) != 0)
 
