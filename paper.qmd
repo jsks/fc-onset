@@ -39,11 +39,9 @@ abstract: |
 [//]: # Setup R environment
 ```{r setup, include = F}
 library(dplyr)
-library(flextable)
 library(ggplot2)
 library(ggthemes)
 library(ggdist)
-library(modelsummary)
 library(knitr)
 library(patchwork)
 library(tidyr)
@@ -63,59 +61,6 @@ design <- readRDS("./data/models/design.rds")
 
 **Research question: to what extent does external state support to conflict actors affect the probability that a civil conflict becomes frozen?**
 
-**Motivation**
-
-Contribution: (*conceptual* and *empirical*)
-
-- *Original Data*, conceptual/descriptive claim about prevalence of frozen conflicts
-- Novel empirical analysis, provides a more nuanced analysis of *conflict termination* and contributes to our understanding of how external support can shape the dynamics of conflicts
-
-The paper will argue that there exists both a theoretical and empirical gap. Studies on conflict termination have generally considered military victory and peace agreements as the only outcome. I further disaggregate the notion of termination to cover also the situation where conflicts are not conclusively termination and instead become "frozen."
-
-In doing so, I show that frozen conflicts are more prevalent than thought and conceptually can and should cover a greater range of cases than just /de facto/ states. I also distinguish the concept of frozen conflicts from the related notions of stalemates and intractable rivalries.
-
-I provide a novel quantitative analysis on the likelihood of a conflict becoming frozen. Specifically, I examine the effect of support by external state actors to belligerents in the course of a civil conflict episode. This will contribute both to our understanding of different types of conflict termination as well as the ways in which external support can shape the dynamics of conflicts.
-
-- Potential shortcoming: what I am not doing is taking into account the preferences of external supporters and motivation for offering support. Nor am I distinguishing between different external support types.
-
-**Why should we care about frozen conflicts?**
-
-# Previous Literature
-
-There exists extensive work on the impact of external third party interventions on civil conflict outcomes [@regan_third-party_2002; @balch-lindsay_third-party_2008; @gent_going_2008]. This literature has emphasised the importance of targeted interventions, either military or economic, in favor of the opposition as increasing the probability of either a negotiated settlement or rebel military victory. The opposition is generally assumed to be the weaker side at the onset of fighting such that biased interventions in favor of the opposition can result in a much larger shift in the balance of power, allowing the opposition to credibly challenge the government. Subsequent research has further disaggregated the types of support that are offered to conflict belligerents, arguing in contrast that fungible support in particular actually decreases the likelihood of a negotiated settlement and increases conflict duration by contributing to information uncertainty over the true strength of the opposition [@sawyer_role_2017; @karlen_escalate_2023]. Furthermore, external support has been found to also increase the likelihood of conflict recurrence by possibly creating an expectation of renewed assistance which may cause actors to be less risk averse and willing to militarily relitigate past conflicts [@karlen_legacy_2017].
-
-The common thread across these works is a general assumption that
-conflicts terminate either with a one-sided military victory or a negotiated settlement. Frozen conflicts, however, represent a qualitatively different type of conflict termination. Unlike a one-sided military victory, there is no clear victor when a conflict freezes, rather the conflict stalemates with both sides either unwilling or unable to continue large-scale hostilities. And, compared to a negotiated settlement, although frozen conflicts can be preceded by a ceasefire or partial settlement, they crucially do not encompass comprehensive peace agreements which would otherwise conclusively terminate a conflict. Thus, frozen conflicts represent a unique outcome; one that has previously not been examined, especially in regards to international dynamics such as external state support.
-
-# Defining Frozen Conflicts
-
-I follow the definition of frozen conflicts offered by @smetana_between_2019 as a "protracted, post-war conflict process, characterized by the absence of stable peace...[where] core issues between the opposing sides remain unresolved, the dispute is in the forefront of mutual relations, and there is a looming threat of the renewal of violence."  Accompanying this definition, @smetana_between_2019 lay forth three criteria determining whether a post-conflict period qualifies as a frozen conflict. First, there needs to be an initial period of active conflict followed by a cessation of large-scale violent hostilities. Isolated, sporadic incidences of violence may continue to occur; however, conflict actors are either unwilling or unable to launch major military offensives. Although not necessary, this may be characterized by the establishment of a general ceasefire and/or presence of external peacekeeping troops.  Second, the core issue underlying the conflict needs to remain salient post-conflict. This entails actors maintaining their claims within a dispute. And, finally, there must be an ongoing threat of violent re-escalation. In other words, post-conflict relations should be characterized by mutual hostility and an unwillingness to abandon violence as a political strategy.
-
-These criteria distinguish frozen conflicts from related concepts such as protracted stalemates or enduring rivalries. In the case of the former, stalemates during a conflict can potentially endure for extended periods of time and offer conditions similar to those of a frozen conflict. However, they do not necessitate a cessation of active fighting. Stalemates can still occur during high intensity periods of a conflict where relatively few gains are made by either side. In the case of the latter, enduring rivalries are characterized in part by repeated onsets of militarized interstate disputes [@Goertz1992; @Goertz1993]; however, this might not entail the actual outbreak of violence. More importantly, enduring rivalries were originally conceptualized in terms of inter-state relations, while the definition of frozen conflicts here can be extended to the intra-state case as well.
-
-# Theory
-
-Why do external states intervene in civil conflicts? To further their national interests. Interveners face constraints, strategic decisions over limited resources, as well as from other interveners (ex: Anderson 2019)
-
-**Fundamental question**: why would actors accept a frozen conflict over a comprehensive peace agreement?
-
-When a conflict freezes, actors elide the ongoing costs of fighting; however, there remains an ever-present threat of violent re-escalation. Thus, actors continue to bear the cost of militarization, lest there is an unfavourable shift in the balance of power enabling the opposing side to re-launch the conflict.[^recurrence] The question then is, why bear the cost of an ongoing frozen conflict, as well as the uncertainty of re-escalation which ensures that war spoils remain transient? A comprehensive peace agreement, especially with international guarantees, solidifies the current status quo and allows actors to translate war spoils to permanent gains.
-
-[^recurrence]: Conflict recurrence can still be a threat even in the case of a conclusive termination, *i.e.*, one-sided military victory or comprehensive peace agreement. However, the uncertainty around future violence in a frozen conflict is higher since there is neither a *de jure* agreement settling the underlying issue or the payoff of a total victory where the victor can dictate the post-conflict status quo.
-
-Three possible reasons for why actors may prefer to let a civil conflict freeze:
-
-1. **Issue Indivisibility**: Issue indivisibility is often times downplayed in bargaining theory --- it is often assumed that there exists a possible division of contested goods even in the most intractable conflicts --- however, it could play an important role in frozen conflicts. Particularly from the perspective of the government when a negotiated settlement may involve the loss of territory to a rebel group. There exists strong norms around territorial integrity as well as domestic pressure which make it difficult for states to acquiesce to secession. Furthermore, in highly fractionalized states, the government has a strong incentive to refuse a negotiated settlement in order to deter future sovereignty claims by other groups.
-
-2. **Credible Committments**: For separatist conflicts it is often difficult for the government to credibly commit to an agreement granting greater autonomy to a separatist region. For the rebels, *de facto* independence as a half-way measure, achieved through a frozen conflict, can be the best possible outcome given that the international community tends to be fairly conservative regarding sovereignty claims. Even in the case of conflicts where the core contestation is over control of the central government, there exists a significant amount of literature pointing to the difficulties of guaranteeing the integrity of the incumbent, especially in authoritarian contexts were there is a fear of retribution.
-
-3. **Time Horizons**: Probably the most significant mechanism concerns actors with forward-looking time horizons. Frozen conflicts, much like ceasefires which are often times involved in creating the conditions for a frozen conflict, can be a delaying tactic if an actor believes that future shifts in the distribution of power will be favourable to their cause. This can be especially important for separatist conflicts where maintaining sovereignty claims over a territory allows for an easy pretext for future escalations. International norms against wars of territorial conquest make relitigating a separatist war where the rebels have achieved a *de jure* independent state significantly more difficult, as compared to a conflict that remains a civil war within the eyes of the international community.
-
-How does external support affect this calculus?
-
-1. Balance of power. This mirrors the theoretical arguments made in the previous literature on external support and conflict outcomes. Essentially, support to a belligerent increases their fighting capacity, and especially in the case of a rebel group that is severely outmatched by a government, increases the likelihood of a military stalemate. This does not mean that the conflict will automatically become frozen, but it is an important first step. Furthermore, the involvement of third party actors can complicate peace negotiations since interests may not also be aligned between the donor and recipient, or even between donor states.
-
-2. External support may also create an expectation that support will continue in the future such that an actor can offset the costs of an ongoing frozen conflict. For example, the post-Soviet separatist states are entirely reliant on Russian support, which allows them to maintain a state of militarization that deters re-escalation by the incumbent state.
 
 # Empirics
 
@@ -238,21 +183,23 @@ knitr::kable(m)
 
 ### Control Variables
 
-- Episode Intensity
-- Episode Duration
-- Incompatibility? (ie separatist conflict over territory)
-- Recurrent episode
-- Right censored
+- Episode censored
+- Episode Duration log
+- Recur
+- Cumulative Intensity
+- Incompatibility
+- Cold War
+- Ongoing intra/interstate conflict
 
 Descriptive statistics split between positive and negative outcomes
 
-### Descriptive Statistics
-
-## Observational Models
-
 ### Results
 
-Figure 1 shows the parameter estimates for $\delta$.
+
+The actual model is implemented in Stan, a probabilistic programming language
+
+Using its builtin No-U-Turn sampler run for 2,000 iterations
+
 
 ```{r}
 #| fig.cap: Posterior estimates for \delta from a single variate probit model
@@ -313,29 +260,6 @@ ggplot(ame, aes(x = value, y = variable, fill = variable)) +
     scale_fill_solarized()
 ```
 
-[^ame]: Hello World
-
-- Parameter Plot
-- Density of predicted probabilities for true success/failure
-- Marginal effects
-- Confusion Matrix + AUR/PRC plots
-
-#### Robustness Checks
-
-- External support only within the last five years of conflict
-- Frozen conflicts with a duration of only 1 year
-- Exclude low intensity conflicts?
-
-Appendix:
-
-- Proportion of episode years with external support
-- Nr of external supporters, maybe weighted by cinc?
-- Territorial conflicts only
-- FCD data
-
-## IV Model
-
-\newpage
 
 # References
 
