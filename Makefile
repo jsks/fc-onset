@@ -64,8 +64,11 @@ wc: paper.qmd ## Rough estimate of word count for manuscript
 	@# We could use `quarto render --no-execute` instead of `sed`,
 	@# but quarto is horribly slow...
 	@printf "$(manuscript): "; \
-	sed -e '/^```/,/^```/d' "$(manuscript)" | \
-		pandoc --quiet --citeproc -f markdown -t plain | wc -w;
+	sed -e '/^```/,/^```/d' \
+			-e '/^# *Appendix/,$$d' $(manuscript) | \
+		pandoc --quiet --citeproc -f markdown -t plain | \
+		wc -w | \
+		xargs -n1 expr $$(yq -f extract '.abstract' $(manuscript) | wc -w) +;
 
 ###
 # Frozen conflict dataset
