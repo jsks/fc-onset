@@ -70,7 +70,7 @@ In what follows, I will first present the model specification and results from a
 
 ## Probit Model
 
-I model the onset of frozen civil conflicts using a hierarchical bayesian probit model. The unit of analysis is conflict episodes --- contiguous years of active fighting according  to the UCDP definition of armed conflict as a "contested incompatibility that concerns a government and/or territory where the use of armed forced between two parties, of which at least one is the government of a state, results in at least 25 battle-related deaths within a calendar year" [@UCDP]. The outcome, $y_i \in \{0, 1\}$ for $i = 1, 2, \ldots, N$ episodes, is a binary indicator denoting whether a given episode terminates in a frozen state modeled as a function of a matrix of treatment variables, $T$, and a set of additional control covariates, $X$, such that
+I model the onset of frozen civil conflicts using a hierarchical bayesian probit model. The unit of analysis is conflict episodes --- contiguous years of active fighting according  to the UCDP definition of armed conflict as a "contested incompatibility that concerns a government and/or territory where the use of armed forced between two parties, of which at least one is the government of a state, results in at least 25 battle-related deaths within a calendar year" [@gleditsch_armed_2002; @davies_organized_2023]. The outcome, $y_i \in \{0, 1\}$ for $i = 1, 2, \ldots, N$ episodes, is a binary indicator denoting whether a given episode terminates in a frozen state modeled as a function of a matrix of treatment variables, $T$, and a set of additional control covariates, $X$, such that
 
 \begin{align*}
 y_i | \pi_i & \sim \text{Bernoulli}(\pi_i) \\
@@ -95,7 +95,14 @@ Due to the non-linear nature of a probit regression model, in order to interpret
 
 ### Measuring Frozen Conflicts
 
-In order to measure the onset of frozen civil conflicts I followed the previous three criteria and coded an original dataset using dyadic intra-state conflict episodes drawn from the UCDP/PRIO Armed Conflict Dataset [@gleditsch_armed_2002; @davies_organized_2023] defined as contiguous years with at least 25 battle-related deaths in a violent contest over a government or territory between a state and non-state actor. To address post-conflict issue saliency, I considered an episode to be unresolved if it terminated without either a comprehensive peace treaty addressing the core underlying issues or a one-sided military victory for either the government or rebel group according to the UCDP Peace Agreement and Conflict Termination Datasets [@pettersson_organized_2019; @kreutz_how_2010]. I also filtered out episodes where one or more actors ceased to exist within five years of the conflict termination and where the non-state actor renounces violences. This was done using a manual coding process with a mix of academic and news media sources for different conflicts in order to capture instances where, for example, rebel groups transition into legitimate political parties.
+The outcome variable in my regression model is a binary indicator for whether a civil conflict terminates in a frozen state. Following the definition of frozen conflicts offered earlier, I construct this measure using a mix of automated and manual coding of intrastate and internationalized intrastate conflict terminations taken from the UCDP Conflict Termination Dataset [@kreutz_how_2010].[^protocol] Episodes were considered terminated if the total number of battle related fatalities dropped below 25 within a year. I subsequently labeled a termination as a frozen conflict if three criteria were satisfied. First, an episode could not result in a one-sided military victory. This would constitute a conclusive termination allowing the victor to set the terms of the post-conflict order. Second, the episode could not conclude with a comprehensive peace agreement that addresses the underlying core issue according to the UCDP Peace Agreement Dataset [@pettersson_organized_2019].[^partial] To account for the possibility of a failed peace agreement I further required that the comprehensive peace agreement had to last for at least one calendar year in order to disqualify an episode termination as a frozen conflict.[^strict_frozen] Finally, an episode could not result in actor death since this is a minimum necessary condition for a conflict to become frozen. For a state actor this meant that although there could be a turnover in the regime, the state could not cease to exist as a sovereign entity following the conclusion of the conflict episode. For non-state actors this entailed a continued existence for at least five years post-conflict without renouncing political violence and/or a re-escalation of violence into a new conflict episode within the same time period. This was done to exclude situations where rebel groups unilaterally renounce violence as a political strategy and either disband or transition into political parties or civil society organizations.
+
+[^protocol]: For a detailed description of the codcing procedure see the protocol document in the supplemental materials.
+
+[^partial]: Note, this does not exclude tha possibility that frozen conflicts can arise following a partial peace agreement or ceasefire. For example, the First Nagorno-Karabkh War was terminated with the 1994 Bishkek Protocol establishing a general ceasefire; however, the agreement failed to address the status of Nagorno-Karabakh leading to a frozen conflict with periodic re-escalations until the forcible reintegration of the territory by Azerbaijan following the 2023 offensive.
+
+[^strict_frozen]: In the appendix I extend the analysis presented in this paper and run a series of robustness checks where I increase the number of years required for a compehensive peace agreement to be in place in order to better distingiush between frozen conflicts and short-term pauses in fighting.
+
 
 ```{r}
 dataset <- readRDS("./data/merged_data.rds")
@@ -103,11 +110,19 @@ n_frozen <- filter(dataset, frozen == 1) |> nrow()
 n_terr_frozen <- filter(dataset, frozen == 1, incompatibility == 1) |> nrow()
 ```
 
-The resulting dataset consists of `r n_frozen` frozen conflicts out
-of `r nrow(dataset)` intra-state episodes, comprising approximately
-`r signif(n_frozen / nrow(dataset), 2) * 100` percent of all observations for the period 1975 to 2019. Of the frozen conflicts, `r n_terr_frozen` are conflicts over territory. (TODO: show world map and time plot)
+
+In total, `r n_frozen` frozen conflicts were identified out of `r nrow(dataset)` civil conflict terminations, comprising approximately `r sprintf("%.0f", 100 * n_frozen / nrow(dataset))` percent of all observations for the period 1975 to 2017. Of the frozen conflicts, `r n_terr_frozen` were conflicts where the central incompatibility between conflict actors concerned territory rather than control of the central government. @fig-frozen shows both a world map of the countries that have experienced at least one frozen conflict within the coded time period as well as the incidence rate of frozen conflicts per year.
+
 
 ```{r}
+#| fig-height: 2
+#| label: fig-frozen
+#| fig-cap: |
+#|    On the left, a world map showing the geographic distribution of
+#|    countries that have experienced at least one frozen conflict
+#|    highlighted in blue. On the right, the incidence rate of new
+#|    frozen conflicts per year.
+
 frozen <- filter(dataset, frozen == 1) |>
     mutate(country = sub("Government of ", "", side_a),
            country = case_when(country == "Russia (Soviet Union)" ~ "Russia",
@@ -122,41 +137,38 @@ frozen <- filter(dataset, frozen == 1) |>
 sub.df <- group_by(frozen, country) |> count(frozen)
 
 world <- map_data("world") |>
+    filter(region != "Antarctica") |>
     left_join(sub.df, by = c("region" = "country")) |>
-    mutate(n = ifelse(is.na(n), 0, 1) )
+    mutate(n = ifelse(is.na(n), 0, 1) |> as.factor())
 
-ggplot(world, aes(long, lat, map_id = region, fill= n, group = group)) +
-    geom_map(map = world) +
-    theme(legend.position = "none") +
-    scale_color_solarized()
-```
+p1 <- ggplot(world, aes(long, lat, map_id = region, fill = n, group = group)) +
+    geom_map(map = world, color = "grey", size = 0.25) +
+    scale_fill_manual(values = c("0" = "#CFCFC4", "1" = "#268bd2"), guide = F) +
+    theme(legend.position = "none",
+          axis.title.x = element_blank(),
+          axis.title.y = element_blank(),
+          axis.ticks = element_blank(),
+          axis.text = element_blank())
 
-```{r}
-filter(dataset, frozen == 1) |>
-ggplot(aes(year)) +
+p2 <- filter(dataset, frozen == 1) |>
+    ggplot(aes(year)) +
     geom_bar() +
-    xlab("Year") +
-    ylab("Frozen Civil Conflict Onsets")
+    theme(axis.title.x = element_blank()) +
+    ylab("Frozen Onsets")
+
+p1 + p2
+
 ```
 
-Compared to the Frozen Conflict Dataset by @klosek_frozen_2021,
 
-Compared to FCD --- significant more cases
-  - More expansive operationalization
-    - Not only looking at de facto states
-    - Captures frozen moments in civil wars over government, ex Angola
+Compared to the only other extant coding of frozen conflicts, the Frozen Conflict Dataset (FCD) [@klosek_frozen_2021], the measure that I employ features a more expansive operationalization of the concept of frozen conflicts. Although the FCD covers a wider period from 1946 until 2011, only civil conflicts involving *de facto* states according to the coding by @Florea2014 are included resulting in 17 cases of frozen conflict. Furthermore, the termination year for a civil conflict episode in the FCD is coded as the last year in which the number of battle related deaths is above 500. In contrast, my measure looks beyond only *de facto* states and considers civil conflicts where the central incompatibility may center over control of the government. Furthermore, I follow the UCDP and employ a smaller battle related fatalities threshold thereby capturing lower intensity conflict episodes.[^insurgencies]
 
-  - Timing of Frozen conflicts
-    - FCD last year in which >= 500 BRD
-    - My datasets follows UCDP last year >25
-      - Captures lower level conflicts
+[^insurgencies]: There is a risk that including low-level conflict episodes risks conflating minor, long-running insurgencies with frozen conflicts. It can be argued that the former may persist at such a low level of activity with only sporadic, isolated incidences of limited violence as to not represent a meaningfully salient issue to the incumbent state and would therefore not constitute a frozen conflict. To mitigate this risk, I also run the analysis presented in this paper on a sub-sample of conflicts with a cumulative intensity of at least 1,000 battle related fatalities since onset.
 
-Potential Weaknesses
-  - Low-level long running insurgencies may not be "salient"
-  - Termination year inexact
-  - Potentially capturing shorter stalemates
 
 ### Treatments
+
+The primary independent variables in the model are two binary treatment variables measuring whether external support was provided to the government side and whether external support was provided to the rebel side at any time during a civil conflict episode by a third party state actor, as well as the interaction in order to account for a differential effect when both sides receive support. Data on external state support was drawn from the UCDP External Support Dataset [@meier_external_2023] covering the period from 1975 to 2017.
 
 UCDP external support dataset, binary variable for whether an external
 state actor offered either fungible or non-fungible support at least
@@ -228,12 +240,6 @@ ggplot(delta, aes(x = value, y = variable, fill = variable)) +
     facet_grid(. ~ group) +
     scale_fill_solarized()
 ```
-
-Figure 2 shows the average marginal effects, *i.e.* the change in the posterior predicted probability between each treatment condition and the control condition averaged across the sample.
-
-\begin{equation}
-\text{AME}_j = \sum_{i=1}^N \Phi(\alpha + X_i' \beta + \delta_i) - \Phi(\alpha + X_i' \beta)
-\end{equation}
 
 
 ```{r}
