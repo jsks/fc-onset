@@ -31,7 +31,7 @@ schemas     := $(wildcard $(model_data)/*.RData)
 model_fits  := $(schemas:$(model_data)/%.RData=$(post)/%/fit.rds)
 
 all: $(manuscript:%.qmd=%.pdf) ## Default rule generates manuscript pdf
-.PHONY: bootstrap clean dataset help models todo watch wc
+.PHONY: bootstrap clean dataset help models todo preview wc
 .SECONDARY:
 
 ###
@@ -57,8 +57,8 @@ help:
 todo: ## List TODO comments in project files tracked by git
 	@grep --color=always --exclude=Makefile -rni todo $$(git ls-files) || :
 
-watch: ## Auto-rebuild pdf documents (requires the program `entr`)
-	ls *.qmd | entr -r make -f ./Makefile
+preview: ## Auto-rebuild html manuscript
+	quarto preview $(manuscript) --to html
 
 wc: paper.qmd ## Rough estimate of word count for manuscript
 	@# We could use `quarto render --no-execute` instead of `sed`,
