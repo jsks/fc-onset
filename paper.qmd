@@ -169,29 +169,42 @@ Compared to the only other extant coding of frozen conflicts, the Frozen Conflic
 
 ### Treatments
 
-The primary independent variables in the model are two binary treatment variables measuring whether external support was provided to the government side and whether external support was provided to the rebel side at any time during a civil conflict episode by a third party state actor, as well as the interaction in order to account for a differential effect when both sides receive support. Data on external state support was drawn from the UCDP External Support Dataset [@meier_external_2023] covering the period from 1975 to 2017.
+The primary independent variables in the model are two binary treatment variables measuring respectively whether external support was provided at least once to either the rebel side or the government side at any time during a civil conflict episode by a third party state actor, as well as the interaction in order to account for a potential differential effect when both sides receive support. Data on external state support was from the UCDP External Support Dataset (ESD) [@meier_external_2023] covering the period from 1975 to 2017 and included both fungible and non-fungible support across all support categories coded by the ESD.
 
-UCDP external support dataset, binary variable for whether an external
-state actor offered either fungible or non-fungible support at least
-once to either the rebels or government side in a conflict episode.
-
-- Include interaction term, three treatment conditions:
-
-1. No support (control group)
-2. Gov. support only
-3. Reb. support only
-4. Both support
+@fig-prop shows the total counts as well as proportion of observations that terminated as frozen conflicts for each corresponding treatment category: external support to only the government, external support to only the rebels, external support to both, and no external support received by either side. In general, a higher proportion of civil conflicts centered on a territorial incompatibility terminate as a frozen conflict when support is either given only to the rebels or to both sides.
 
 ```{r}
-conditions <- dataset |>
-    mutate(treatment = case_when(ext_sup_s_rebel_bin == 1 & ext_sup_s_state_bin == 1 ~ "Ext. Sup. to Both",
-                                 ext_sup_s_rebel_bin == 1 & ext_sup_s_state_bin == 0 ~ "Ext. Sup. Rebel Only",
-                                 ext_sup_s_rebel_bin == 0 & ext_sup_s_state_bin == 1 ~ "Ext. Sup. Gov Only",
-                                 ext_sup_s_rebel_bin == 0 & ext_sup_s_state_bin == 0 ~ "Ext. Sup. to Neither"))
+#| fig-height: 3
+#| label: fig-prop
+#| fig-cap: |
+#|     Total counts and proportion of observations that terminated as
+#|     frozen conflict per treatment category.
 
-m <- table(conditions$frozen, conditions$treatment)
-rownames(m) <- c("Not Frozen", "Frozen")
-knitr::kable(m)
+conditions <- dataset |>
+    mutate(treatment = case_when(ext_sup_s_rebel_bin == 1 & ext_sup_s_state_bin == 1 ~ "Both",
+                                 ext_sup_s_rebel_bin == 1 & ext_sup_s_state_bin == 0 ~ "Rebel",
+                                 ext_sup_s_rebel_bin == 0 & ext_sup_s_state_bin == 1 ~ "Gov.",
+                                 ext_sup_s_rebel_bin == 0 & ext_sup_s_state_bin == 0 ~ "None"),
+           treatment = factor(treatment, levels = c("Gov.", "Rebel", "Both", "None")),
+           Incompatibility = ifelse(incompatibility == 0, "Government",
+                                    "Territory"))
+
+p1 <- ggplot(conditions, aes(treatment, fill = Incompatibility)) +
+    geom_bar(position = "dodge") +
+    ylab("Total Count") +
+    scale_fill_solarized()
+
+condition_props <- group_by(conditions, treatment, Incompatibility) |>
+    summarise(prop = mean(frozen == 1))
+
+p2 <- ggplot(condition_props, aes(treatment, prop, fill = Incompatibility)) +
+    geom_col(position = "dodge") +
+    ylim(c(0, 1)) +
+    ylab("Proportion Frozen") +
+    scale_fill_solarized()
+
+p1 + p2 + plot_layout(axis_title = "collect", guides = "collect") & xlab("External Support")
+
 ```
 
 ### Control Variables
