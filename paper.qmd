@@ -169,7 +169,7 @@ Compared to the only other extant coding of frozen conflicts, the Frozen Conflic
 
 ### Treatments
 
-The primary independent variables in the model are two binary treatment variables measuring respectively whether external support was provided at least once to either the rebel side or the government side at any time during a civil conflict episode by a third party state actor, as well as the interaction in order to account for a potential differential effect when both sides receive support. Data on external state support was from the UCDP External Support Dataset (ESD) [@meier_external_2023] covering the period from 1975 to 2017 and included both fungible and non-fungible support across all support categories coded by the ESD.
+The primary independent variables in the model are two binary treatment variables measuring respectively whether external support was provided at least once to either the rebel side or the government side at any time during a civil conflict episode by a third party state actor, as well as the interaction in order to account for a potential differential effect when both sides receive support. Data on external state support was drawn from the UCDP External Support Dataset (ESD) [@meier_external_2023] covering the period from 1975 to 2017 and included both fungible and non-fungible support across all support categories coded by the ESD.
 
 @fig-prop shows the total counts as well as proportion of observations that terminated as frozen conflicts for each corresponding treatment category: external support to only the government, external support to only the rebels, external support to both, and no external support received by either side. In general, a higher proportion of civil conflicts centered on a territorial incompatibility terminate as a frozen conflict when support is either given only to the rebels or to both sides.
 
@@ -209,6 +209,10 @@ p1 + p2 + plot_layout(axis_title = "collect", guides = "collect") & xlab("Extern
 
 ### Control Variables
 
+In addition to the treatment variables I also include a set of covariates that could plausibly confound the relationship between external state support and frozen conflicts. This includes variables related to the following conflict dynamics: conflict episode duration, episode reoccurence within a conflict, and cumulative intensity. Conflicts which last longer may affect the willing of third party actors to offer support to conflict actors. Simulatenously, long-running conflicts may also be at a greater risk of becoming frozen since the protracted nature of the conflict indicates an inability for either side to achieve a one-sided victory or be willing to reach a compremise through a peace agreement. We could expect the costs to increase such that active fighting ceases; however, the underlying conflict remains unresolved and the conflict transitions to being frozen. Thus, I include the log of the duration for each episode. A similar logic may also apply to episode reoccurence. Recurring episodes can also indicate an intractable long-running conflict that may affect both external support and the likelihood for a conflict to become frozen. Therefore, I include a binary indicator variable for whether an episode is is a recurring episode within a larger conflict as identified by the UCDP. Finally,
+
+This includes three variables related to conflict dynamics: conflict episode duration, episode reoccurence within a conflict, and cumulative intensity. Conflicts which last longer may affect the willingness of third party actors to provide support to conflict actors. Either
+
 - Episode censored
 - Episode Duration log
 - Recur
@@ -225,6 +229,12 @@ Descriptive statistics split between positive and negative outcomes
 The actual model is implemented in Stan, a probabilistic programming language
 
 Using its builtin No-U-Turn sampler run for 2,000 iterations
+
+In other words, the crucial predictor for whether an intra-state conflict terminates as a frozen conflict is whether the opposition received external support by a third party state during the conflict episode
+
+
+
+. Meanwhile, external support directed to the government is fairly uninformative for the outcome.
 
 
 ```{r}
