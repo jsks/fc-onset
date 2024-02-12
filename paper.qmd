@@ -254,7 +254,7 @@ delta$group <- ifelse(sapply(ll, `[`, 2) == 1, "Government Incompatibility",
                       "Territorial Incompatibility")
 
 ggplot(delta, aes(x = value, y = variable, fill = variable)) +
-    stat_halfeye(alpha = 0.8, show.legend = F) +
+    stat_halfeye(alpha = 0.8, show.legend = F, .width = c(0.5, 0.9)) +
     geom_vline(xintercept = 0, linetype = "dashed", alpha = 0.2) +
     theme(axis.title.x = element_blank(),
           axis.title.y = element_blank()) +
@@ -278,7 +278,7 @@ ame$group <- ifelse(sapply(ll, `[`, 2) == 1, "Government Incompatibility",
                     "Territorial Incompatibility")
 
 ggplot(ame, aes(x = value, y = variable, fill = variable)) +
-    stat_eye(alpha = 0.8, show.legend = F) +
+    stat_eye(alpha = 0.8, show.legend = F, .width = c(0.5, 0.9)) +
     geom_vline(xintercept = 0, linetype = "dashed", alpha = 0.2) +
     theme(axis.title.x = element_blank()) +
     labs(x = parse(text = "bold('AME '*Delta)")) +
