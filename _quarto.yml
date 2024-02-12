@@ -6,6 +6,7 @@ bibliography: library.bib
 format:
   pdf:
     keep-tex: true
+    link-citations: true
     mainfont: TeX Gyre Pagella
     mathfont: TeX Gyre Pagella
     pdf-engine: lualatex
