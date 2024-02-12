@@ -7,10 +7,10 @@ library(tools)
 
 options(mc.cores = 1)
 
-design <- readRDS("./data/models/design.rds")
+design <- readRDS("./data/model_inputs/design.rds")
 
 input <- commandArgs(trailingOnly = T)
-default <- "data/models/data_0001.RData"
+default <- "data/model_inputs/0001.RData"
 model_data <- if (!exists("input") || length(input) == 0) default else input
 
 stopifnot(file.exists(model_data))

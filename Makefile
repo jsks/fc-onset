@@ -19,7 +19,7 @@ qmd_files  != ls ./**/*.qmd
 qmd_slides := $(wildcard slides/*.qmd)
 
 data       := data
-model_data := $(data)/models
+model_data := $(data)/model_inputs
 dataset    := $(data)/dataset
 raw        := $(data)/raw
 post       := posteriors
@@ -139,10 +139,10 @@ endif
 ###
 # Presentation slides
 slides/%.html: slides/%.qmd
-	quarto render $< --to revealjs
+	quarto render $< --to revealjs $(QUARTO_OPTS)
 
 slides/%.pdf: slides/%.qmd
-	quarto render $< --to beamer
+	quarto render $< --to beamer $(QUARTO_OPTS)
 
 slides: $(qmd_slides:slides/%.qmd=slides/%.html) ## Generate presentation slides
 

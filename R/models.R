@@ -3,7 +3,7 @@
 library(dplyr)
 library(fc.utils)
 
-dir.create("data/models", showWarnings = F)
+dir.create("data/model_inputs", showWarnings = F)
 df <- readRDS("./data/merged_data.rds") |> ungroup()
 
 ###
@@ -11,14 +11,14 @@ df <- readRDS("./data/merged_data.rds") |> ungroup()
 treatments <- c("bin", "bin_5y", "prop")
 outcomes <- c("frozen", "strict_frozen")
 units <- c("all", "cumulative_intensity")
-censored <- c("no_censored", "no_episode_censored", "with_censored")
+censored <- c("with_censored", "no_censored", "no_episode_censored")
 
 design <- expand.grid("outcome" = outcomes, "treatment" = treatments,
                       "episodes" = units, "censored" = censored) |>
     mutate(id = sprintf("%04d", row_number()))
 
 # Save the design matrix
-saveRDS(design, "./data/models/design.rds")
+saveRDS(design, "./data/model_inputs/design.rds")
 
 for (row in 1:nrow(design)) {
     info("Model %s", design[row, "id"])
@@ -31,20 +31,21 @@ for (row in 1:nrow(design)) {
 
     # Filter out censored observations if necessary, ie conflicts
     # beginning before 1975
-    if (design[row, "censored"] == "no_censored") {
+    if (design[row, "censored"] == "no_censored")
         sub.df <- filter(sub.df, censored == 0)
-    } else if (design[row, "censored"] == "no_episode_censored") {
+    else if (design[row, "censored"] == "no_episode_censored")
         sub.df <- filter(sub.df, episode_censored == 0)
-    }
 
     # Select control variables - this is mostly static across models
     X <- select(sub.df, episode_censored, episode_duration, recur, cumulative_intensity,
                 incompatibility, cold_war, ongoing_intrastate, ongoing_interstate)
 
     # If we've dropped censored episodes, no need for binary control
-    # var
+    # var similar for cumulative intensity episodes
     if (design[row, "censored"] != "with_censored")
         X <- select(X, -episode_censored)
+    else if (design[row, "episodes"] == "cumulative_intensity")
+        X <- select(X, -cumulative_intensity)
 
     X <- mutate(X, episode_duration = log(episode_duration) |> scale()) |>
         data.matrix()
@@ -62,6 +63,6 @@ for (row in 1:nrow(design)) {
     # Set the outcome variable
     y <- sub.df[[design[row, "outcome"]]]
 
-    f <- sprintf("./data/models/data_%s.RData", design[row, "id"])
+    f <- sprintf("./data/model_inputs/%s.RData", design[row, "id"])
     save(sub.df, cases, treatments, X, y, file = f)
 }
