@@ -86,7 +86,7 @@ For $\delta_k$ and $\gamma$ I use hierarchical priors that allow for varying eff
 
 [^country-intercepts]: The risk for overfitting is especially high for the country-specific intercepts since the number of observations per country is relatively small with the median country only experiencing two episodes within the time period under study.
 
-Due to the non-linear nature of a probit regression model, in order to interpret the estimated association between the treatments and outcome, the target empirical estimands are the group-specific average marginal effects, *i.e.* the changes in the conditional expectation of the outcome variable given the various treatment states versus the baseline control averaged over the relevant subgroup sample. Let $\theta$ denote the vector of all unknown parameters in the regression model, then the average marginal effect (AME) for the $j^{th}$ treatment state represented by vector $w_j$ for subsample $k$ can be approximated using $m = 1, 2, \ldots, M$ posterior draws from $\theta$ such that
+Due to the non-linear nature of a probit regression model, in order to interpret the estimated association between the treatments and outcome, the target empirical estimands are the group-specific average marginal effects, *i.e.* the changes in the conditional expectation of the outcome variable given the various treatment states versus the baseline control averaged over the relevant subgroup sample. Let $\theta$ denote the vector of all unknown parameters in the regression model, then the average marginal effect (AME) for the $j^{th}$ treatment state represented by vector $w_j$ for subsample $k$ can be approximated using $m = 1, 2, \ldots, M$ posterior draws from $p(\theta | y, X, T)$ such that
 
 \begin{align*}
 \text{AME}_{jk}^{(m)} = \frac{1}{N_k} \sum_{i \in S_k} P\left(y_i = 1 | T = w_j, X_i, \theta^{(m)}\right) - P\left(y_i = 1 | T = 0_{D}, X_i, \theta^{(m)}\right)
@@ -169,7 +169,7 @@ Compared to the only other extant coding of frozen conflicts, the Frozen Conflic
 
 ### Treatments
 
-The primary independent variables in the model are two binary treatment variables measuring respectively whether external support was provided at least once to either the rebel side or the government side at any time during a civil conflict episode by a third party state actor, as well as the interaction in order to account for a potential differential effect when both sides receive support. Data on external state support was drawn from the UCDP External Support Dataset (ESD) [@meier_external_2023] covering the period from 1975 to 2017 and included both fungible and non-fungible support across all support categories coded by the ESD.
+The primary independent variables in the model are two binary treatment variables measuring respectively whether external support was provided at least once to either the rebel side or the government side at any time during a civil conflict episode by a third party state actor, as well as the interaction in order to account for a potential differential effect when both sides receive support. Data on external state support was drawn from the UCDP External Support Dataset (ESD) [@meier_external_2023] covering the period from 1975 to 2017 and included both fungible and non-fungible support across all support categories coded by the ESD. As detailed in the model specification, I allow the effect parameters to vary according to whether the underlying incompatibility concerns control of the government or territory resulting in two sets of treatment effects.
 
 @fig-prop shows the total counts as well as proportion of observations that terminated as frozen conflicts for each corresponding treatment category: external support to only the government, external support to only the rebels, external support to both, and no external support received by either side. In general, a higher proportion of civil conflicts centered on a territorial incompatibility terminate as a frozen conflict when support is either given only to the rebels or to both sides.
 
@@ -209,21 +209,15 @@ p1 + p2 + plot_layout(axis_title = "collect", guides = "collect") & xlab("Extern
 
 ### Control Variables
 
-In addition to the treatment variables I also include a set of covariates that could plausibly confound the relationship between external state support and frozen conflicts. This includes variables related to the following conflict dynamics: conflict episode duration, episode reoccurence within a conflict, and cumulative intensity. Conflicts which last longer may affect the willing of third party actors to offer support to conflict actors. Simulatenously, long-running conflicts may also be at a greater risk of becoming frozen since the protracted nature of the conflict indicates an inability for either side to achieve a one-sided victory or be willing to reach a compremise through a peace agreement. We could expect the costs to increase such that active fighting ceases; however, the underlying conflict remains unresolved and the conflict transitions to being frozen. Thus, I include the log of the duration for each episode. A similar logic may also apply to episode reoccurence. Recurring episodes can also indicate an intractable long-running conflict that may affect both external support and the likelihood for a conflict to become frozen. Therefore, I include a binary indicator variable for whether an episode is is a recurring episode within a larger conflict as identified by the UCDP. Finally,
+In addition to the treatment variables I also include a set of covariates that could plausibly confound the relationship between external state support and frozen conflicts. This includes variables related to  conflict dynamics, specifically: conflict episode duration, episode recurrence within a conflict, and cumulative intensity. Conflicts which last longer may affect the willingness of third party actors to offer support to belligerents. Simultaneously, long-running conflicts may also be at a greater risk of becoming frozen since the protracted nature of the conflict indicates an inability for either side to achieve a one-sided victory or be willing to reach a compromise through a peace agreement. We could expect the costs to increase such that active fighting ceases; however, the underlying conflict remains unresolved and the conflict transitions to being frozen. Thus, I include the number of years for which each episodes lasts until termination transformed with the natural logarithm function in order to reflect the diminishing impact of each one unit increase. A similar logic may also apply to episode recurrence. Recurring episodes can also indicate an intractable long-running conflict that may affect both external support and the likelihood for a conflict to become frozen. Therefore, I include a binary indicator variable for whether an episode is a recurring episode within a larger conflict as identified by the UCDP. Finally, I also include a binary indicator for whether the cumulative number of battle related deaths has exceeded 1,000 since onset. High intensity conflicts would be indicative of a greater relative strength for the opposition and may be more likely to attract outside intervention both because of the potential destabilizing effects to international/regional security as well as the greater opportunity for third party state rivals to secure a favourable post-war outcome. Furthermore, a stronger opposition may also raise the probability that the conflict becomes frozen since the incumbent government may be less likely to win an outright victory.
 
-This includes three variables related to conflict dynamics: conflict episode duration, episode reoccurence within a conflict, and cumulative intensity. Conflicts which last longer may affect the willingness of third party actors to provide support to conflict actors. Either
+In complement to the partially pooled varying treatment effects, I also include a binary indicator for whether the conflict incompatibility concerns territory in order to account for a potential differing baseline probability for termination as a frozen conflict and the possibility that the conflict incompatibility affects the likelihood of external support. Further, I include variables to control for the Cold War and ongoing inter/intra-state conflicts within the host country. The former is a binary indicator for whether the termination year falls before 1989 to capture temporal dynamics related to the propensity for different types of conflict terminations. For example, international norms concerning external intervention in civil conflicts may be shaped in part by the state of the international system influencing both the decision by third party actors to intervene in a civil conflict and the types of conflict terminations that external interveners seek [@howard2017civil]. The latter are binary indicators as well measuring whether an interstate or intrastate conflict occurred at any time during the conflict episode. Third party states involved in one conflict may be more likely to also intervene in another ongoing conflict within the same country. Furthermore, multiple ongoing conflicts could also indicate a weakened incumbent government forced to face multiple opponents, which may in turn affect the probability that a conflict freezes. Lastly, I include a binary variable for whether a conflict is left censored, *i.e.*, that the onset of the episode occurred before the coding start for the dataset, since data on external support from the ESD is only available from 1975 until 2017.[^robust_censor]
 
-- Episode censored
-- Episode Duration log
-- Recur
-- Cumulative Intensity
-- Incompatibility
-- Cold War
-- Ongoing intra/interstate conflict
+[^robust_censor]: I also run multiple robustness checks in the appendix where I alternatively drop episodes with an episode onset year before the coding start for the dataset and/or recurrent episodes within conflicts that also began prior to 1975.
 
-Descriptive statistics split between positive and negative outcomes
+## Results
 
-### Results
+@fig-delta shows the posterior densities for the three treatment parameters varied by conflict incompatibility.
 
 
 The actual model is implemented in Stan, a probabilistic programming language
@@ -238,7 +232,13 @@ In other words, the crucial predictor for whether an intra-state conflict termin
 
 
 ```{r}
-#| fig.cap: Posterior estimates for \delta from a single variate probit model
+#| label: fig-delta
+#| fig-cap: |
+#|     Posterior densities as well as 50% and 90% credible intervals
+#|     for the treatment parameters in the hierarchical probit model
+#|     predicting whether a civil conflict episodes terminates as a
+#|     frozen conflict. Point estimates are the posterior medians.
+
 main_model <- filter(design, outcome == "frozen", treatment == "bin", episodes == "all",
                      censored == "with_censored") |> pull(id)
 
@@ -267,7 +267,13 @@ ggplot(delta, aes(x = value, y = variable, fill = variable)) +
 
 
 ```{r}
-#| fig.cap: Average marginal effects for the three treatment conditions on the predicted probability of a frozen conflict onset.[^ame]
+#| label: fig-ame
+#| fig-cap: |
+#|     Posterior densities for the average marginal effects for the
+#|     three treatment conditions on the predicted probability of a
+#|     frozen conflict onset with 50% and 90% credible
+#|     intervals. Point estimates are the posterior medians.
+
 ame <- fit$draws("ame", format = "df") |>
     select(matches("ame\\[[124]")) |>
     pivot_longer(everything(), names_to = "variable")
@@ -280,15 +286,16 @@ ame$group <- ifelse(sapply(ll, `[`, 2) == 1, "Government Incompatibility",
 ggplot(ame, aes(x = value, y = variable, fill = variable)) +
     stat_eye(alpha = 0.8, show.legend = F, .width = c(0.5, 0.9)) +
     geom_vline(xintercept = 0, linetype = "dashed", alpha = 0.2) +
-    theme(axis.title.x = element_blank()) +
-    labs(x = parse(text = "bold('AME '*Delta)")) +
-    scale_y_discrete(labels = c("ame[1]" = "Ext. Sup. Gov Only",
-                                "ame[2]" = "Ext. Sup. Rebel Only",
-                                "ame[3]" = "Ext. Sup. to Both")) +
+    labs(x = parse(text = "bold('AME '*Delta)"),
+         y = "External Support") +
+    scale_y_discrete(labels = c("ame[1]" = "Gov. Only",
+                                "ame[2]" = "Rebel Only",
+                                "ame[4]" = "Both")) +
     coord_flip() +
     facet_grid(. ~ group) +
     scale_fill_solarized()
 ```
+
 
 
 # References
