@@ -86,11 +86,13 @@ For $\delta_k$ and $\gamma$ I use hierarchical priors that allow for varying eff
 
 [^country-intercepts]: The risk for overfitting is especially high for the country-specific intercepts since the number of observations per country is relatively small with the median country only experiencing two episodes within the time period under study.
 
-Due to the non-linear nature of a probit regression model, in order to interpret the estimated association between the treatments and outcome, the target empirical estimands are the group-specific average marginal effects, *i.e.* the changes in the conditional expectation of the outcome variable given the various treatment states versus the baseline control averaged over the relevant subgroup sample. Let $\theta$ denote the vector of all unknown parameters in the regression model, then the average marginal effect (AME) for the $j^{th}$ treatment state represented by vector $w_j$ for subsample $k$ can be approximated using $m = 1, 2, \ldots, M$ posterior draws from $p(\theta | y, X, T)$ such that
+Due to the non-linear nature of a probit regression model, in order to interpret the estimated association between the treatments and outcome, the target empirical estimands are the group-specific average marginal effects, *i.e.* the changes in the conditional expectation of the outcome variable given the various treatment states versus the baseline control averaged over the relevant subgroup sample.[^mem] Let $\theta$ denote the vector of all unknown parameters in the regression model, then the average marginal effect (AME) for the $j^{th}$ treatment state represented by vector $w_j$ for subsample $k$ can be approximated using $m = 1, 2, \ldots, M$ posterior draws from $p(\theta | y, X, T)$ such that
 
 \begin{align*}
 \text{AME}_{jk}^{(m)} = \frac{1}{N_k} \sum_{i \in S_k} P\left(y_i = 1 | T = w_j, X_i, \theta^{(m)}\right) - P\left(y_i = 1 | T = 0_{D}, X_i, \theta^{(m)}\right)
 \end{align*}
+
+[^mem]: An alternative approach would be to calculate the differences in the predicted probability for each treatment effect while holding the remaining covariates constant at their mean and/or mode. However, this would not necessarily be representative of the "typical case" in the population [@hanmer_behind_2013]. Although there is a minimal amount of non-stochastic missingness in the data I employ due to differing coding coverage between datasets resulting in dropped conflict episodes, I would argue that the sample averaged marginal effects are still more representative of each treatment would affect the typical civil conflict.
 
 ## Data
 
@@ -211,68 +213,30 @@ p1 + p2 + plot_layout(axis_title = "collect", guides = "collect") & xlab("Extern
 
 In addition to the treatment variables I also include a set of covariates that could plausibly confound the relationship between external state support and frozen conflicts. This includes variables related to  conflict dynamics, specifically: conflict episode duration, episode recurrence within a conflict, and cumulative intensity. Conflicts which last longer may affect the willingness of third party actors to offer support to belligerents. Simultaneously, long-running conflicts may also be at a greater risk of becoming frozen since the protracted nature of the conflict indicates an inability for either side to achieve a one-sided victory or be willing to reach a compromise through a peace agreement. We could expect the costs to increase such that active fighting ceases; however, the underlying conflict remains unresolved and the conflict transitions to being frozen. Thus, I include the number of years for which each episodes lasts until termination transformed with the natural logarithm function in order to reflect the diminishing impact of each one unit increase. A similar logic may also apply to episode recurrence. Recurring episodes can also indicate an intractable long-running conflict that may affect both external support and the likelihood for a conflict to become frozen. Therefore, I include a binary indicator variable for whether an episode is a recurring episode within a larger conflict as identified by the UCDP. Finally, I also include a binary indicator for whether the cumulative number of battle related deaths has exceeded 1,000 since onset. High intensity conflicts would be indicative of a greater relative strength for the opposition and may be more likely to attract outside intervention both because of the potential destabilizing effects to international/regional security as well as the greater opportunity for third party state rivals to secure a favourable post-war outcome. Furthermore, a stronger opposition may also raise the probability that the conflict becomes frozen since the incumbent government may be less likely to win an outright victory.
 
-In complement to the partially pooled varying treatment effects, I also include a binary indicator for whether the conflict incompatibility concerns territory in order to account for a potential differing baseline probability for termination as a frozen conflict and the possibility that the conflict incompatibility affects the likelihood of external support. Further, I include variables to control for the Cold War and ongoing inter/intra-state conflicts within the host country. The former is a binary indicator for whether the termination year falls before 1989 to capture temporal dynamics related to the propensity for different types of conflict terminations. For example, international norms concerning external intervention in civil conflicts may be shaped in part by the state of the international system influencing both the decision by third party actors to intervene in a civil conflict and the types of conflict terminations that external interveners seek [@howard2017civil]. The latter are binary indicators as well measuring whether an interstate or intrastate conflict occurred at any time during the conflict episode. Third party states involved in one conflict may be more likely to also intervene in another ongoing conflict within the same country. Furthermore, multiple ongoing conflicts could also indicate a weakened incumbent government forced to face multiple opponents, which may in turn affect the probability that a conflict freezes. Lastly, I include a binary variable for whether a conflict is left censored, *i.e.*, that the onset of the episode occurred before the coding start for the dataset, since data on external support from the ESD is only available from 1975 until 2017.[^robust_censor]
+In complement to the partially pooled varying treatment effects, I also include a binary indicator for whether the conflict incompatibility concerns territory in order to account for a potential differing baseline probability for termination as a frozen conflict and the possibility that the conflict incompatibility affects the likelihood of external support. Further, I include variables to control for the Cold War and ongoing inter/intra-state conflicts within the host country. The former is a binary indicator for whether the termination year falls before 1989 to capture temporal dynamics related to the propensity for different types of conflict terminations. For example, international norms concerning external intervention in civil conflicts may be shaped in part by the state of the international system influencing both the decision by third party actors to intervene in a civil conflict and the types of conflict terminations that external interveners seek [@howard_how_2017]. The latter are binary indicators as well measuring whether an interstate or intrastate conflict occurred at any time during the conflict episode. Third party states involved in one conflict may be more likely to also intervene in another ongoing conflict within the same country. Furthermore, multiple ongoing conflicts could also indicate a weakened incumbent government forced to face multiple opponents, which may in turn affect the probability that a conflict freezes. Lastly, I include a binary variable for whether a conflict is left censored, *i.e.*, that the onset of the episode occurred before the coding start for the dataset, since data on external support from the ESD is only available from 1975 until 2017.[^robust_censor]
 
 [^robust_censor]: I also run multiple robustness checks in the appendix where I alternatively drop episodes with an episode onset year before the coding start for the dataset and/or recurrent episodes within conflicts that also began prior to 1975.
 
 ## Results
 
-@fig-delta shows the posterior densities for the three treatment parameters varied by conflict incompatibility.
+@fig-ame plots the average marginal effects from estimating the hierarchical probit model predicting frozen civil conflicts given the observed data on directed external support by third party states and the set of control variables detailed in the data section.[^stan] The average marginal effects capture the change in the predicted probability for the outcome given the three treatment conditions --- external support given only to the government, external support given only to the rebel(s), and external support given to both sides --- versus the baseline condition of no external support given to any conflict actor. The plots also depict the 50% and 90% credible intervals formed from the corresponding quantiles of the posterior draws with the point estimates representing the posterior medians.
 
-
-The actual model is implemented in Stan, a probabilistic programming language
-
-Using its builtin No-U-Turn sampler run for 2,000 iterations
-
-In other words, the crucial predictor for whether an intra-state conflict terminates as a frozen conflict is whether the opposition received external support by a third party state during the conflict episode
-
-
-
-. Meanwhile, external support directed to the government is fairly uninformative for the outcome.
-
+[^stan]: The model is implemented in Stan, a probabilistic programming language, and estimated using Stan's No-U-Turn sampler via the `CmdStanR` interface [@stan_development_team_stan_2024; @gabry_cmdstanr_2024]. It was run with 4 parallel chains at 2,000 iterations each with a warmup of 1,000 with convergence assessed using the standard Stan diagnostics. All pre/post-processing was done using R `r sprintf("%s.%s", R.version$major, R.version$minor)` [@r_core_team_r_2023].
 
 ```{r}
-#| label: fig-delta
+#| label: fig-ame
+#| fig-height: 3
 #| fig-cap: |
-#|     Posterior densities as well as 50% and 90% credible intervals
-#|     for the treatment parameters in the hierarchical probit model
-#|     predicting whether a civil conflict episodes terminates as a
-#|     frozen conflict. Point estimates are the posterior medians.
+#|     Posterior densities for the average marginal effects for the
+#|     three treatment conditions varying by incompatibility type on
+#|     the predicted probability of a
+#|     frozen conflict onset versus the baseline with 50% and 90%
+#|     credible intervals. Point estimates are the posterior medians.
 
 main_model <- filter(design, outcome == "frozen", treatment == "bin", episodes == "all",
                      censored == "with_censored") |> pull(id)
 
 fit <- sprintf("posteriors/%s/fit.rds", main_model) |>  readRDS()
-
-delta <- fit$draws("delta", format = "df") |>
-    select(matches("delta")) |>
-    pivot_longer(everything(), names_to = "variable")
-
-ll <- extract_digits(delta$variable)
-delta$variable <- sprintf("delta[%s]", sapply(ll, `[`, 1))
-delta$group <- ifelse(sapply(ll, `[`, 2) == 1, "Government Incompatibility",
-                      "Territorial Incompatibility")
-
-ggplot(delta, aes(x = value, y = variable, fill = variable)) +
-    stat_halfeye(alpha = 0.8, show.legend = F, .width = c(0.5, 0.9)) +
-    geom_vline(xintercept = 0, linetype = "dashed", alpha = 0.2) +
-    theme(axis.title.x = element_blank(),
-          axis.title.y = element_blank()) +
-    scale_y_discrete(labels = c("delta[1]" = "Ext. Sup. to Gov",
-                                "delta[2]" = "Ext. Sup. to Rebel",
-                                "delta[3]" = "Interaction")) +
-    facet_grid(. ~ group) +
-    scale_fill_solarized()
-```
-
-
-```{r}
-#| label: fig-ame
-#| fig-cap: |
-#|     Posterior densities for the average marginal effects for the
-#|     three treatment conditions on the predicted probability of a
-#|     frozen conflict onset with 50% and 90% credible
-#|     intervals. Point estimates are the posterior medians.
 
 ame <- fit$draws("ame", format = "df") |>
     select(matches("ame\\[[124]")) |>
@@ -282,6 +246,9 @@ ll <- extract_digits(ame$variable)
 ame$variable <- sprintf("ame[%s]", sapply(ll, `[`, 1))
 ame$group <- ifelse(sapply(ll, `[`, 2) == 1, "Government Incompatibility",
                     "Territorial Incompatibility")
+
+ame2 <- filter(ame, variable == "ame[2]", group == "Territorial Incompatibility")
+ame4 <- filter(ame, variable == "ame[4]", group == "Territorial Incompatibility")
 
 ggplot(ame, aes(x = value, y = variable, fill = variable)) +
     stat_eye(alpha = 0.8, show.legend = F, .width = c(0.5, 0.9)) +
@@ -296,7 +263,44 @@ ggplot(ame, aes(x = value, y = variable, fill = variable)) +
     scale_fill_solarized()
 ```
 
+From the results, it is clear that only in instances of territorial civil conflict where external support was provided to either both sides or to only the rebel(s) is there a substantive effect on the probability of an episode becoming a frozen conflict. In both cases, the effect is positive with respective probabilities `r mean(ame4$value > 0) |> signif(2)` and `r mean(ame2$value > 0) |> signif(2)`, and on average, each condition is associated with an approximately `r mean(ame2$value) |> signif(2)` increase in the predicted probability for a frozen conflict across the sample of territorial civil conflict episodes, albeit with a high degree of posterior uncertainty, $\text{CI}_{90\%}: [`r quantile(ame4$value, 0.05) |> signif(2)`, `r quantile(ame4$value, 0.95) |> signif(2)`]$ and $\text{CI}_{90\%}: [`r quantile(ame2$value, 0.05) |> signif(2)`, `r quantile(ame2$value, 0.95) |> signif(2)`]$.
 
+```{r}
+#| label: fig-delta
+#| fig-height: 3
+#| fig-cap: |
+#|     Posterior densities as well as 50% and 90% credible intervals
+#|     for the treatment parameters varying by incompatibility type in
+#|     the hierarchical probit model predicting whether a civil
+#|     conflict episodes terminates as a frozen conflict. Point
+#|     estimates are the posterior medians.
+
+delta <- fit$draws("delta", format = "df") |>
+    select(matches("delta")) |>
+    pivot_longer(everything(), names_to = "variable")
+
+ll <- extract_digits(delta$variable)
+delta$variable <- sprintf("delta[%s]", sapply(ll, `[`, 1))
+delta$group <- ifelse(sapply(ll, `[`, 2) == 1, "Government Incompatibility",
+                      "Territorial Incompatibility")
+
+delta2 <- filter(delta, variable == "delta[2]", group == "Territorial Incompatibility")
+
+ggplot(delta, aes(x = value, y = variable, fill = variable)) +
+    stat_halfeye(alpha = 0.8, show.legend = F, .width = c(0.5, 0.9)) +
+    geom_vline(xintercept = 0, linetype = "dashed", alpha = 0.2) +
+    theme(axis.title.x = element_blank(),
+          axis.title.y = element_blank()) +
+    scale_y_discrete(labels = c("delta[1]" = "Ext. Sup. to Gov",
+                                "delta[2]" = "Ext. Sup. to Rebel",
+                                "delta[3]" = "Interaction")) +
+    facet_grid(. ~ group) +
+    scale_fill_solarized()
+```
+
+From the parameter plots in @fig-delta, the main driver for this substantive results is the estimate for external support given to the rebel(s) in the context of a territorial civil conflict. In this case, the probability for the treatment parameter being greater than zero is `r mean(delta2$value > 0) |> signif(2)` with $\text{CI}_{90\%}: [`r quantile(delta2$value, 0.05) |> signif(2)`, `r quantile(delta2$value, 0.95) |> signif(2)`]$. Taken together, these results indicate that the crucial predictor for whether an intra-state conflict terminates as a frozen conflict is whether the opposition received external support by a third party state during a conflict episode centered around a territorial incompatibility. Meanwhile, external support directed to the government is fairly uninformative as are all treatment effects under the condition of a government incompatibility. However, the posterior uncertainty remains high, which limits the degree to which the treatment effect can be substantively interpreted.
+
+\newpage
 
 # References
 
