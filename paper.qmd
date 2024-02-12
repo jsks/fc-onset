@@ -2,7 +2,7 @@
 title: "Frozen Civil Conflicts"
 subtitle: "The Role of External State Support"
 author: J.L.A. Krusell
-date: "`r Sys.Date()`"
+date: today
 linestretch: 1.25
 bibliography: library.bib
 format: pdf
@@ -55,7 +55,7 @@ options(knitr.kable.NA = ".", knitr.kable.format = "latex",
 
 theme_set(theme_tufte(base_family = "TeX Gyre Pagella", base_size = 10))
 
-design <- readRDS("./data/models/design.rds")
+design <- readRDS("./data/model_inputs/design.rds")
 ```
 
 # Introduction
@@ -242,7 +242,7 @@ In other words, the crucial predictor for whether an intra-state conflict termin
 main_model <- filter(design, outcome == "frozen", treatment == "bin", episodes == "all",
                      censored == "with_censored") |> pull(id)
 
-fit <- sprintf("posteriors/data_%s/fit.rds", main_model) |>  readRDS()
+fit <- sprintf("posteriors/%s/fit.rds", main_model) |>  readRDS()
 
 delta <- fit$draws("delta", format = "df") |>
     select(matches("delta")) |>
