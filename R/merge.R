@@ -85,7 +85,10 @@ state_sup <- filter(esd, actor_nonstate == 0) |>
 
 full_ep.df <- full_join(rebel_sup, state_sup, by = c("conflict_id", "year"),
                     suffix = c("_rebel", "_state")) |>
-    right_join(reduced, by = c("conflict_id", "year"))
+    right_join(reduced, by = c("conflict_id", "year")) |>
+    group_by(conflictep_id) |>
+    filter(all(!is.na(ext_sup_s_state))) |>
+    ungroup()
 
 ###
 # NMC - CINC data
