@@ -11,11 +11,16 @@ library(tidyr)
 frozen <- readRDS("./data/raw/frozen_conflicts.rds") |>
     select(conflict_id, year, duration, frozen)
 
+# There is a bug in the UCDP termination dataset where 2020
+# observations for two conflicts have been erroneously given a
+# recycled conflictep_id (conflict_id 265 and 353). Our data doesn't
+# extend beyond 2017 anyways, so just drop those censored episodes.
 term <- read_excel("./data/raw/ucdp-term-acd-3-2021.xlsx") |>
-    filter(type_of_conflict %in% 3:4) |>
+    filter(type_of_conflict %in% 3:4, !(conflict_id %in% c(265, 353) & year == 2020)) |>
     select(conflict_id, conflictep_id, year, gwno_a = gwno_loc, side_a, side_b,
            intensity_level, incompatibility, recur) |>
     group_by(conflictep_id) |>
+    filter(max(year) <= 2017) |>
     mutate(episode_censored = ifelse(min(year) < 1975, 1, 0),
            recur = max(recur),
            gwno_a = as.numeric(gwno_a)) |>
@@ -49,7 +54,7 @@ ongoing <- filter(ucdp, intensity_level == 2) |>
 # Cumulative intensity per conflict
 intensity <- select(ucdp, conflict_id, year, cumulative_intensity)
 
-ep <- filter(term, between(year, 1975, 2019)) |>
+ep <- filter(term, year >= 1975) |>
     full_join(frozen, by = c("conflict_id", "year")) |>
     left_join(intensity, by = c("conflict_id", "year")) |>
     left_join(ongoing, by = c("gwno_a" = "gwno", "year")) |>
