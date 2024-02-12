@@ -31,7 +31,7 @@ schemas     := $(wildcard $(model_data)/*.RData)
 model_fits  := $(schemas:$(model_data)/%.RData=$(post)/%/fit.rds)
 
 all: $(manuscript:%.qmd=%.pdf) ## Default rule generates manuscript pdf
-.PHONY: bootstrap clean dataset help models todo preview wc
+.PHONY: bootstrap clean dataset help models todo preview release wc
 .SECONDARY:
 
 ###
@@ -59,6 +59,10 @@ todo: ## List TODO comments in project files tracked by git
 
 preview: ## Auto-rebuild html manuscript
 	quarto preview $(manuscript) --to html
+
+release: QUARTO_OPTS += --cache-refresh
+release: QUARTO_OPTS += -o Frozen_Conflict-$(shell date +'%F')-$(shell git rev-parse --short HEAD).pdf
+release: paper.pdf ## Release build for manuscript pdf
 
 wc: paper.qmd ## Rough estimate of word count for manuscript
 	@# We could use `quarto render --no-execute` instead of `sed`,
@@ -153,10 +157,10 @@ $(foreach ext, pdf docx html, $(manuscript:%.qmd=%.$(ext))): \
 ###
 # Implicit rules for pdf and html generation
 %.docx: %.qmd
-	quarto render $< --to docx
+	quarto render $< --to docx $(QUARTO_OPTS)
 
 %.html: %.qmd
-	quarto render $< --to html
+	quarto render $< --to html $(QUARTO_OPTS)
 
 %.pdf: %.qmd
-	quarto render $< --to pdf
+	quarto render $< --to pdf $(QUARTO_OPTS)
