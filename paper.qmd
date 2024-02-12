@@ -269,7 +269,7 @@ ggplot(delta, aes(x = value, y = variable, fill = variable)) +
 ```{r}
 #| fig.cap: Average marginal effects for the three treatment conditions on the predicted probability of a frozen conflict onset.[^ame]
 ame <- fit$draws("ame", format = "df") |>
-    select(matches("ame")) |>
+    select(matches("ame\\[[124]")) |>
     pivot_longer(everything(), names_to = "variable")
 
 ll <- extract_digits(ame$variable)
@@ -339,6 +339,7 @@ Different combinations of the following...
 
 
 ```{R}
+
 models <- list.dirs("posteriors", recursive = F)
 stopifnot(length(models) != 0)
 
@@ -347,7 +348,8 @@ names(fits) <- basename(models)
 
 model_ames <- lapply(names(fits), function(model) {
     fits[[model]]$summary("ame", pzero, posterior::quantile2, median) |>
-                    mutate(id = sub("data_", "", model))
+                    mutate(id = sub("data_", "", model)) |>
+                    filter(grepl("ame\\[[124]", variable))
 }) |>
     bind_rows() |>
     left_join(design, by = "id")
@@ -358,7 +360,7 @@ ame_keys <- sprintf("ame[%s]", sapply(ll, `[`, 1))
 
 model_ames$variable <- case_when(ame_keys == "ame[1]" ~ "Ext. Sup. Gov Only",
                                  ame_keys == "ame[2]" ~ "Ext. Sup. Rebel Only",
-                                 ame_keys == "ame[3]" ~ "Ext. Sup. to Both")
+                                 ame_keys == "ame[4]" ~ "Ext. Sup. to Both")
 model_ames$group <- ifelse(sapply(ll, `[`, 2) == 1, "Government Incompatibility",
                            "Territorial Incompatibility")
 
