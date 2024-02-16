@@ -62,6 +62,16 @@ design <- readRDS("./data/model_inputs/design.rds")
 
 **Research question: to what extent does external state support to conflict actors affect the probability that a civil conflict becomes frozen?**
 
+# Literature Review
+
+## External Support and Civil Conflict
+
+In contrast to the paucity of literature concerning frozen conflicts, there exists numerous studies examining the links between third party involvement on both the duration and outcome of civil conflicts [@shelton2013we]. Previous work has argued that external interventions by third party states increase the duration of civil conflicts [@regan2002third]. However, biased military interventions may be the exception and in some cases actually increase the probability of a favourable outcome for the supported conflict actor [@balch2008third]. Although others have put forth empirical arguments that this only holds in the case of rebel biased interventions. More specifically, third party military interventions may decrease the duration of a conflict and increase the probability of either negotiated settlement or rebel military victory in part because interveners may only involve themselves in ongoing civil conflicts in favor of the government when the government is facing a relatively strong rebel group with a high level of military capabilities [@gent2008going]. The probability for a government military victory would on average be lower in these situations, thereby masking the effects of a government biased intervention. Indeed, when accounting for the differential effect of intervention given the strength of the opposition, there have been empirical claims that government biased interventions decrease the probability of a rebel victory and increase the probability of a government military victory [@sullivan2015conditional].
+
+Additional work has sought to disaggregate the types of external interventions that third party states may provide to conflict actors. This includes looking beyond military interventions with some scholars arguing that military aid and other forms of support, excluding direct military involvement, increase the likelihood of either a rebel victory or negotiated settlement [@jones2017altering]. Others argue that fungible support, *i.e.* financing and weapons, has an opposite impact by actually extending the duration of conflicts [@sawyer2017role].
+
+
+
 
 # Empirics
 
@@ -300,6 +310,10 @@ ggplot(delta, aes(x = value, y = variable, fill = variable)) +
 
 From the parameter plots in @fig-delta, the main driver for this substantive results is the estimate for external support given to the rebel(s) in the context of a territorial civil conflict. In this case, the probability for the treatment parameter being greater than zero is `r mean(delta2$value > 0) |> signif(2)` with $\text{CI}_{90\%}: [`r quantile(delta2$value, 0.05) |> signif(2)`, `r quantile(delta2$value, 0.95) |> signif(2)`]$. Taken together, these results indicate that the crucial predictor for whether an intra-state conflict terminates as a frozen conflict is whether the opposition received external support by a third party state during a conflict episode centered around a territorial incompatibility. Meanwhile, external support directed to the government is fairly uninformative as are all treatment effects under the condition of a government incompatibility. However, the posterior uncertainty remains high, which limits the degree to which the treatment effect can be substantively interpreted.
 
+# Conclusion
+
+The measurement of frozen conflicts provided herewithin is crude. Future work should focus on refining this measurement.
+
 \newpage
 
 # References
@@ -322,6 +336,8 @@ filter(dataset, frozen == 1) |>
     kable(longtable = T)
 ```
 
+\newpage
+
 ## Simulation Based Calibration
 
 ```{R}
@@ -337,6 +353,8 @@ for (i in seq_along(sbc)) {
     sbc[[i]] |> hist(main = "", xlab = TeX(label), ylab = "")
 }
 ```
+
+\newpage
 
 ## Robustness Checks
 
