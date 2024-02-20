@@ -60,15 +60,43 @@ design <- readRDS("./data/model_inputs/design.rds")
 
 # Introduction
 
-**Research question: to what extent does external state support to conflict actors affect the probability that a civil conflict becomes frozen?**
+Frozen conflicts are among some of the most pernicious, difficult to
+resolve conflicts. Surprisingly, little scholarly attention has been
+paid to the factors influencing their emergence. This paper addresses
+
+Frozen conflicts -> pernicious difficult to solve conflicts; long-running costs
+
+- relatively little academic literature on why some conflicts
+
+"Why do some conflicts become frozen?"
+
+- focus on the class of intra-state frozen conflicts
+
+- wide variety of potential factors
+  -  I decide to focus on international dimensions, specifically external support
+  - Justify by saying there exists a broad literatur eon the importance of external support on ocnlfict outcomes
+
+- Skeleton for remaining article
+  - First, I provide a brief overview of prev. literature
+  - I then offer a theory of why external support may be linked to the onset of frozen civil conflicts. "In brief, etc etc"
+  - Provide empirical evidence with original coding showing that support is positively linked with prob. of frozen conflict
+    - H/o: only within the context of territorial civil conflicts
+
+- Results contribute to our understanding of frozen conflitcs and conflict outcomes more broadly
+
+frozen conflict - "a protracted state of affairs in which major hostilities have ended, but the enmity between the actors persists and re-escalation remains a permanent threat."
+
+When conflicts freeze, large-scale hostilities cease, but the underlying issue(s) remain unresolved and there remains an ever-present threat of violent re-escalation.
 
 # Literature Review
 
-## External Support and Civil Conflict
+In contrast to the paucity of literature concerning frozen conflicts, there exists numerous studies examining the links between third party involvement on both the duration and outcome of civil conflicts [@shelton_what_2013]. Previous work has argued that external interventions by third party states increase the duration of civil conflicts [@regan_third-party_2002]. However, biased military interventions may be the exception and in some cases actually increase the probability of a favourable outcome for the supported conflict actor [@balch-lindsay_third-party_2008]. Although others have put forth empirical arguments that this only holds in the case of rebel biased interventions. More specifically, third party military interventions may decrease the duration of a conflict and increase the probability of either negotiated settlement or rebel military victory in part because interveners may only involve themselves in ongoing civil conflicts in favor of the government when the government is facing a relatively strong rebel group with a high level of military capabilities [@gent_going_2008]. The probability for a government military victory would on average be lower in these situations, thereby masking the effects of a government biased intervention. Indeed, when accounting for the differential effect of intervention given the strength of the opposition, there have been empirical claims that government biased interventions decrease the probability of a rebel victory and increase the probability of a government military victory [@sullivan_conditional_2015].
 
-In contrast to the paucity of literature concerning frozen conflicts, there exists numerous studies examining the links between third party involvement on both the duration and outcome of civil conflicts [@shelton2013we]. Previous work has argued that external interventions by third party states increase the duration of civil conflicts [@regan2002third]. However, biased military interventions may be the exception and in some cases actually increase the probability of a favourable outcome for the supported conflict actor [@balch2008third]. Although others have put forth empirical arguments that this only holds in the case of rebel biased interventions. More specifically, third party military interventions may decrease the duration of a conflict and increase the probability of either negotiated settlement or rebel military victory in part because interveners may only involve themselves in ongoing civil conflicts in favor of the government when the government is facing a relatively strong rebel group with a high level of military capabilities [@gent2008going]. The probability for a government military victory would on average be lower in these situations, thereby masking the effects of a government biased intervention. Indeed, when accounting for the differential effect of intervention given the strength of the opposition, there have been empirical claims that government biased interventions decrease the probability of a rebel victory and increase the probability of a government military victory [@sullivan2015conditional].
+Additional work has sought to look at the relationships and preferences of supporting actors as well as the disaggregated types of external support. Third party states intervening or providing material support to opposing sides in a civil conflict for the purpose of balancing may increase conflict duration [@aydin_networks_2012; @anderson_competitive_2019].
 
-Additional work has sought to disaggregate the types of external interventions that third party states may provide to conflict actors. This includes looking beyond military interventions with some scholars arguing that military aid and other forms of support, excluding direct military involvement, increase the likelihood of either a rebel victory or negotiated settlement [@jones2017altering]. Others argue that fungible support, *i.e.* financing and weapons, has an opposite impact by actually extending the duration of conflicts [@sawyer2017role].
+disaggregate the types of external interventions that third party states may provide to conflict actors. This includes looking beyond military interventions with some scholars arguing that military aid and other forms of support, excluding direct military involvement, increase the likelihood of either a rebel victory or negotiated settlement [@jones_altering_2017]. Others argue that fungible support, *i.e.* financing and weapons, has an opposite impact by actually extending the duration of conflicts [@sawyer_role_2017].
+
+# Theory
 
 
 
@@ -313,6 +341,9 @@ From the parameter plots in @fig-delta, the main driver for this substantive res
 # Conclusion
 
 The measurement of frozen conflicts provided herewithin is crude. Future work should focus on refining this measurement.
+
+Potential shortcoming: what I am not doing is taking into account the preferences of external supporters and motivation for offering support. Nor am I distinguishing between different external support types.
+
 
 \newpage
 
