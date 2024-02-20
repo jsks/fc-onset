@@ -61,10 +61,13 @@ design <- readRDS("./data/model_inputs/design.rds")
 # Introduction
 
 Frozen conflicts are among some of the most pernicious, difficult to
-resolve conflicts. Surprisingly, little scholarly attention has been
-paid to the factors influencing their emergence. This paper addresses
+resolve conflicts. When conflicts freeze large-scale hostilities cease, but the underlying issue(s) remain unresolved with an ever present threat of recurrent violence. This state of unstable peace can be costly for actors as a certain degree of military preparedness needs to be maintained to secure transitory war gains lest the conflict reignites leading to an outright military defeat.
 
-Frozen conflicts -> pernicious difficult to solve conflicts; long-running costs
+
+Suprisingly, little scholarly attention has been paid to the factors influencing the emergence of frozen conflicts. Previous empirical work tends to consist of qualitative single-case studies [@klosek_frozen_2021].
+
+Surprisingly, little scholarly attention has been
+paid to the factors influencing their emergence. This paper addresses
 
 - relatively little academic literature on why some conflicts
 
