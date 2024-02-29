@@ -60,11 +60,12 @@ design <- readRDS("./data/model_inputs/design.rds")
 
 # Introduction
 
-Frozen conflicts are among some of the most pernicious, difficult to
-resolve conflicts. When conflicts freeze large-scale hostilities cease, but the underlying issue(s) remain unresolved with an ever present threat of recurrent violence. This state of unstable peace can be costly for actors as a certain degree of military preparedness needs to be maintained to secure transitory war gains lest the conflict reignites leading to an outright military defeat.
+Frozen conflicts are among some of the most pernicious, difficult to resolve conflicts. They are geographically and temporally dispersed, and although they are characterized by a cessation of large-scale hostilities, the underlying disputes remain unresolved. This puts actors into a state of uncertainty with an ever present threat of violent re-escalations and can lead to long-running accumulating costs.
+
+Surprisingly, little scholarly attention has been paid to the factors influencing the emergence of frozen conflicts [@klosek_frozen_2021].
 
 
-Suprisingly, little scholarly attention has been paid to the factors influencing the emergence of frozen conflicts. Previous empirical work tends to consist of qualitative single-case studies [@klosek_frozen_2021].
+This paper seeks to address this gap by asking why do some conflicts become frozen?
 
 Surprisingly, little scholarly attention has been
 paid to the factors influencing their emergence. This paper addresses
@@ -101,6 +102,26 @@ disaggregate the types of external interventions that third party states may pro
 
 # Theory
 
+## Defining Frozen Conflict
+
+I start with the definition of frozen conflict offered by @smetana_between_2019:
+
+> We define frozen conflict as a protracted, post-war conflict process, characterized by the absence of stable peace... [where] core issues between the opposing sides remain unresolved, the dispute is in the forefront of mutual relations, and there is a looming threat of the renewal of violence.
+
+Accompanying this definition, @smetana_between_2019 lay forth four criteria determining whether a post-conflict period qualifies as a frozen conflict. First, the conflict must be international since it is assumed that frozen conflict are a subset of international conflict featuring state or state-like actors. Second, there needs to be an initial period of active conflict followed by a cessation of large-scale violent hostilities. Isolated, sporadic incidences of violence may continue to occur; however, conflict actors are either unwilling or unable to launch major military offensives. Although not necessary, this may be characterized by the establishment of a general ceasefire and/or presence of external peacekeeping troops. Third, the core issue underlying the conflict needs to remain salient post-conflict. This entails actors maintaining their claims within a dispute. And, finally, there must be an ongoing threat of violent re-escalation. In other words, post-conflict relations should be characterized by mutual hostility and an unwillingness to abandon violence as a political strategy.
+
+These are precise criteria that expand the coverage of frozen conflicts both temporally and geographically, beyond the traditional scope of the post-Soviet separatist states that emerged in the early 1990s following the collapse of the Soviet Union. Furthermore, they hint at the dynamic nature of frozen conflicts --- far from a static condition, when a conflict freezes it may still be characterized by low levels of violence and periodic attempts at negotiations and international mediation. However, I deviate from these criteria in one crucial regard. I relax the assumption that frozen conflicts are a subset of international conflicts and assert that frozen conflicts are a subset of conflict more broadly speaking. In regards to civil conflicts, the @smetana_between_2019 criteria restrict frozen conflicts to *de facto* independent states. This precludes the possibility that non-secessionist conflicts can exhibit the same post-conflict characteristics of unstable peace that define frozen conflicts.
+
+Consider the case of the Second Libyan Civil War. In the aftermath of the overthrow of Muammar Gaddafi in 2011, central political authority fragmented and two competing governments emerged: the internationally recognized and UN sanctioned Government of National Accord (GNA) based in Tripoli and the so-called Tobruk Government comprised of the Libyan House of Representatives elected in the 2014 parliamentary elections aligned with the Libyan National Army under Khalifa Haftar. A ceasefire was signed in 2015 leaving the GNA nominally in control of Tripoli with the Tobruk government in control of the eastern portion of Libya. Intense fighting continued among other factions,
+
+[^libya_ceasefire]: https://www.reuters.com/article/us-libya-security-idUSKBN0KP0VL20150116/
+
+
+## How do frozen conflicts emerge?
+
+As an equilibrium state
+
+crucially, the expected utility of maintaining the dispute outweighs the potential gain from a peace agreement.
 
 
 
@@ -347,6 +368,12 @@ The measurement of frozen conflicts provided herewithin is crude. Future work sh
 
 Potential shortcoming: what I am not doing is taking into account the preferences of external supporters and motivation for offering support. Nor am I distinguishing between different external support types.
 
+```{R cache=F}
+output <- system("scripts/wordcount.sh paper.qmd", intern = T)
+wc <- gsub("[^\\d]", "", output, perl = T)
+```
+
+**Word Count**: `r wc`
 
 \newpage
 
