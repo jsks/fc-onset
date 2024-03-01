@@ -24,7 +24,8 @@ dataset    := $(data)/dataset
 raw        := $(data)/raw
 post       := posteriors
 
-cmdstan    != Rscript -e 'cat(cmdstanr::cmdstan_path())'
+# Define as normal variable to defer execution.
+cmdstan	   := Rscript -e 'cat(cmdstanr::cmdstan_path())'
 stan_model := stan/hierarchical_probit
 
 schemas     := $(wildcard $(model_data)/*.RData)
@@ -40,7 +41,7 @@ clean: ## Clean generated files
 	rm -rf $(foreach ext,pdf docx html tex log,$(qmd_files:%.qmd=%.$(ext))) \
 		$(qmd_files:%.qmd=%_files) $(data)/*.{csv,rds,RData} \
 		$(model_data)
-	$(MAKE) -C $(cmdstan) STANPROG=$(CURDIR)/$(stan_model) clean-program
+	$(MAKE) -C $$($(cmdstan)) STANPROG=$(CURDIR)/$(stan_model) clean-program
 
 help:
 	@printf 'To run all models and compile $(manuscript):\n\n'
@@ -115,7 +116,7 @@ data/merged_data.rds: R/merge.R \
 	Rscript $<
 
 stan/%: stan/%.stan
-	$(MAKE) -C $(cmdstan) $(CURDIR)/stan/$*
+	$(MAKE) -C $$($(cmdstan)) $(CURDIR)/stan/$*
 
 $(post)/%/fit.rds: \
 	R/probit.R \
@@ -126,7 +127,7 @@ $(post)/%/fit.rds: \
 
 models: $(model_fits) ## Run all Stan models
 ifndef model_fits
-	$(error No models found. Run `make bootstrap` to generate model profiles.)
+	$(error No model inputs found. Run `make bootstrap` first to generate.)
 endif
 
 ###
