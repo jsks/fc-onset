@@ -4,8 +4,10 @@ $endif$
 $if(title)$
 \maketitle
 $if(abstract)$
+\renewcommand{\abstractname}{\vspace{-\baselineskip}}
 \begin{abstract}
-\noindent $abstract$
+\noindent\textbf{Abstract} $abstract$
 \end{abstract}
+\newpage
 $endif$
 $endif$

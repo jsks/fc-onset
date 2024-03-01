@@ -1,3 +1,4 @@
+# -*- mode: yaml-ts -*-
 project:
   render:
         - "*.qmd"
@@ -5,6 +6,11 @@ project:
 bibliography: library.bib
 format:
   pdf:
+    fontsize: 11pt
+    papersize: A4
+    include-in-header:
+        - text: |
+            \usepackage[font={small}]{caption}
     keep-tex: true
     link-citations: true
     mainfont: TeX Gyre Pagella

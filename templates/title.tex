@@ -3,35 +3,32 @@ $if(title)$
 \renewcommand{\@maketitle}{
 \begin{flushleft}  % Start the flushleft environment
   \let \footnote \thanks
-  {\bfseries January 31, 2024} \\
-  {Working Paper - Git Commit $commit$ \par}
+  {\bfseries $date$} \\
+  {Working Paper$if(commit)$ - Git Commit $commit$$endif$\par}
+  \vskip 1.5em
   {\LARGE\bfseries \@title \par}  % Title in large, bold font
-  \vskip 1em  % Space between title and subtitle
   {\large\bfseries $subtitle$ \par}  % Subtitle in slightly smaller, bold font
-  \vskip 1.5em  % Space after the subtitle
+  \vskip 1.2em  % Space after the subtitle
   {\normalsize
     \lineskip .5em  % Space between lines
-    \begin{tabular}[t]{l}  % Tabular environment for the author
+    \begin{tabular}[t]{@{}l@{}}  % Tabular environment for the author
       \normalsize \@author
     \end{tabular}\par}
-  \vskip 1em  % Space after the author
-  {\normalsize \@date}  % Date
+  \vskip 3em  % Space after the author
 \end{flushleft}  % End the flushleft environment
 }
 \makeatother
-
-
 \title{$title$$if(thanks)$\thanks{$thanks$}$endif$}
 $endif$
-$if(subtitle)$
-\usepackage{etoolbox}
-\makeatletter
-\providecommand{\subtitle}[1]{% add subtitle to \maketitle
-  \apptocmd{\@title}{\par {\large #1 \par}}{}{}
-}
-\makeatother
-\subtitle{$subtitle$}
-$endif$
 
-\author{$for(authors)$$it.name.literal$$sep$ \and $endfor$}
-\date{$date$}
+$if(authors)$
+% Borrowed from Andrew Heiss' hikmah academic template. It's a hack, but it works.
+\renewcommand{\and}{\end{tabular} \hskip 3em \begin{tabular}[t]{@{}l@{}}}
+\author{
+  $for(by-author)$
+    $it.name.literal$ \\
+    $for(it.affiliations)$\small{$it.name$} \\$endfor$
+    \footnotesize{\url{$it.email$}}$sep$ \and
+  $endfor$
+}
+$endif$

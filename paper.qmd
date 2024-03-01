@@ -2,21 +2,17 @@
 title: "Frozen Civil Conflicts"
 subtitle: "The Role of External State Support"
 authors:
-    - name: J.L.A. Krusell
-      affiliations:
-          - name: University of Gothenburg
+- name: J.L.A. Krusell
+  affiliations:
+      - "University of Gothenburg"
 date: today
+date-format: long
 linestretch: 1.25
 bibliography: library.bib
 filters:
     - lib/luafilter/meta.lua
 format:
     pdf:
-        fontsize: 11pt
-        papersize: A4
-        include-in-header:
-            - text: |
-                \usepackage[font={small}]{caption}
         template-partials:
             - templates/before-body.tex
             - templates/title.tex
@@ -71,8 +67,6 @@ theme_set(theme_tufte(base_family = "TeX Gyre Pagella", base_size = 10))
 
 design <- readRDS("./data/model_inputs/design.rds")
 ```
-
-# Introduction
 
 Frozen conflicts are among some of the most pernicious, difficult to resolve conflicts. They are geographically and temporally dispersed, and although they are characterized by a cessation of large-scale hostilities, the underlying disputes remain unresolved. This puts actors into a state of uncertainty with an ever present threat of violent re-escalations and can lead to long-running accumulating costs.
 
