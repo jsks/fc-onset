@@ -20,7 +20,7 @@ function Meta(meta)
       meta.commit = pandoc.Link(commit, url)
    end
 
-   meta.wordcount = shell("scripts/wordcount.sh " .. quarto.doc.input_file)
+   _, meta.wordcount = shell("scripts/wordcount.sh " .. quarto.doc.input_file)
 
    return meta
 end
