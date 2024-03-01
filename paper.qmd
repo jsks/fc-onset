@@ -1,11 +1,25 @@
 ---
 title: "Frozen Civil Conflicts"
 subtitle: "The Role of External State Support"
-author: J.L.A. Krusell
+authors:
+    - name: J.L.A. Krusell
+      affiliations:
+          - name: University of Gothenburg
 date: today
 linestretch: 1.25
 bibliography: library.bib
-format: pdf
+filters:
+    - lib/luafilter/meta.lua
+format:
+    pdf:
+        fontsize: 11pt
+        papersize: A4
+        include-in-header:
+            - text: |
+                \usepackage[font={small}]{caption}
+        template-partials:
+            - templates/before-body.tex
+            - templates/title.tex
 execute:
     cache: true
     echo: false
@@ -112,17 +126,24 @@ Accompanying this definition, @smetana_between_2019 lay forth four criteria dete
 
 These are precise criteria that expand the coverage of frozen conflicts both temporally and geographically, beyond the traditional scope of the post-Soviet separatist states that emerged in the early 1990s following the collapse of the Soviet Union. Furthermore, they hint at the dynamic nature of frozen conflicts --- far from a static condition, when a conflict freezes it may still be characterized by low levels of violence and periodic attempts at negotiations and international mediation. However, I deviate from these criteria in one crucial regard. I relax the assumption that frozen conflicts are a subset of international conflicts and assert that frozen conflicts are a subset of conflict more broadly speaking. In regards to civil conflicts, the @smetana_between_2019 criteria restrict frozen conflicts to *de facto* independent states. This precludes the possibility that non-secessionist conflicts can exhibit the same post-conflict characteristics of unstable peace that define frozen conflicts.
 
-Consider the case of the Second Libyan Civil War. In the aftermath of the overthrow of Muammar Gaddafi in 2011, central political authority fragmented and two competing governments emerged: the internationally recognized and UN sanctioned Government of National Accord (GNA) based in Tripoli and the so-called Tobruk Government comprised of the Libyan House of Representatives elected in the 2014 parliamentary elections aligned with the Libyan National Army under Khalifa Haftar. A ceasefire was signed in 2015 leaving the GNA nominally in control of Tripoli with the Tobruk government in control of the eastern portion of Libya. Intense fighting continued among other factions,
+Consider the case of the Second Libyan Civil War. In the aftermath of the overthrow of Muammar Gaddafi in 2011, central political authority fragmented and two competing governments emerged: the internationally recognized and UN sanctioned Government of National Accord (GNA) based in Tripoli and the so-called Tobruk Government comprised of the Libyan House of Representatives elected in the 2014 parliamentary elections aligned with the Libyan National Army under Khalifa Haftar. A ceasefire was signed in 2015 leaving the GNA nominally in control of Tripoli with the Tobruk government in control of the eastern portion of Libya. However, the core contested issue, legitimized control of the central government, remained unresolved with
+
+dyadic frozen conflict
 
 [^libya_ceasefire]: https://www.reuters.com/article/us-libya-security-idUSKBN0KP0VL20150116/
 
 
 ## How do frozen conflicts emerge?
 
-As an equilibrium state
+Frozen conflict as an equilibrium of a situation where both actors strictly prefer a military victory but are unable to achieve a significant military advantage and are unwilling to acquiesce to a peace agreement. The belligerents will seek to minimize costs by de-escalating the conflict intensity and the conflict will eventually freeze.
 
-crucially, the expected utility of maintaining the dispute outweighs the potential gain from a peace agreement.
+Assumes that the expected utility of maintaining the dispute is greater than the utility of a peace agreement.
 
+-  transitory war gains outweigh peaceful division of contested good
+- time horizon, low discount factor (Stall war paper assumes that actors actually discount the future?). Anticipation of a future favourable shift in the balance of power
+- credible commitment issues undermine payoff from a peace agreement
+
+Unlike conflict onsets, assume that fighting has revealed information about actors' resolve and capabilities.
 
 
 # Empirics
@@ -169,7 +190,7 @@ The outcome variable in my regression model is a binary indicator for whether a 
 [^strict_frozen]: In the appendix I extend the analysis presented in this paper and run a series of robustness checks where I increase the number of years required for a compehensive peace agreement to be in place in order to better distingiush between frozen conflicts and short-term pauses in fighting.
 
 
-```{r}
+```{r dataset}
 dataset <- readRDS("./data/merged_data.rds")
 n_frozen <- filter(dataset, frozen == 1) |> nrow()
 n_terr_frozen <- filter(dataset, frozen == 1, incompatibility == 1) |> nrow()
@@ -368,13 +389,6 @@ The measurement of frozen conflicts provided herewithin is crude. Future work sh
 
 Potential shortcoming: what I am not doing is taking into account the preferences of external supporters and motivation for offering support. Nor am I distinguishing between different external support types.
 
-```{R cache=F}
-output <- system("scripts/wordcount.sh paper.qmd", intern = T)
-wc <- gsub("[^\\d]", "", output, perl = T)
-```
-
-**Word Count**: `r wc`
-
 \newpage
 
 # References
@@ -389,6 +403,7 @@ wc <- gsub("[^\\d]", "", output, perl = T)
 ## List of Frozen Conflicts
 
 ```{r}
+#| label: tbl-frozen
 
 filter(dataset, frozen == 1) |>
     arrange(side_a, year) |>
@@ -402,6 +417,10 @@ filter(dataset, frozen == 1) |>
 ## Simulation Based Calibration
 
 ```{R}
+#| label: fig-sbc
+#| fig-cap: |
+#|     Simulation based calibration results
+
 sbc <- readRDS("./posteriors/sbc.rds") |>
     select(-.chain, -.iteration, -.draw)
 
@@ -429,6 +448,8 @@ Different combinations of the following...
 
 
 ```{R}
+#| label: fig-robust
+#| fig-cap: Robustness checks
 
 models <- list.dirs("posteriors", recursive = F)
 stopifnot(length(models) != 0)
