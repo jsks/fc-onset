@@ -10,7 +10,6 @@ $if(title)$
   {\large\bfseries $subtitle$ \par}  % Subtitle in slightly smaller, bold font
   \vskip 1.2em  % Space after the subtitle
   {\normalsize
-    \lineskip .5em  % Space between lines
     \begin{tabular}[t]{@{}l@{}}  % Tabular environment for the author
       \normalsize \@author
     \end{tabular}\par}
@@ -18,7 +17,7 @@ $if(title)$
 \end{flushleft}  % End the flushleft environment
 }
 \makeatother
-\title{$title$$if(thanks)$\thanks{$thanks$}$endif$}
+\title{$title$\thanks{Word count: $wordcount$}}
 $endif$
 
 $if(authors)$
@@ -26,8 +25,8 @@ $if(authors)$
 \renewcommand{\and}{\end{tabular} \hskip 3em \begin{tabular}[t]{@{}l@{}}}
 \author{
   $for(by-author)$
-    $it.name.literal$ \\
-    $for(it.affiliations)$\small{$it.name$} \\$endfor$
+    \large{$it.name.literal$} \\
+    $for(it.affiliations)$\footnotesize{$it.name$} \\$endfor$
     \footnotesize{\url{$it.email$}}$sep$ \and
   $endfor$
 }
