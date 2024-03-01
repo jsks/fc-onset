@@ -8,7 +8,7 @@ format:
     keep-tex: true
     link-citations: true
     mainfont: TeX Gyre Pagella
-    mathfont: TeX Gyre Pagella
+    mathfont: TeX Gyre Pagella Math
     pdf-engine: lualatex
     knitr:
         opts_chunk:
