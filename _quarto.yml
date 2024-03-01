@@ -11,8 +11,13 @@ format:
     include-in-header:
         - text: |
             \usepackage[font={small}]{caption}
-    keep-tex: true
+            \definecolor{pastelblue}{HTML}{579ABE}
+            \definecolor{pastelgreen}{HTML}{03C03C}
+    linkcolor: pastelblue
+    urlcolor: pastelgreen
+    citecolor: pastelblue
     link-citations: true
+    keep-tex: true
     mainfont: TeX Gyre Pagella
     mathfont: TeX Gyre Pagella Math
     pdf-engine: lualatex
