@@ -15,6 +15,7 @@ posteriors/
 *_files/
 *.docx
 *.html
+*.org
 *.pdf
 
 *.aux
