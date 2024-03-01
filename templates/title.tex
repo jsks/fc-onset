@@ -1,0 +1,37 @@
+$if(title)$
+\makeatletter
+\renewcommand{\@maketitle}{
+\begin{flushleft}  % Start the flushleft environment
+  \let \footnote \thanks
+  {\bfseries January 31, 2024} \\
+  {Working Paper - Git Commit $commit$ \par}
+  {\LARGE\bfseries \@title \par}  % Title in large, bold font
+  \vskip 1em  % Space between title and subtitle
+  {\large\bfseries $subtitle$ \par}  % Subtitle in slightly smaller, bold font
+  \vskip 1.5em  % Space after the subtitle
+  {\normalsize
+    \lineskip .5em  % Space between lines
+    \begin{tabular}[t]{l}  % Tabular environment for the author
+      \normalsize \@author
+    \end{tabular}\par}
+  \vskip 1em  % Space after the author
+  {\normalsize \@date}  % Date
+\end{flushleft}  % End the flushleft environment
+}
+\makeatother
+
+
+\title{$title$$if(thanks)$\thanks{$thanks$}$endif$}
+$endif$
+$if(subtitle)$
+\usepackage{etoolbox}
+\makeatletter
+\providecommand{\subtitle}[1]{% add subtitle to \maketitle
+  \apptocmd{\@title}{\par {\large #1 \par}}{}{}
+}
+\makeatother
+\subtitle{$subtitle$}
+$endif$
+
+\author{$for(authors)$$it.name.literal$$sep$ \and $endfor$}
+\date{$date$}

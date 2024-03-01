@@ -144,6 +144,8 @@ slides: $(qmd_slides:slides/%.qmd=slides/%.html) ## Generate presentation slides
 ###
 # Manuscript dependencies
 $(foreach ext, pdf docx html, $(manuscript:%.qmd=%.$(ext))): \
+	templates/title.tex \
+	templates/before-body.tex \
 	$(raw)/frozen_conflicts.rds \
 	$(data)/merged_data.rds \
 	$(model_fits) \

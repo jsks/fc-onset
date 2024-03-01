@@ -25,4 +25,4 @@ body=$(sed -e '/^```/,/^```/d' -e '/^#\s*Appendix/,$d' $1 | \
 # blocks
 figure_captions=$(grep '^#|' $1 | sed -e 's/^#|\s*//' -e '/^.*:/d' | wc -w)
 
-print "$1: $((abstract + body + figure_captions))"
+print "$((abstract + body + figure_captions))"
