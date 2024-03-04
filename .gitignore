@@ -21,6 +21,7 @@ posteriors/
 *.aux
 *.log
 *.tex
+!templates/*.tex
 
 *_cache/
 
