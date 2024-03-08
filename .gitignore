@@ -3,6 +3,9 @@ models/
 stan/*
 !stan/*.stan
 posteriors/
+renv/*
+!renv/activate.R
+!renv/settings.json
 
 .DS_Store
 .Rhistory
