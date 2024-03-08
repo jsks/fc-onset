@@ -7,6 +7,6 @@
 # * https://testthat.r-lib.org/articles/special-files.html
 
 library(testthat)
-library(fc)
+library(fc.utils)
 
-test_check("fc")
+test_check("fc.utils")
