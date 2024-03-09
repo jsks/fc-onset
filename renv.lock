@@ -8,7 +8,7 @@
       },
       {
         "Name": "CMDSTAN",
-        "URL": "https://mc-stan.org/r-packages/"
+        "URL": "https://mc-stan.org/r-packages"
       }
     ]
   },
@@ -304,6 +304,11 @@
         "withr"
       ],
       "Hash": "7d975b08a9b0ff7bfb037c432a1ef0f8"
+    },
+    "codetools": {
+      "Package": "codetools",
+      "Version": "0.2-19",
+      "Source": "Repository"
     },
     "colorspace": {
       "Package": "colorspace",
@@ -843,6 +848,11 @@
         "R"
       ],
       "Hash": "7ce2733a9826b3aeb1775d56fd305472"
+    },
+    "maps": {
+      "Package": "maps",
+      "Version": "3.4.2",
+      "Source": "Repository"
     },
     "matrixStats": {
       "Package": "matrixStats",
