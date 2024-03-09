@@ -14,6 +14,16 @@
 
 SHELL = /bin/bash -eo pipefail -O globstar
 
+# Default command for running/building project containers/image
+CONTAINER_CMD ?= podman
+
+# Default output directory for manuscript files
+OUTPUT_DIR    ?= .
+_mk           != mkdir -p $(OUTPUT_DIR)
+
+# Additional options passed to quarto
+QUARTO_OPTS   ?=
+
 manuscript := paper.qmd
 qmd_files  != ls ./**/*.qmd
 qmd_slides := $(wildcard slides/*.qmd)
@@ -24,14 +34,15 @@ dataset    := $(data)/dataset
 raw        := $(data)/raw
 post       := posteriors
 
-# Define as normal variable to defer execution.
-cmdstan	   := Rscript -e 'cat(cmdstanr::cmdstan_path())'
+# Define as normal variable to defer execution. Grab the last line because renv
+# has decided to hijack stdout even in non-interactive sessions.
+cmdstan	   := Rscript -e 'cat(cmdstanr::cmdstan_path())' | tail -n1
 stan_model := stan/hierarchical_probit
 
 schemas     := $(wildcard $(model_data)/*.RData)
 model_fits  := $(schemas:$(model_data)/%.RData=$(post)/%/fit.rds)
 
-all: $(manuscript:%.qmd=%.pdf) ## Default rule generates manuscript pdf
+all: $(manuscript:%.qmd=$(OUTPUT_DIR)/%.pdf) ## Default rule generates manuscript pdf
 .PHONY: bootstrap clean dataset help models todo preview wc wp
 .SECONDARY:
 
@@ -66,29 +77,30 @@ wc: paper.qmd ## Rough estimate of word count for manuscript
 	@scripts/wordcount.sh $(manuscript)
 
 wp: QUARTO_OPTS += --cache-refresh
-wp: QUARTO_OPTS += -o Frozen_Conflict-$(shell date +'%F')-$(shell git rev-parse --short HEAD).pdf
-wp: paper.pdf ## Working paper build for manuscript pdf
+wp: QUARTO_OPTS += -o $(OUTPUT_DIR)/Frozen_Conflict-$(shell date +'%F')-$(shell git rev-parse --short HEAD).pdf
+wp: $(manuscript:%.qmd=$(OUTPUT_DIR)/%.pdf) ## Working paper build for manuscript pdf
+
 
 ###
 # Frozen conflict dataset
 $(data)/conflict_candidates.csv: \
-	R/conflict_candidates.R \
-	$(raw)/ucdp-peace-agreements-221.xlsx \
-	$(raw)/ucdp-term-acd-3-2021.xlsx
+		R/conflict_candidates.R \
+		$(raw)/ucdp-peace-agreements-221.xlsx \
+		$(raw)/ucdp-term-acd-3-2021.xlsx
 	Rscript $<
 
 $(dataset)/frozen_conflicts.rds: R/dataset.R \
-	$(dataset)/adjusted_conflict_candidates.csv \
-	$(raw)/UcdpPrioConflict_v23_1.rds \
-	$(raw)/ucdp-term-acd-3-2021.xlsx
+		$(dataset)/adjusted_conflict_candidates.csv \
+		$(raw)/UcdpPrioConflict_v23_1.rds \
+		$(raw)/ucdp-term-acd-3-2021.xlsx
 	Rscript $<
 
 doc/coding-protocol.pdf: $(data)/conflict_candidates.csv
 doc/codebook.pdf: library.bib
 
 dataset.zip: $(dataset)/frozen_conflicts.rds \
-	doc/coding-protocol.pdf \
-	doc/codebook.pdf
+		doc/coding-protocol.pdf \
+		doc/codebook.pdf
 	zip -j $@ $^
 
 dataset: dataset.zip ## Create a zip archive of the dataset
@@ -96,8 +108,8 @@ dataset: dataset.zip ## Create a zip archive of the dataset
 ###
 # Probit Models
 $(post)/sbc.rds: R/sbc.R \
-	$(stan_model) \
-	stan/sim
+		$(stan_model) \
+		stan/sim
 	Rscript $<
 
 sbc: $(post)/sbc.rds ## Run simulation-based calibration
@@ -107,12 +119,12 @@ bootstrap: R/models.R data/merged_data.rds ## Generate datasets for each model r
 	Rscript $<
 
 data/merged_data.rds: R/merge.R \
-	$(raw)/frozen_conflicts.rds \
-	$(raw)/ucdp-term-acd-3-2021.xlsx \
-	$(raw)/UcdpPrioConflict_v23_1.rds \
-	$(raw)/ucdp-esd-ay-181.dta \
-	$(raw)/NMC-60-abridged.csv \
-	$(raw)/V-Dem-CY-Full+Others-v13.rds \
+		$(raw)/frozen_conflicts.rds \
+		$(raw)/ucdp-term-acd-3-2021.xlsx \
+		$(raw)/UcdpPrioConflict_v23_1.rds \
+		$(raw)/ucdp-esd-ay-181.dta \
+		$(raw)/NMC-60-abridged.csv \
+		$(raw)/V-Dem-CY-Full+Others-v13.rds \
 	refs/ucdp_countries.csv
 	Rscript $<
 
@@ -120,9 +132,9 @@ stan/%: stan/%.stan
 	$(MAKE) -C $$($(cmdstan)) $(CURDIR)/stan/$*
 
 $(post)/%/fit.rds: \
-	R/probit.R \
-	$(model_data)/%.RData \
-	$(stan_model) \
+		R/probit.R \
+		$(model_data)/%.RData \
+		$(stan_model) \
 	data/merged_data.rds
 	Rscript $< $(model_data)/$*.RData
 
@@ -143,21 +155,21 @@ slides: $(qmd_slides:slides/%.qmd=slides/%.html) ## Generate presentation slides
 
 ###
 # Manuscript dependencies
-$(foreach ext, pdf docx html, $(manuscript:%.qmd=%.$(ext))): \
-	templates/title.tex \
-	templates/before-body.tex \
-	$(raw)/frozen_conflicts.rds \
-	$(data)/merged_data.rds \
-	$(model_fits) \
-	.WAIT $(post)/sbc.rds
+$(foreach ext, pdf docx html, $(manuscript:%.qmd=$(OUTPUT_DIR)/%.$(ext))): \
+		templates/title.tex \
+		templates/before-body.tex \
+		$(raw)/frozen_conflicts.rds \
+		$(data)/merged_data.rds \
+		$(model_fits) \
+		.WAIT $(post)/sbc.rds
 
 ###
 # Implicit rules for pdf and html generation
-%.docx: %.qmd
-	quarto render $< --to docx $(QUARTO_OPTS)
+$(OUTPUT_DIR)/%.docx: %.qmd
+	quarto render $< --to docx --output-dir $(@D) $(QUARTO_OPTS)
 
-%.html: %.qmd
-	quarto render $< --to html $(QUARTO_OPTS)
+$(OUTPUT_DIR)/%.html: %.qmd
+	quarto render $< --to html --output-dir $(@D) $(QUARTO_OPTS)
 
-%.pdf: %.qmd
-	quarto render $< --to pdf $(QUARTO_OPTS)
+$(OUTPUT_DIR)/%.pdf: %.qmd
+	quarto render $< --to pdf --output-dir $(@D) $(QUARTO_OPTS)
