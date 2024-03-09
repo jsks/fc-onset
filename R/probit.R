@@ -7,6 +7,10 @@ library(tools)
 
 options(mc.cores = 1)
 
+# This is only for building the project image in order to avoid
+# including CmdStan by precompiling our model
+assignInNamespace("cmdstan_version", function(...) "2.34.1", ns = "cmdstanr")
+
 design <- readRDS("./data/model_inputs/design.rds")
 
 input <- commandArgs(trailingOnly = T)
@@ -37,7 +41,7 @@ stan_data <- list(N = sum(cases),
                   y = y[cases])
 str(stan_data)
 
-mod <- cmdstan_model("./stan/hierarchical_probit.stan")
+mod <- cmdstan_model(exe_file = "stan/hierarchical_probit")
 fit <- mod$sample(data = stan_data, refresh = 0, sig_figs = 3, adapt_delta = 0.99)
 
 # Treatment coefficients
