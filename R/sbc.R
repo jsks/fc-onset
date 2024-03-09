@@ -10,6 +10,10 @@ library(parallel)
 
 options(mc.cores = parallel::detectCores() / 2)
 
+# This is only for building the project image in order to avoid
+# including CmdStan by precompiling our model
+assignInNamespace("cmdstan_version", function(...) "2.34.1", ns = "cmdstanr")
+
 rank_statistic <- function(draws, true_value) {
     sum(draws < true_value)
 }

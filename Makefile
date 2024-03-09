@@ -1,15 +1,14 @@
-# Invoke `make help` to get started.
+# Pipeline runner for the Frozen Conflict Onset project
 #
-# By default, Make will compile the pdf versions of all qmd files
-# found in the current working directory.
-#
-# Note, this Makefile only targets GNU Make + Linux, and requires the
-# following dependencies:
-#     - entr
+# Note, this Makefile only targets GNU Make (>=4.4) + Linux, and
+# requires the following dependencies:
+#     - Cmdstanr/Cmdstan
 #     - pandoc
 #     - R
 #     - quarto-cli
 #     - zip
+#
+# Invoke `make help` to get started.
 ###
 
 SHELL = /bin/bash -eo pipefail -O globstar
@@ -43,7 +42,7 @@ schemas     := $(wildcard $(model_data)/*.RData)
 model_fits  := $(schemas:$(model_data)/%.RData=$(post)/%/fit.rds)
 
 all: $(manuscript:%.qmd=$(OUTPUT_DIR)/%.pdf) ## Default rule generates manuscript pdf
-.PHONY: bootstrap clean dataset help models todo preview wc wp
+.PHONY: bootstrap build clean dataset help models todo preview wc wp
 .SECONDARY:
 
 ###
@@ -80,6 +79,11 @@ wp: QUARTO_OPTS += --cache-refresh
 wp: QUARTO_OPTS += -o $(OUTPUT_DIR)/Frozen_Conflict-$(shell date +'%F')-$(shell git rev-parse --short HEAD).pdf
 wp: $(manuscript:%.qmd=$(OUTPUT_DIR)/%.pdf) ## Working paper build for manuscript pdf
 
+###
+# Container image
+build:  ## Build container image
+	git archive --format=tar.gz -o fc-onset-HEAD.tar.gz HEAD
+	$(CONTAINER_CMD) build --jobs $(shell nproc) -t ghcr.io/jsks/fc-onset .
 
 ###
 # Frozen conflict dataset
