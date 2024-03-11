@@ -45,7 +45,7 @@ schemas     := $(wildcard $(model_data)/*.RData)
 model_fits  := $(schemas:$(model_data)/%.RData=$(post)/%/fit.rds)
 
 all: $(manuscript:%.qmd=$(OUTPUT_DIR)/%.pdf) ## Default rule generates manuscript pdf
-.PHONY: bootstrap build clean dataset help models todo preview wc wp
+.PHONY: build clean dataset init help models todo preview wc wp
 .SECONDARY:
 
 ###
@@ -58,7 +58,7 @@ clean: ## Clean generated files
 
 help:
 	@printf 'To run all models and compile $(manuscript):\n\n'
-	@printf '\t$$ make bootstrap\n'
+	@printf '\t$$ make init\n'
 	@printf '\t$$ make -O -j$(shell nproc)\n\n'
 	@printf 'Compile a specific document or output format with `make <file.[html|pdf|docx]>.`\n'
 	@printf 'Additionally, the following commands are available:\n\n'
@@ -121,7 +121,7 @@ $(post)/sbc.rds: R/sbc.R \
 
 sbc: $(post)/sbc.rds ## Run simulation-based calibration
 
-bootstrap: R/models.R data/merged_data.rds ## Generate datasets for each model run
+init: R/models.R data/merged_data.rds ## Generate datasets for each model run
 	rm -rf $(model_data)
 	Rscript $<
 
@@ -147,7 +147,7 @@ $(post)/%/fit.rds: \
 
 models: $(model_fits) ## Run all Stan models
 ifndef model_fits
-	$(error No model inputs found. Run `make bootstrap` first to generate.)
+	$(error No model inputs found. Run `make init` first to generate.)
 endif
 
 ###
@@ -162,12 +162,15 @@ slides: $(qmd_slides:slides/%.qmd=slides/%.html) ## Generate presentation slides
 
 ###
 # Manuscript dependencies
-$(foreach ext, pdf docx html, $(manuscript:%.qmd=$(OUTPUT_DIR)/%.$(ext))): \
+$(manuscript:%.qmd=$(OUTPUT_DIR)/%.pdf): \
 		templates/title.tex \
-		templates/before-body.tex \
+		templates/before-body.tex
+
+$(foreach ext, pdf docx html, $(manuscript:%.qmd=$(OUTPUT_DIR)/%.$(ext))): \
 		$(raw)/frozen_conflicts.rds \
 		$(data)/merged_data.rds \
 		$(model_fits)
+
 ifndef NO_SBC
 $(foreach ext, pdf docx html, $(manuscript:%.qmd=$(OUTPUT_DIR)/%.$(ext))): \
 		.WAIT $(post)/sbc.rds

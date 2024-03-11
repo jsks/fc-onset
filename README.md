@@ -42,7 +42,7 @@ $ Rscript -e "renv::restore()" -e "cmdstanr::install_cmdstan()"
 Finally, invoke `make` directly to clean/merge the data sources, run the Stan models, and compile the final pdf, `paper.pdf`. Note, no attempt has been made to ensure the portability of the code in this project beyond Linux amd64.
 
 ```sh
-$ make bootstrap # clean/merge, and prep data for Stan
+$ make init # clean/merge, and prep data for Stan
 $ make -O -j $(nproc) # Run all models, and compile paper.qmd
 ```
 

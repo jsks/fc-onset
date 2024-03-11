@@ -97,4 +97,4 @@ RUN --mount=type=cache,target=/root/.cache/R/renv \
     MAKEFLAGS="-j$(nproc)" Rscript -e "renv::restore()" -e "renv::isolate()" && \
     make -t stan/hierarchical_probit stan/sim
 
-CMD make bootstrap && make -O -j $(nproc) models && OUTPUT_DIR=/proj/output make
+CMD make init && make -O -j $(nproc) models && OUTPUT_DIR=/proj/output make
