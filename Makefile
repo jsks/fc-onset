@@ -44,7 +44,7 @@ stan_model := stan/hierarchical_probit
 schemas     := $(wildcard $(model_data)/*.RData)
 model_fits  := $(schemas:$(model_data)/%.RData=$(post)/%/fit.rds)
 
-all: $(manuscript:%.qmd=$(OUTPUT_DIR)/%.pdf) ## Default rule generates manuscript pdf
+all: $(manuscript:%.qmd=%.pdf) ## Default rule generates manuscript pdf
 .PHONY: build clean dataset init help models todo preview wc wp
 .SECONDARY:
 
@@ -79,8 +79,9 @@ wc: paper.qmd ## Rough estimate of word count for manuscript
 	@scripts/wordcount.sh $(manuscript)
 
 wp: QUARTO_OPTS += --cache-refresh
-wp: QUARTO_OPTS += -o $(OUTPUT_DIR)/Frozen_Conflict-$(shell date +'%F')-$(shell git rev-parse --short HEAD).pdf
-wp: $(manuscript:%.qmd=$(OUTPUT_DIR)/%.pdf) ## Working paper build for manuscript pdf
+wp: $(manuscript:%.qmd=%.pdf) ## Working paper build for manuscript pdf
+	mv $(OUTPUT_DIR)/$(manuscript:%.qmd=%.pdf) \
+		$(OUTPUT_DIR)/Frozen_Conflict-$(shell date +'%F')-$(shell git rev-parse --short HEAD).pdf
 
 ###
 # Container image
@@ -162,27 +163,34 @@ slides: $(qmd_slides:slides/%.qmd=slides/%.html) ## Generate presentation slides
 
 ###
 # Manuscript dependencies
-$(manuscript:%.qmd=$(OUTPUT_DIR)/%.pdf): \
+$(manuscript:%.qmd=%.pdf): \
 		templates/title.tex \
 		templates/before-body.tex
 
-$(foreach ext, pdf docx html, $(manuscript:%.qmd=$(OUTPUT_DIR)/%.$(ext))): \
+$(foreach ext, pdf docx html, $(manuscript:%.qmd=%.$(ext))): \
 		$(raw)/frozen_conflicts.rds \
 		$(data)/merged_data.rds \
 		$(model_fits)
 
 ifndef NO_SBC
-$(foreach ext, pdf docx html, $(manuscript:%.qmd=$(OUTPUT_DIR)/%.$(ext))): \
+$(foreach ext, pdf docx html, $(manuscript:%.qmd=%.$(ext))): \
 		.WAIT $(post)/sbc.rds
 endif
 
 ###
 # Implicit rules for pdf and html generation
-$(OUTPUT_DIR)/%.docx: %.qmd
-	quarto render $< --to docx --output-dir $(@D) $(QUARTO_OPTS)
+%.docx: %.qmd
+	quarto render $< --to docx $(QUARTO_OPTS)
 
-$(OUTPUT_DIR)/%.html: %.qmd
-	quarto render $< --to html --output-dir $(@D) $(QUARTO_OPTS)
+	@# This is ugly, but there is a bug in quarto v1.4/deno that
+	@# prevents `--output-dir` being set to a directory on another
+	@# device, ie a bind mount in a container.
+	mv $(<:%.qmd=%.docx) $(OUTPUT_DIR)/$@
 
-$(OUTPUT_DIR)/%.pdf: %.qmd
-	quarto render $< --to pdf --output-dir $(@D) $(QUARTO_OPTS)
+%.html: %.qmd
+	quarto render $< --to html $(QUARTO_OPTS)
+	mv $(<:%.qmd=%.html) $(OUTPUT_DIR)/$@
+
+%.pdf: %.qmd
+	quarto render $< --to pdf $(QUARTO_OPTS)
+	mv $(<:%.qmd=%.pdf) $(OUTPUT_DIR)/$@
