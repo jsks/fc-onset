@@ -47,7 +47,7 @@ data <- list(N = n,
              n_contest_types = n_conflict_types,
              contest_id = conflict_id)
 
-sim <- cmdstan_model("./stan/sim.stan")
+sim <- cmdstan_model(exe_file = "stan/sim")
 sim_data <- sim$sample(data = data, fixed_param = TRUE, chains = 1)
 
 # Simulated parameter values
