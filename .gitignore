@@ -10,6 +10,7 @@ renv/*
 .DS_Store
 .Rhistory
 .Rprof.user
+token
 
 \#*\#
 .\#*
