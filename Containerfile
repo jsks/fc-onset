@@ -50,7 +50,8 @@ RUN make -j$(nproc) models/hierarchical_probit models/sim && \
 FROM base
 
 ARG QUARTO_VERSION=1.4.551 \
-    MAKE_VERSION=4.4
+    MAKE_VERSION=4.4 \
+    YQ_VERSION=4.42.1
 
 LABEL org.opencontainers.image.source="https://github.com/jsks/fc-onset" \
       org.opencontainers.image.authors="Joshua Krusell <joshua.krusell@gu.se>" \
@@ -74,9 +75,10 @@ RUN --mount=type=cache,sharing=locked,target=/var/cache/apt \
         zlib1g-dev && \
     rm -rf  /var/lib/apt/lists/*
 
-# Install Quarto
+# Install Quarto + Pandoc
 RUN curl -LO https://github.com/quarto-dev/quarto-cli/releases/download/v${QUARTO_VERSION}/quarto-${QUARTO_VERSION}-linux-amd64.deb && \
     dpkg -i quarto-${QUARTO_VERSION}-linux-amd64.deb && \
+    ln -s /opt/quarto/bin/tools/x86_64/pandoc /usr/local/bin/pandoc && \
     rm quarto-${QUARTO_VERSION}-linux-amd64.deb
 
 # Install latest version of Make - required for .WAIT feature in Makefile
@@ -87,6 +89,10 @@ RUN curl -LO https://ftp.gnu.org/gnu/make/make-${MAKE_VERSION}.tar.gz && \
     make -j $(nproc) && \
     checkinstall -y -D --nodoc --pkgname=make --pkgversion=${MAKE_VERSION} make install && \
     cd ../ && rm -rf make-${MAKE_VERSION} make-${MAKE_VERSION}.tar.gz
+
+# Install go-yq - for wordcount
+RUN curl -L https://github.com/mikefarah/yq/releases/download/v${YQ_VERSION}/yq_linux_amd64.tar.gz -o - | \
+    tar xz && mv yq_linux_amd64 /usr/local/bin/yq
 
 ADD fc-onset-HEAD.tar.gz /proj
 WORKDIR /proj
