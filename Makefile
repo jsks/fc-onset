@@ -13,18 +13,11 @@
 
 SHELL = /bin/bash -eo pipefail -O globstar
 
-# Default command for running/building project containers/image
-CONTAINER_CMD ?= podman
-
-# Default output directory for manuscript files
-OUTPUT_DIR    ?= .
+CONTAINER_CMD ?= podman ## Command for building project image
+QUARTO_OPTS   ?=        ## Additional options passed to quarto
+NO_SBC        ?=        ## Skip simulation-based calibration
+OUTPUT_DIR    ?= .      ## Output directory for manuscript files
 _mk           != mkdir -p $(OUTPUT_DIR)
-
-# Additional options passed to quarto
-QUARTO_OPTS   ?=
-
-# Skip simulation-based calibration
-NO_SBC        ?=
 
 manuscript := paper.qmd
 qmd_files  != ls ./**/*.qmd
@@ -41,8 +34,14 @@ post       := posteriors
 cmdstan	   := Rscript -e 'cat(cmdstanr::cmdstan_path())' | tail -n1
 stan_model := stan/hierarchical_probit
 
-schemas     := $(wildcard $(model_data)/*.RData)
-model_fits  := $(schemas:$(model_data)/%.RData=$(post)/%/fit.rds)
+schemas    := $(wildcard $(model_data)/*.RData)
+model_fits := $(schemas:$(model_data)/%.RData=$(post)/%/fit.rds)
+
+# Escape codes for colourized output in `help` command
+blue   := \033[1;34m
+green  := \033[0;32m
+white  := \033[0;37m
+reset  := \033[0m
 
 all: $(manuscript:%.qmd=%.pdf) ## Default rule generates manuscript pdf
 .PHONY: build clean dataset init help models todo preview wc wp
@@ -65,7 +64,15 @@ help:
 	@grep -E '^\S+:.*##' $(MAKEFILE_LIST) | \
 		sort | \
 		awk -F ':.*##' \
-			'{ printf "\t\033[01;34m%-10s \033[00;37m%s\033[0m\n", $$1, $$2 }'
+			'{ printf "\t$(blue)%-10s $(white)%s$(reset)\n", $$1, $$2 }'
+	@printf '\nAnd, the following environmental variables can be set:\n\n'
+	@grep -E '^\S+\s*\?=.*##' $(MAKEFILE_LIST) | \
+		sort | \
+		awk -F '?= *| *##' \
+			'{ printf "\t$(blue)%-10s" \
+				  "$(white)%s\t" \
+				  "[Default: \"$(green)%s$(white)\"]$(reset)\n", \
+			   $$1, $$3, $$2 }'
 	@printf '\n'
 
 todo: ## List TODO comments in project files tracked by git
