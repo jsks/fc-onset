@@ -8,7 +8,7 @@ library(dplyr)
 library(MASS, include.only = "mvrnorm")
 library(parallel)
 
-options(mc.cores = parallel::detectCores() / 2)
+options(mc.cores = parallel::detectCores())
 
 # This is only for building the project image in order to avoid
 # including CmdStan by precompiling our model
@@ -60,14 +60,14 @@ y_sim <- sim_data$draws("y_sim", format = "matrix")
 # For each simulated outcome, run the model and compute the rank
 # statistic for each parameter between the posterior draws and the
 # true (ie simulated) value
-mod <- cmdstan_model("./stan/hierarchical_probit.stan")
+mod <- cmdstan_model(exe_file = "./stan/hierarchical_probit")
 ranks <- mclapply(1:nrow(y_sim), function(i) {
     stan_data <- data
     stan_data$y <- as.vector(y_sim[i, ])
     stan_data$interaction_id <- 1
 
-    fit <- mod$sample(data = stan_data, sig_figs = 3, iter_sampling = 500, chains = 2,
-                      parallel_chains = 2, adapt_delta = 0.95, thin = 2, refresh = 0)
+    fit <- mod$sample(data = stan_data, sig_figs = 3, iter_sampling = 500, chains = 1,
+                      adapt_delta = 0.95, thin = 2, refresh = 0)
     mapply(rank_statistic, fit$draws(parameters, format = "data.frame"), pv[i, ])
 })
 
