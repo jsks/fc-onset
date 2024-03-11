@@ -1,1 +1,10 @@
 library.bib linguist-vendored
+/.github export-ignore
+/assets export-ignore
+/doc export-ignore
+/stan export-ignore
+/slides export-ignore
+/.gitattributes export-ignore
+/.gitignore export-ignore
+/Containerfile export-ignore
+/README.md export-ignore
