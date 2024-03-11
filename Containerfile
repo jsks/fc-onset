@@ -56,16 +56,21 @@ LABEL org.opencontainers.image.source="https://github.com/jsks/fc-onset" \
       org.opencontainers.image.authors="Joshua Krusell <joshua.krusell@gu.se>" \
       org.opencontainers.image.description="Container image for the fc-onset project"
 
-RUN --mount=type=cache,sharing=locked,target=/var/cache/apt apt-get update && \
+RUN --mount=type=cache,sharing=locked,target=/var/cache/apt \
+    apt-get update && \
     apt-get install -y --no-install-recommends \
         checkinstall \
         gfortran \
+        fonts-texgyre \
+        fonts-texgyre-math \
         libcurl4-openssl-dev \
         libopenblas0-pthread \
         libopenblas-pthread-dev \
+        lmodern \
         r-base-core \
         texlive-latex-base \
-        tex-gyre \
+        texlive-latex-recommended \
+        texlive-luatex \
         zlib1g-dev && \
     rm -rf  /var/lib/apt/lists/*
 
@@ -86,15 +91,14 @@ RUN curl -LO https://ftp.gnu.org/gnu/make/make-${MAKE_VERSION}.tar.gz && \
 ADD fc-onset-HEAD.tar.gz /proj
 WORKDIR /proj
 
-COPY --from=cmdstan /cmdstan/models/hierarchical_probit /cmdstan/models/sim /proj/stan/
-COPY --from=cmdstan /cmdstan/stan/lib/stan_math/lib/tbb/libtbb.so.2 /usr/local/lib/
-
 ENV _R_SHLIB_STRIP_=TRUE \
     RENV_CONFIG_INSTALL_VERBOSE=TRUE
 
 RUN --mount=type=cache,target=/root/.cache/R/renv \
     mkdir -p ~/.R && mv etc/R/Makevars ~/.R/Makevars && \
-    MAKEFLAGS="-j$(nproc)" Rscript -e "renv::restore()" -e "renv::isolate()" && \
-    make -t stan/hierarchical_probit stan/sim
+    MAKEFLAGS="-j$(nproc)" Rscript -e "renv::restore()" -e "renv::isolate()"
+
+COPY --from=cmdstan /cmdstan/models/hierarchical_probit /cmdstan/models/sim /proj/stan/
+COPY --from=cmdstan /cmdstan/stan/lib/stan_math/lib/tbb/libtbb.so.2 /usr/local/lib/
 
 CMD make init && make -O -j $(nproc) models && OUTPUT_DIR=/proj/output make
