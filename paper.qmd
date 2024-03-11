@@ -431,11 +431,10 @@ filter(dataset, frozen == 1) |>
 
 ## Simulation Based Calibration
 
-```{R}
+```{R eval = Sys.getenv("NO_SBC") == "" && file.exists("posteriors/sbc.rds")}
 #| label: fig-sbc
 #| fig-cap: |
 #|     Simulation based calibration results
-
 sbc <- readRDS("./posteriors/sbc.rds") |>
     select(-.chain, -.iteration, -.draw)
 

@@ -23,6 +23,9 @@ _mk           != mkdir -p $(OUTPUT_DIR)
 # Additional options passed to quarto
 QUARTO_OPTS   ?=
 
+# Skip simulation-based calibration
+NO_SBC        ?=
+
 manuscript := paper.qmd
 qmd_files  != ls ./**/*.qmd
 qmd_slides := $(wildcard slides/*.qmd)
@@ -164,8 +167,11 @@ $(foreach ext, pdf docx html, $(manuscript:%.qmd=$(OUTPUT_DIR)/%.$(ext))): \
 		templates/before-body.tex \
 		$(raw)/frozen_conflicts.rds \
 		$(data)/merged_data.rds \
-		$(model_fits) \
+		$(model_fits)
+ifndef NO_SBC
+$(foreach ext, pdf docx html, $(manuscript:%.qmd=$(OUTPUT_DIR)/%.$(ext))): \
 		.WAIT $(post)/sbc.rds
+endif
 
 ###
 # Implicit rules for pdf and html generation
