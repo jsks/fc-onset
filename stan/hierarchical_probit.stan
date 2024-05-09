@@ -62,7 +62,7 @@ model {
     target += std_normal_lupdf(sigma);
 
     target += std_normal_lupdf(to_vector(raw_delta));
-    target += normal_lupdf(mu | 0.5, 1);
+    target += std_normal_lupdf(mu);
     target += normal_lupdf(tau | 0, 2.5);
 
     // Likelihood

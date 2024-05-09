@@ -26,13 +26,12 @@ generated quantities {
         gamma[i] = normal_rng(0, sigma);
 
     array[K] real mu;
-    mu[1] = normal_rng(0.5, 1);
-    mu[2] = normal_rng(0.5, 1);
-    mu[3] = normal_rng(0, 1);
+    for (i in 1:K)
+        mu[i] = std_normal_rng();
 
     array[K] real<lower=0> tau;
     for (i in 1:K)
-        tau[i] = abs(normal_rng(0, 2));
+        tau[i] = abs(normal_rng(0, 2.5));
 
     matrix[K, n_contest_types] delta;
     for (i in 1:K) {
