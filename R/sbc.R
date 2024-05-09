@@ -5,27 +5,22 @@
 
 library(cmdstanr)
 library(dplyr)
+library(fc.utils)
 library(MASS, include.only = "mvrnorm")
 library(parallel)
 
 options(mc.cores = parallel::detectCores())
 
-# This is only for building the project image in order to avoid
-# including CmdStan by precompiling our model
-assignInNamespace("cmdstan_version", function(...) "2.34.1", ns = "cmdstanr")
-
-rank_statistic <- function(draws, true_value) {
-    sum(draws < true_value)
-}
-
+iter <- 5000
 n <- 248
 m <- 8
 k <- 3
 
+info("Running simulation based calibration for %d iterations and %d threads",
+     iter, parallel::detectCores())
+
 parameters <- c("alpha", "beta", "gamma", "sigma", "delta", "mu", "tau")
 
-#X <- mvrnorm(n, rep(0, m), diag(rep(2, m), nrow = m, ncol = m)) |>
-#    apply(2, scale)
 X <- sample(0:1, n * m, replace = T) |> matrix(nrow = n, ncol = m)
 
 n_countries <- 3
@@ -48,7 +43,7 @@ data <- list(N = n,
              contest_id = conflict_id)
 
 sim <- cmdstan_model(exe_file = "stan/sim")
-sim_data <- sim$sample(data = data, fixed_param = TRUE, chains = 1)
+sim_data <- sim$sample(data = data, fixed_param = TRUE, chains = 1, iter_sampling = iter)
 
 # Simulated parameter values
 pv <- sim_data$draws(parameters, format = "data.frame")
@@ -60,7 +55,7 @@ y_sim <- sim_data$draws("y_sim", format = "matrix")
 # For each simulated outcome, run the model and compute the rank
 # statistic for each parameter between the posterior draws and the
 # true (ie simulated) value
-mod <- cmdstan_model(exe_file = "./stan/hierarchical_probit")
+mod <- cmdstan_model(exe_file = "stan/hierarchical_probit")
 ranks <- mclapply(1:nrow(y_sim), function(i) {
     stan_data <- data
     stan_data$y <- as.vector(y_sim[i, ])
@@ -72,4 +67,6 @@ ranks <- mclapply(1:nrow(y_sim), function(i) {
 })
 
 df <- bind_rows(ranks)
+
+dir.create("posteriors", showWarnings = F)
 saveRDS(df, "posteriors/sbc.rds")
