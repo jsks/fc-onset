@@ -9,7 +9,7 @@ library(fc.utils)
 library(MASS, include.only = "mvrnorm")
 library(parallel)
 
-options(mc.cores = parallel::detectCores())
+options(mc.cores = parallel::detectCores() / 2)
 
 iter <- 5000
 n <- 248
@@ -61,8 +61,15 @@ ranks <- mclapply(1:nrow(y_sim), function(i) {
     stan_data$y <- as.vector(y_sim[i, ])
     stan_data$interaction_id <- 1
 
-    fit <- mod$sample(data = stan_data, sig_figs = 3, iter_sampling = 500, chains = 1,
-                      adapt_delta = 0.95, thin = 2, refresh = 0)
+    fit <- mod$sample(data = stan_data, chains = 2, iter_warmup = 1000,
+                      iter_sampling = 1000, adapt_delta = 0.95, refresh = 0)
+
+    diagnostics <- fit$diagnostic_summary()
+    if (sum(diagnostics$num_divergent) > 0 | sum(diagnostics$num_max_treedepth) > 0) {
+        warning("Divergent transitions or max treedepth exceeded")
+        return(NULL)
+    }
+
     mapply(rank_statistic, fit$draws(parameters, format = "data.frame"), pv[i, ])
 })
 
