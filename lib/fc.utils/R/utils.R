@@ -35,3 +35,8 @@ stanvar_latex <- function(s) {
     else
         sprintf("$\\%s$", s)
 }
+
+#' @export
+rank_statistic <- function(draws, true_value) {
+    sum(draws < true_value)
+}
