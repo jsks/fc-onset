@@ -8,7 +8,7 @@ df <- readRDS("./data/merged_data.rds") |> ungroup()
 
 ###
 # Create a design matrix with all possible analysis combinations
-treatments <- c("bin", "bin_5y", "prop")
+treatments <- c("bin", "prop")
 outcomes <- c("frozen", "strict_frozen")
 units <- c("all", "cumulative_intensity")
 censored <- c("with_censored", "no_censored", "no_episode_censored")

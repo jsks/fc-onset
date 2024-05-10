@@ -98,7 +98,7 @@ build:  ## Build container image
 
 ###
 # Frozen conflict dataset
-$(data)/conflict_candidates.csv: \
+$(data)/conflict_{episodes,candidates}.csv &: \
 		R/conflict_candidates.R \
 		$(raw)/ucdp-peace-agreements-221.xlsx \
 		$(raw)/ucdp-term-acd-3-2021.xlsx
@@ -110,7 +110,7 @@ $(dataset)/frozen_conflicts.rds: R/dataset.R \
 		$(raw)/ucdp-term-acd-3-2021.xlsx
 	Rscript $<
 
-doc/coding-protocol.pdf: $(data)/conflict_candidates.csv
+doc/coding-protocol.pdf: $(data)/conflict_{candidates,episodes}.csv
 doc/codebook.pdf: library.bib
 
 dataset.zip: $(dataset)/frozen_conflicts.rds \
@@ -177,6 +177,7 @@ $(manuscript:%.qmd=%.pdf): \
 $(foreach ext, pdf docx html, $(manuscript:%.qmd=%.$(ext))): \
 		$(raw)/frozen_conflicts.rds \
 		$(data)/merged_data.rds \
+		$(data)/conflict_{episodes,candidates}.csv \
 		$(model_fits)
 
 ifndef NO_SBC
@@ -200,4 +201,4 @@ endif
 
 %.pdf: %.qmd
 	quarto render $< --to pdf $(QUARTO_OPTS)
-	mv $(<:%.qmd=%.pdf) $(OUTPUT_DIR)/$@
+	mv $(<:%.qmd=%.pdf) $(strip $(OUTPUT_DIR))/$@

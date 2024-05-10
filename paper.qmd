@@ -20,7 +20,7 @@ format:
             - templates/before-body.tex
             - templates/title.tex
 execute:
-    cache: true
+    cache: false
     echo: false
     warning: false
 abstract: |
@@ -193,14 +193,13 @@ Due to the non-linear nature of a probit regression model, in order to interpret
 
 ### Measuring Frozen Conflicts
 
-The outcome variable in my regression model is a binary indicator for whether a civil conflict terminates in a frozen state. Following the definition of frozen conflicts offered earlier, I construct this measure using a mix of automated and manual coding of intrastate and internationalized intrastate conflict terminations taken from the UCDP Conflict Termination Dataset [@kreutz_how_2010].[^protocol] Episodes were considered terminated if the total number of battle related fatalities dropped below 25 within a year. I subsequently labeled a termination as a frozen conflict if three criteria were satisfied. First, an episode could not result in a one-sided military victory. This would constitute a conclusive termination allowing the victor to set the terms of the post-conflict order. Second, the episode could not conclude with a comprehensive peace agreement that addresses the underlying core issue according to the UCDP Peace Agreement Dataset [@pettersson_organized_2019].[^partial] To account for the possibility of a failed peace agreement I further required that the comprehensive peace agreement had to last for at least one calendar year in order to disqualify an episode termination as a frozen conflict.[^strict_frozen] Finally, an episode could not result in actor death since this is a minimum necessary condition for a conflict to become frozen. For a state actor this meant that although there could be a turnover in the regime, the state could not cease to exist as a sovereign entity following the conclusion of the conflict episode. For non-state actors this entailed a continued existence for at least five years post-conflict without renouncing political violence and/or a re-escalation of violence into a new conflict episode within the same time period. This was done to exclude situations where rebel groups unilaterally renounce violence as a political strategy and either disband or transition into political parties or civil society organizations.
+The outcome variable in my regression model is a binary indicator for whether a civil conflict terminates in a frozen state. Following the definition of frozen conflicts offered earlier, I construct this measure using a mix of automated and manual coding of intrastate and internationalized intrastate conflict terminations taken from the UCDP Conflict Termination Dataset [@kreutz_how_2010].[^protocol] Episodes were considered terminated if the total number of battle related fatalities dropped below 25 within a year.[^strict_frozen] I subsequently labeled a termination as a frozen conflict if three criteria were satisfied. First, an episode could not result in a one-sided military victory. This would constitute a conclusive termination allowing the victor to set the terms of the post-conflict order. Second, the episode could not conclude with a comprehensive peace agreement that addresses the underlying core issue according to the UCDP Peace Agreement Dataset [@pettersson_organized_2019].[^partial] To account for the possibility of a failed peace agreement I further required that the comprehensive peace agreement had to last for at least one calendar year in order to disqualify an episode termination as a frozen conflict. Finally, an episode could not result in actor death since this is a minimum necessary condition for a conflict to become frozen. For a state actor this meant that although there could be a turnover in the regime, the state could not cease to exist as a sovereign entity following the conclusion of the conflict episode. For non-state actors this entailed a continued existence for at least five years post-conflict without renouncing political violence and/or a re-escalation of violence into a new conflict episode within the same time period. This was done to exclude situations where rebel groups unilaterally renounce violence as a political strategy and either disband or transition into political parties or civil society organizations.
 
-[^protocol]: For a detailed description of the codcing procedure see the protocol document in the supplemental materials.
+[^protocol]: For a detailed description of the coding procedure see the [coding protocol][Coding Protocol] in the appendix.
 
 [^partial]: Note, this does not exclude tha possibility that frozen conflicts can arise following a partial peace agreement or ceasefire. For example, the First Nagorno-Karabkh War was terminated with the 1994 Bishkek Protocol establishing a general ceasefire; however, the agreement failed to address the status of Nagorno-Karabakh leading to a frozen conflict with periodic re-escalations until the forcible reintegration of the territory by Azerbaijan following the 2023 offensive.
 
-[^strict_frozen]: In the appendix I extend the analysis presented in this paper and run a series of robustness checks where I increase the number of years required for a compehensive peace agreement to be in place in order to better distingiush between frozen conflicts and short-term pauses in fighting.
-
+[^strict_frozen]: In the [appendix][robustness checks] I extend the analysis presented in this paper and run a series of robustness checks where I adopt a more strict definition of conflict termination requiring that frozen conflicts have more than 2 years below the UCDP threshold for an active conflict year in order to better distinguish between frozen conflicts and short-term pauses in fighting. TODO: what are the results?
 
 ```{r dataset}
 dataset <- readRDS("./data/merged_data.rds")
@@ -208,8 +207,9 @@ n_frozen <- filter(dataset, frozen == 1) |> nrow()
 n_terr_frozen <- filter(dataset, frozen == 1, incompatibility == 1) |> nrow()
 ```
 
+In total, `r n_frozen` frozen conflicts were identified out of `r nrow(dataset)` civil conflict terminations, comprising approximately `r sprintf("%.0f", 100 * n_frozen / nrow(dataset))` percent of all observations for the period 1975 to 2017. Of the frozen conflicts, `r n_terr_frozen` were conflicts where the central incompatibility between conflict actors concerned territory rather than control of the central government.[^list] @fig-frozen shows both a world map of the countries that have experienced at least one frozen conflict within the coded time period as well as the incidence rate of frozen conflicts per year.
 
-In total, `r n_frozen` frozen conflicts were identified out of `r nrow(dataset)` civil conflict terminations, comprising approximately `r sprintf("%.0f", 100 * n_frozen / nrow(dataset))` percent of all observations for the period 1975 to 2017. Of the frozen conflicts, `r n_terr_frozen` were conflicts where the central incompatibility between conflict actors concerned territory rather than control of the central government. @fig-frozen shows both a world map of the countries that have experienced at least one frozen conflict within the coded time period as well as the incidence rate of frozen conflicts per year.
+[^list]: The full list of all frozen civil conflict onsets is included in @tbl-frozen in the appendix.
 
 
 ```{r}
@@ -261,8 +261,7 @@ p1 + p2
 
 Compared to the only other extant coding of frozen conflicts, the Frozen Conflict Dataset (FCD) [@klosek_frozen_2021], the measure that I employ features a more expansive operationalization of the concept of frozen conflicts. Although the FCD covers a wider period from 1946 until 2011, only civil conflicts involving *de facto* states according to the coding by @florea_facto_2014 are included resulting in 17 cases of frozen conflict. Furthermore, the termination year for a civil conflict episode in the FCD is coded as the last year in which the number of battle related deaths is above 500. In contrast, my measure looks beyond only *de facto* states and considers civil conflicts where the central incompatibility may center over control of the government. Furthermore, I follow the UCDP and employ a smaller battle related fatalities threshold thereby capturing lower intensity conflict episodes.[^insurgencies]
 
-[^insurgencies]: There is a risk that including low-level conflict episodes risks conflating minor, long-running insurgencies with frozen conflicts. It can be argued that the former may persist at such a low level of activity with only sporadic, isolated incidences of limited violence as to not represent a meaningfully salient issue to the incumbent state and would therefore not constitute a frozen conflict. To mitigate this risk, I also run the analysis presented in this paper on a sub-sample of conflicts with a cumulative intensity of at least 1,000 battle related fatalities since onset.
-
+[^insurgencies]: There is a risk that including low-level conflict episodes risks conflating minor, long-running insurgencies with frozen conflicts. It can be argued that the former may persist at such a low level of activity with only sporadic, isolated incidences of limited violence as to not represent a meaningfully salient issue to the incumbent state and would therefore not constitute a frozen conflict. To mitigate this risk, I also run the analysis presented in this paper on a sub-sample of conflicts with a cumulative intensity of at least 1,000 battle related fatalities since onset in the [appendix][robustness checks]. TODO: results
 
 ### Treatments
 
@@ -310,13 +309,13 @@ In addition to the treatment variables I also include a set of covariates that c
 
 In complement to the partially pooled varying treatment effects, I also include a binary indicator for whether the conflict incompatibility concerns territory in order to account for a potential differing baseline probability for termination as a frozen conflict and the possibility that the conflict incompatibility affects the likelihood of external support. Further, I include variables to control for the Cold War and ongoing inter/intra-state conflicts within the host country. The former is a binary indicator for whether the termination year falls before 1989 to capture temporal dynamics related to the propensity for different types of conflict terminations. For example, international norms concerning external intervention in civil conflicts may be shaped in part by the state of the international system influencing both the decision by third party actors to intervene in a civil conflict and the types of conflict terminations that external interveners seek [@howard_how_2017]. The latter are binary indicators as well measuring whether an interstate or intrastate conflict occurred at any time during the conflict episode. Third party states involved in one conflict may be more likely to also intervene in another ongoing conflict within the same country. Furthermore, multiple ongoing conflicts could also indicate a weakened incumbent government forced to face multiple opponents, which may in turn affect the probability that a conflict freezes. Lastly, I include a binary variable for whether a conflict is left censored, *i.e.*, that the onset of the episode occurred before the coding start for the dataset, since data on external support from the ESD is only available from 1975 until 2017.[^robust_censor]
 
-[^robust_censor]: I also run multiple robustness checks in the appendix where I alternatively drop episodes with an episode onset year before the coding start for the dataset and/or recurrent episodes within conflicts that also began prior to 1975.
+[^robust_censor]: I also run multiple robustness checks in the [appendix][robustness checks] where I alternatively drop episodes with an episode onset year before the coding start for the dataset and/or recurrent episodes within conflicts that also began prior to 1975.
 
 ## Results
 
 @fig-ame plots the average marginal effects from estimating the hierarchical probit model predicting frozen civil conflicts given the observed data on directed external support by third party states and the set of control variables detailed in the data section.[^stan] The average marginal effects capture the change in the predicted probability for the outcome given the three treatment conditions --- external support given only to the government, external support given only to the rebel(s), and external support given to both sides --- versus the baseline condition of no external support given to any conflict actor. The plots also depict the 50% and 90% credible intervals formed from the corresponding quantiles of the posterior draws with the point estimates representing the posterior medians.
 
-[^stan]: The model is implemented in Stan, a probabilistic programming language, and estimated using Stan's No-U-Turn sampler via the `CmdStanR` interface [@stan_development_team_stan_2024; @gabry_cmdstanr_2024]. It was run with 4 parallel chains at 2,000 iterations each with a warmup of 1,000 with convergence assessed using the standard Stan diagnostics. All pre/post-processing was done using R `r sprintf("%s.%s", R.version$major, R.version$minor)` [@r_core_team_r_2023].
+[^stan]: The model is implemented in Stan, a probabilistic programming language, and estimated using Stan's No-U-Turn sampler via the `CmdStanR` interface [@stan_development_team_stan_2024; @gabry_cmdstanr_2024]. It was run with 4 parallel chains at 2,000 iterations each with a warmup of 1,000 with convergence assessed using the standard Stan diagnostics. Validation of the implementation code was done through simulation based calibration as detailed in the [appendix][simulation based calibration]. All pre/post-processing was done using R `r sprintf("%s.%s", R.version$major, R.version$minor)` [@r_core_team_r_2023].
 
 ```{r}
 #| label: fig-ame
@@ -415,10 +414,45 @@ Furthermore, the measurement offered for frozen conflicts was necessarily crude.
 
 # Appendix
 
+## Coding Protocol
+
+The frozen conflict data was created using a mix of programmatic and manual coding in a two-stage process. The first stage filtered out dyadic civil conflict episode outcomes according to a preset list of rules listed in detail below. This candidate list was then manually corrected in the second stage to form the final list of frozen conflict onsets.
+
+### Procedure
+
+#### Stage 1
+
+Dyadic conflict episode outcomes were drawn from the UCDP Conflict Termination dataset v21.1. This means that the definition of a conflict episode and its corresponding termination followed the coding conventions of the UCDP dataset. Namely, dyad-years are coded as active conflicts when the number of battle related fatalities rises above a threshold of 25. Consecutive conflict years, or episodes, are terminated the first year when this number drops below the threshold.
+
+Episode outcomes were selected as potential onsets of frozen civil conflicts when satisfying the following predicates:
+
+- Intrastate and internationalized intrastate conflicts --- *i.e.*, when the UCDP variable $\text{type\_of\_conflict}_i \in \{ 3, 4 \}$
+
+- Outcomes were not coded as either a one-sided military victory or actor death --- *i.e.*, when the UCDP variable $\text{outcome}_i \notin \{ 3, 4, 6 \}$
+
+- No comprehensive peace agreement lasting at least one calendar year signed either in the termination year or the subsequent year. This corresponds to when the UCDP variable $\text{pa\_type} = 1$ while duration was calculated based on the date of the last signature.
+
+The last predicate relied on data drawn from the UCDP Peace Agreement dataset v22.1. Due to the smaller time series in the Peace Agreement dataset, the final list was restricted to conflict outcomes between 1975 and 2019.
+
+```{r echo = F}
+candidates <- read.csv("data/conflict_candidates.csv")
+episodes <- read.csv("data/conflict_episodes.csv")
+```
+
+In total, `r nrow(candidates)` candidates were identified, comprising approximately
+`r sprintf("%.2f", 100 * nrow(candidates) / sum(!is.na(episodes$outcome)))` percent of all outcomes.
+
+#### Stage 2
+
+The resulting list was then manually coded to filter out episode outcomes where the non-state actor ceased to exist as a military actor within five years of termination. This includes situations where, for example, the rebel group unilaterally renounces violence as a political strategy and transitions to becoming a political party. Or, when a rebel group becomes so weakened and/or fragmented that they effectively dissolve.
+
+Evaluations were primarily done using a mix of UCDP's own description of conflicts and conflict actors, as well as a number of different academic sources.
+
 ## List of Frozen Conflicts
 
 ```{r}
 #| label: tbl-frozen
+#| tbl-cap: Frozen Civil Conflicts (1975 - 2017)
 
 filter(dataset, frozen == 1) |>
     arrange(side_a, year) |>
@@ -431,10 +465,26 @@ filter(dataset, frozen == 1) |>
 
 ## Simulation Based Calibration
 
+The model specification is implemented using the probabilistic programming language, Stan. I use simulation-based calibration to validate the correctness of the implementation code according to the following procedure [@gelman_bayesian_2020].
+
+I first fix the covariate matrix $X$ and the treatment matrix $T$ by $X_i, T_i \sim \text{Bern}(p) \; \forall i \in \{1, 2, \ldots, N \}$ where $N$ is set to the number of observations in the actual dataset.
+
+Next, letting $\theta$ be the vector of unknown parameters in the regression equation, I simulate parameter values from the prior, $\tilde{\theta}^{(m)} \sim p(\theta)$, followed by data from the likelihood, $\tilde{y}^{(m)} \sim p(y | \tilde{\theta}, X, T)$ where $m = 1, 2, \ldots, M$.
+
+For each simulated tuple, $(\tilde{\theta}^{(m)}, \tilde{y}^{(m)} )$, I fit the full inference model and draw $L$ values from the posterior, $\{ \theta_1, \theta_2, \ldots, \theta_L \} \sim p(\theta | \tilde{y}^{(m)}, X, T)$.
+
+Finally, I calculate the rank statistic for each parameter $k$, $r_{m, k} = \sum_{l = 1}^L \mathbb{I} \{ \theta_k^{(l)} < \tilde{\theta}_k^{(m)} \}$. If the model is correctly specified and the inference procedure is unbiased, then $r_k \sim \text{Unif}(0, L)$ as $M \to \infty$. [^proof]
+
+@fig-sbc plots the histograms from the results of this procedure showing that the rank statistics for each parameter is approximately uniform.
+
+[^proof]: For a full proof see Appendix B in @talts_validating_2020.
+
 ```{R eval = Sys.getenv("NO_SBC") == "" && file.exists("posteriors/sbc.rds")}
 #| label: fig-sbc
 #| fig-cap: |
-#|     Simulation based calibration results
+#|     Simulation based calibration results for $M = 5000$ and $L =
+#|     2000$. Posteriors were not thinned since the effective sample
+#|     sizes showed anticorrelation among the MCMC draws.
 sbc <- readRDS("./posteriors/sbc.rds") |>
     select(-.chain, -.iteration, -.draw)
 
@@ -452,13 +502,17 @@ for (i in seq_along(sbc)) {
 
 ## Robustness Checks
 
-Different combinations of the following...
+There are several concerns that may be raised with the main results presented in this paper examining the potential link between directed external support by a third party state to a conflict actor and the probability for a civil conflict to have terminated as a frozen conflict. It what follows I detail each potential issue and present additional and/or alternative measures of frozen conflicts, conflict episodes, and the treatment variables. Finally, I re-run the model for all the resulting combinations and present the results.
 
-- Aggregation of the treatments: binary treatment, binary treatment in the last 5 years of the conflict episode, and proportional treatment. The latter is calculated as the proportion of conflict-years in an episode where one side received external support
+The first potential issue is that the original definition for a conflict termination as taken from the UCDP Conflict Termination Dataset requires that a conflict drops below a threshold of 25 battle related fatalities for only a single year. This risks including brief pauses in fighting as potential terminations to be coded as frozen conflicts. Although the conceptual definition of frozen conflict that I employ does not include an explicit temporal dimension as a requirement for a conflict to be considered frozen, it could be nonetheless argued that such pauses should not be considered candidates for being classified as frozen since actors may view the conflict as active and ongoing. Therefore, I also construct a stricter measure for frozen conflict whereby a conflict episode has to be followed by more than two years below the UCDP battle related threshold to be considered eligible to being classified as frozen, conditional on the remaining the coding criteria.
 
-- All conflict episodes and only high intensity episodes --- try to distinguish between low-level insurgencies and actual civil wars
+The second issue also relates to the underlying population of conflict episodes used to construct the frozen conflict measure. In the original coding for frozen conflict, I included all conflict episodes from the UCDP within the time period from 1975 to 2017, including low-level conflicts with relatively few battle related fatalities. It can be argued that minor, long-running insurgencies should not be considered as frozen conflicts since the underlying issue may no longer be particularly salient and there is a relatively low risk for a major escalation in violence. Such conflicts may experience sporadic, isolated incidences of violence, but would otherwise are minor factors in the domestic political agenda. To this end, I subset the list of conflict episodes to only include civil conflict episodes that have cumulatively experienced at least 1,000 battle related fatalities since onset in the hopes that major conflicts maintain a greater degree of salience post-termination.
 
-- Normal definition for frozen conflicts and a strict definition that requires a duration of at least 2 years in order to exclude temporary one-year pauses in fighting that may be more the result of UCDP's coding decision rather than representing actual frozen conflict.
+Third, due to the truncated nature of the dataset, some of the civil conflict episodes are censored with missing data before 1975. In the main results I included a binary variable if the onset of an episode occurred before the start of the dataset. As an alternative, in the following robustness checks I also drop all censored episodes as well as censored conflicts.
+
+Finally, the primary treatment variables used in the main text are aggregated binary measures for directed support, plus the interaction, at any time during a civil conflict episode. Although this aids in the interpretation of the treatment effect, these variables do not capture the extent to which support is provided during a conflict episode. Thus, I also replace the treatment variables with measures capturing the proportion of conflict-years within an episode that each actor received external support.
+
+In total, this leads to `r list.files("posteriors", "\\d{4}") |> length()` different model configurations for the original vs strict definition of frozen conflict, inclusion and exclusion of low-intensity conflict episodes, inclusion and exclusion of censored episodes and/or conflicts, and finally the proportional aggregation of the treatment variables. @fig-robust
 
 
 ```{R}
@@ -489,12 +543,21 @@ model_ames$variable <- case_when(ame_keys == "ame[1]" ~ "Ext. Sup. Gov Only",
 model_ames$group <- ifelse(sapply(ll, `[`, 2) == 1, "Government Incompatibility",
                            "Territorial Incompatibility")
 
-ggplot(model_ames, aes(pzero, median)) +
-    geom_point(alpha = 0.2) +
-    geom_errorbar(aes(ymin = q5, ymax = q95), alpha = 0.25) +
-    geom_hline(yintercept = 0, linetype = "dashed", alpha = 0.2) +
-    facet_grid(variable ~ group) +
-    labs(y = parse(text = "tilde(Delta)"), x = parse(text = "P(tilde(Delta) > 0)")) +
-    theme(legend.position = "none")
+rebel <- filter(model_ames, variable == "Ext. Sup. Rebel Only", censored == "with_censored")
+ggplot(rebel, aes(pzero, median, colour = treatment)) +
+    geom_point(aes(shape = outcome), alpha = 0.8) +
+    geom_errorbar(aes(ymin = q5, ymax = q95), alpha = 0.1) +
+    geom_vline(xintercept = 0.9, linetype = "dashed", alpha = 0.2) +
+    facet_grid(episodes ~ group)
+
+#filter(model_ames, variable == "Ext. Sup. Rebel Only") |>
+#ggplot(aes(pzero, median, colour = treatment)) +
+#    geom_point(alpha = 0.2) +
+#    geom_errorbar(aes(ymin = q5, ymax = q95), alpha = 0.25) +
+#    geom_hline(yintercept = 0, linetype = "dashed", alpha = 0.2) +
+#    geom_vline(xintercept = 0.9, linetype = "dashed", alpha = 0.2) +
+#    facet_grid(variable ~ group) +
+#    labs(y = parse(text = "tilde(Delta)"), x = parse(text = "P(tilde(Delta) > 0)")) +
+#    theme(legend.position = "none")
 
 ```

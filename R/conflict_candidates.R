@@ -41,6 +41,8 @@ full.df <- filter(pce_collapsed, conflict_id %in% term$conflict_id) |>
 
 info("Finished with %d conflict terminations", sum(!is.na(full.df$outcome)))
 
+write.csv(full.df, "data/conflict_episodes.csv", row.names = F)
+
 ###
 # Filter out candidates for being frozen conflicts
 outcomes <- group_by(full.df, conflict_id) |>
