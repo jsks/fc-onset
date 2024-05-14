@@ -16,8 +16,6 @@ SHELL = /bin/bash -eo pipefail -O globstar
 CONTAINER_CMD ?= podman ## Command for building project image
 QUARTO_OPTS   ?=        ## Additional options passed to quarto
 NO_SBC        ?=        ## Skip simulation-based calibration
-OUTPUT_DIR    ?= .      ## Output directory for manuscript files
-_mk           != mkdir -p $(OUTPUT_DIR)
 
 manuscript := paper.qmd
 qmd_files  != ls ./**/*.qmd
@@ -87,14 +85,13 @@ wc: paper.qmd ## Rough estimate of word count for manuscript
 
 wp: QUARTO_OPTS += --cache-refresh
 wp: $(manuscript:%.qmd=%.pdf) ## Working paper build for manuscript pdf
-	mv $(OUTPUT_DIR)/$(manuscript:%.qmd=%.pdf) \
-		$(OUTPUT_DIR)/Frozen_Conflict-$(shell date +'%F')-$(shell git rev-parse --short HEAD).pdf
+	mv $(manuscript:%.qmd=%.pdf) Frozen_Conflict-$(shell date +'%F').pdf
 
 ###
 # Container image
 build:  ## Build container image
-	git archive --format=tar.gz -o fc-onset-HEAD.tar.gz HEAD
-	$(CONTAINER_CMD) build --jobs $(shell nproc) -t ghcr.io/jsks/fc-onset .
+	git ls-files | grep -E 'renv|Makevars|Rprofile|fc.utils' | tar Tczf - renv-archive.tar.gz
+	$(CONTAINER_CMD) build -t ghcr.io/jsks/fc-onset .
 
 ###
 # Frozen conflict dataset
@@ -190,15 +187,8 @@ endif
 %.docx: %.qmd
 	quarto render $< --to docx $(QUARTO_OPTS)
 
-	@# This is ugly, but there is a bug in quarto v1.4/deno that
-	@# prevents `--output-dir` being set to a directory on another
-	@# device, ie a bind mount in a container.
-	mv $(<:%.qmd=%.docx) $(OUTPUT_DIR)/$@
-
 %.html: %.qmd
 	quarto render $< --to html $(QUARTO_OPTS)
-	mv $(<:%.qmd=%.html) $(OUTPUT_DIR)/$@
 
 %.pdf: %.qmd
 	quarto render $< --to pdf $(QUARTO_OPTS)
-	mv $(<:%.qmd=%.pdf) $(strip $(OUTPUT_DIR))/$@
