@@ -37,7 +37,7 @@ stan_data <- list(N = sum(cases),
                   y = y[cases])
 str(stan_data)
 
-mod <- cmdstan_model("stan/hierarchical_probit")
+mod <- cmdstan_model("stan/hierarchical_probit.stan")
 fit <- mod$sample(data = stan_data, refresh = 0, sig_figs = 3, adapt_delta = 0.99)
 
 # Treatment coefficients

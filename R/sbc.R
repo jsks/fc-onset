@@ -42,7 +42,7 @@ data <- list(N = n,
              n_contest_types = n_conflict_types,
              contest_id = conflict_id)
 
-sim <- cmdstan_model("stan/sim")
+sim <- cmdstan_model("stan/sim.stan")
 sim_data <- sim$sample(data = data, fixed_param = TRUE, chains = 1, iter_sampling = iter)
 
 # Simulated parameter values
@@ -55,7 +55,7 @@ y_sim <- sim_data$draws("y_sim", format = "matrix")
 # For each simulated outcome, run the model and compute the rank
 # statistic for each parameter between the posterior draws and the
 # true (ie simulated) value
-mod <- cmdstan_model("stan/hierarchical_probit")
+mod <- cmdstan_model("stan/hierarchical_probit.stan")
 ranks <- mclapply(1:nrow(y_sim), function(i) {
     stan_data <- data
     stan_data$y <- as.vector(y_sim[i, ])
