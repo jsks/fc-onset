@@ -52,6 +52,7 @@ clean: clean-stan ## Clean generated files
 		$(model_data)
 
 clean-stan: ## Clean compiled stan models
+	$(MAKE) -C $$($(cmdstan)) clean-all
 	rm -rf stan/{hierarchical_probit,sim}
 
 help:
