@@ -30,7 +30,6 @@ post       := posteriors
 # Define as normal variable to defer execution. Grab the last line because renv
 # has decided to hijack stdout even in non-interactive sessions.
 cmdstan	   := Rscript -e 'cat(cmdstanr::cmdstan_path())' | tail -n1
-stan_model := stan/hierarchical_probit
 
 schemas    := $(wildcard $(model_data)/*.RData)
 model_fits := $(schemas:$(model_data)/%.RData=$(post)/%/fit.rds)
@@ -47,11 +46,13 @@ all: $(manuscript:%.qmd=%.pdf) ## Default rule generates manuscript pdf
 
 ###
 # Development commands
-clean: ## Clean generated files
+clean: clean-stan ## Clean generated files
 	rm -rf $(foreach ext,pdf docx html tex log,$(qmd_files:%.qmd=%.$(ext))) \
 		$(qmd_files:%.qmd=%_files) $(data)/*.{csv,rds,RData} \
 		$(model_data)
-	$(MAKE) -C $$($(cmdstan)) STANPROG=$(CURDIR)/$(stan_model) clean-program
+
+clean-stan: ## Clean compiled stan models
+	rm -rf stan/{hierarchical_probit,sim}
 
 help:
 	@printf 'To run all models and compile $(manuscript):\n\n'
@@ -85,12 +86,14 @@ wc: paper.qmd ## Rough estimate of word count for manuscript
 
 wp: QUARTO_OPTS += --cache-refresh
 wp: $(manuscript:%.qmd=%.pdf) ## Working paper build for manuscript pdf
-	mv $(manuscript:%.qmd=%.pdf) Frozen_Conflict-$(shell date +'%F').pdf
+	mv $(manuscript:%.qmd=%.pdf) \
+		Frozen_Conflict-$(shell date +'%F')-$(shell git rev-parse --short HEAD).pdf
 
 ###
 # Container image
 build:  ## Build container image
-	git ls-files | grep -E 'renv|Makevars|Rprofile|fc.utils' | tar Tczf - renv-archive.tar.gz
+	git ls-files | grep -E 'renv|Makevars|Rprofile|fc.utils' | \
+		tar Tczf - renv-archive.tar.gz
 	$(CONTAINER_CMD) build -t ghcr.io/jsks/fc-onset .
 
 ###
@@ -120,7 +123,7 @@ dataset: dataset.zip ## Create a zip archive of the dataset
 ###
 # Probit Models
 $(post)/sbc.rds: R/sbc.R \
-		$(stan_model) \
+		stan/hierarchical_probit \
 		stan/sim
 	Rscript $<
 
@@ -146,8 +149,8 @@ stan/%: stan/%.stan
 $(post)/%/fit.rds: \
 		R/probit.R \
 		$(model_data)/%.RData \
-		$(stan_model) \
-	data/merged_data.rds
+		stan/hierarchical_probit \
+		data/merged_data.rds
 	Rscript $< $(model_data)/$*.RData
 
 models: $(model_fits) ## Run all Stan models
@@ -162,8 +165,6 @@ slides/%.html: slides/%.qmd
 
 slides/%.pdf: slides/%.qmd
 	quarto render $< --to beamer $(QUARTO_OPTS)
-
-slides: $(qmd_slides:slides/%.qmd=slides/%.html) ## Generate presentation slides
 
 ###
 # Manuscript dependencies

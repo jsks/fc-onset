@@ -63,7 +63,7 @@ RUN curl -LO https://ftp.gnu.org/gnu/make/make-${MAKE_VERSION}.tar.gz && \
     checkinstall -y -D --nodoc --pkgname=make --pkgversion=${MAKE_VERSION} make install && \
     cd ../ && rm -rf make-${MAKE_VERSION} make-${MAKE_VERSION}.tar.gz
 
-# Install go-yq - for wordcount
+# Install go-yq for wordcount
 RUN curl -L https://github.com/mikefarah/yq/releases/download/v${YQ_VERSION}/yq_linux_amd64.tar.gz -o - | \
     tar xz && mv yq_linux_amd64 /usr/local/bin/yq
 
@@ -84,4 +84,4 @@ WORKDIR /proj
 
 ENV RENV_PATHS_RENV=/pkg/renv
 
-CMD make init && make -O -j $(nproc) models && make wp
+CMD make clean init && make -O -j $(nproc) models && make wp
