@@ -1,6 +1,6 @@
 {
   "R": {
-    "Version": "4.3.2",
+    "Version": "4.4.0",
     "Repositories": [
       {
         "Name": "CRAN",
@@ -169,13 +169,6 @@
       ],
       "Hash": "9fe98599ca456d6552421db0d6772d8f"
     },
-    "bitops": {
-      "Package": "bitops",
-      "Version": "1.0-7",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "b7d8d8ee39869c18d8846a184dd8a1af"
-    },
     "brio": {
       "Package": "brio",
       "Version": "1.1.4",
@@ -206,17 +199,6 @@
         "sass"
       ],
       "Hash": "c0d8599494bc7fb408cd206bbdd9cab0"
-    },
-    "caTools": {
-      "Package": "caTools",
-      "Version": "1.18.2",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Requirements": [
-        "R",
-        "bitops"
-      ],
-      "Hash": "34d90fa5845004236b9eacafc51d07b2"
     },
     "cachem": {
       "Package": "cachem",
@@ -290,8 +272,12 @@
     "cmdstanr": {
       "Package": "cmdstanr",
       "Version": "0.7.1",
-      "Source": "Repository",
-      "Repository": "CMDSTAN",
+      "Source": "GitHub",
+      "RemoteType": "github",
+      "RemoteHost": "api.github.com",
+      "RemoteUsername": "stan-dev",
+      "RemoteRepo": "cmdstanr",
+      "RemoteRef": "master",
       "Requirements": [
         "R",
         "R6",
@@ -303,12 +289,7 @@
         "rlang",
         "withr"
       ],
-      "Hash": "7d975b08a9b0ff7bfb037c432a1ef0f8"
-    },
-    "codetools": {
-      "Package": "codetools",
-      "Version": "0.2-19",
-      "Source": "Repository"
+      "Hash": "89389cacaa3bb1d2eafb9bb983f76ab0"
     },
     "colorspace": {
       "Package": "colorspace",
@@ -359,7 +340,7 @@
     },
     "datawizard": {
       "Package": "datawizard",
-      "Version": "0.9.1",
+      "Version": "0.10.0",
       "Source": "Repository",
       "Repository": "CRAN",
       "Requirements": [
@@ -368,7 +349,7 @@
         "stats",
         "utils"
       ],
-      "Hash": "51cf8172b52cfa5b4b988c73c37accfa"
+      "Hash": "62d6ec10346d3302a1299e1c54641d83"
     },
     "desc": {
       "Package": "desc",
@@ -506,7 +487,7 @@
         "cmdstanr",
         "parameters"
       ],
-      "Hash": "5bf77321867c6a3aaa63641ba295a768"
+      "Hash": "0a9fbd685152094b62b67f855ef8e696"
     },
     "fontawesome": {
       "Package": "fontawesome",
@@ -731,7 +712,7 @@
     },
     "insight": {
       "Package": "insight",
-      "Version": "0.19.8",
+      "Version": "0.19.11",
       "Source": "Repository",
       "Repository": "CRAN",
       "Requirements": [
@@ -740,7 +721,7 @@
         "stats",
         "utils"
       ],
-      "Hash": "adcc19435135a4d211e5aa2e48e4f6b7"
+      "Hash": "53172afebe4b773ed2c405332aa465d7"
     },
     "isoband": {
       "Package": "isoband",
@@ -849,11 +830,6 @@
       ],
       "Hash": "7ce2733a9826b3aeb1775d56fd305472"
     },
-    "maps": {
-      "Package": "maps",
-      "Version": "3.4.2",
-      "Source": "Repository"
-    },
     "matrixStats": {
       "Package": "matrixStats",
       "Version": "1.2.0",
@@ -939,7 +915,7 @@
     },
     "parameters": {
       "Package": "parameters",
-      "Version": "0.21.5",
+      "Version": "0.21.7",
       "Source": "Repository",
       "Repository": "CRAN",
       "Requirements": [
@@ -952,7 +928,7 @@
         "stats",
         "utils"
       ],
-      "Hash": "0e17cb609f27608c8312a822d7d85cc2"
+      "Hash": "9f8ce76f256b193e1536c827c7adc125"
     },
     "patchwork": {
       "Package": "patchwork",
