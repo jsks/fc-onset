@@ -81,7 +81,7 @@ todo: ## List TODO comments in project files tracked by git
 preview: ## Auto-rebuild html manuscript
 	quarto preview $(manuscript) --to html
 
-wc: paper.qmd ## Rough estimate of word count for manuscript
+wc: ## Rough estimate of word count for manuscript
 	@printf '$(manuscript): '
 	@scripts/wordcount.sh $(manuscript)
 
@@ -99,19 +99,19 @@ build:  ## Build container image
 
 ###
 # Frozen conflict dataset
-$(data)/conflict_{episodes,candidates}.csv &: \
+$(data)/conflict_episodes.csv $(data)/conflict_candidates.csv &: \
 		R/conflict_candidates.R \
 		$(raw)/ucdp-peace-agreements-221.xlsx \
 		$(raw)/ucdp-term-acd-3-2021.xlsx
-	Rscript $<
+	Rscript R/conflict_candidates.R
 
 $(dataset)/frozen_conflicts.rds: R/dataset.R \
 		$(dataset)/adjusted_conflict_candidates.csv \
 		$(raw)/UcdpPrioConflict_v23_1.rds \
 		$(raw)/ucdp-term-acd-3-2021.xlsx
-	Rscript $<
+	Rscript R/dataset.R
 
-doc/coding-protocol.pdf: $(data)/conflict_{candidates,episodes}.csv
+doc/coding-protocol.pdf: $(data)/conflict_candidates.csv $(data)/conflict_episodes.csv
 doc/codebook.pdf: library.bib
 
 dataset.zip: $(dataset)/frozen_conflicts.rds \
@@ -126,13 +126,13 @@ dataset: dataset.zip ## Create a zip archive of the dataset
 $(post)/sbc.rds: R/sbc.R \
 		stan/hierarchical_probit \
 		stan/sim
-	Rscript $<
+	Rscript R/sbc.R
 
 sbc: $(post)/sbc.rds ## Run simulation-based calibration
 
 init: R/models.R data/merged_data.rds ## Generate datasets for each model run
 	rm -rf $(model_data)
-	Rscript $<
+	Rscript R/models.R
 
 data/merged_data.rds: R/merge.R \
 		$(raw)/frozen_conflicts.rds \
@@ -141,8 +141,8 @@ data/merged_data.rds: R/merge.R \
 		$(raw)/ucdp-esd-ay-181.dta \
 		$(raw)/NMC-60-abridged.csv \
 		$(raw)/V-Dem-CY-Full+Others-v13.rds \
-	refs/ucdp_countries.csv
-	Rscript $<
+		refs/ucdp_countries.csv
+	Rscript R/merge.R
 
 stan/%: stan/%.stan
 	$(MAKE) -C $$($(cmdstan)) $(CURDIR)/stan/$*
@@ -152,7 +152,7 @@ $(post)/%/fit.rds: \
 		$(model_data)/%.RData \
 		stan/hierarchical_probit \
 		data/merged_data.rds
-	Rscript $< $(model_data)/$*.RData
+	Rscript R/probit.R $(model_data)/$*.RData
 
 models: $(model_fits) ## Run all Stan models
 ifndef model_fits
@@ -176,7 +176,9 @@ $(manuscript:%.qmd=%.pdf): \
 $(foreach ext, pdf docx html, $(manuscript:%.qmd=%.$(ext))): \
 		$(raw)/frozen_conflicts.rds \
 		$(data)/merged_data.rds \
-		$(data)/conflict_{episodes,candidates}.csv \
+		$(data)/conflict_episodes.csv \
+		$(data)/conflict_candidates.csv \
+		refs/labels.csv \
 		$(model_fits)
 
 ifndef NO_SBC
