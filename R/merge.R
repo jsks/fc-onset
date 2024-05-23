@@ -119,11 +119,24 @@ ctable <- read.csv2("refs/ucdp_countries.csv") |>
 vdem <- select(ctable, -country_name) |>
     right_join(vdem, by = "gwid")
 
+###
+# PKO Data
+pko <- read_xls("./data/raw/Third-Party-PKMs-version-3.5.xls") |>
+    select(idx = OBSNUM, COWcode = CCODE1, start = STARTYR, end = ENDYR) |>
+    mutate(end = ifelse(is.na(end), 2020, end)) |>
+    reframe(COWcode = first(COWcode), year = start:end, .by = idx) |>
+    distinct(COWcode, year) |>
+    mutate(pko = 1)
+
 full.df <- left_join(full_ep.df, vdem, by = c("gwno_a" = "gwid", "year")) |>
-    left_join(nmc, by = c("year", "COWcode" = "ccode"))
+    left_join(nmc, by = c("year", "COWcode" = "ccode")) |>
+    left_join(pko, by = c("COWcode", "year")) |>
+    mutate(pko = ifelse(is.na(pko), 0, 1))
 
 info("Missing V-Dem observation(s): %d", is.na(full.df$v2x_polyarchy) |> sum())
 info("Missing CINC observation(s): %d", is.na(full.df$cinc) |> sum())
+
+saveRDS(full.df, "data/ts.rds")
 
 ###
 # Collapse into an episode level dataset
@@ -144,6 +157,7 @@ final.df <- filter(full.df, !is.na(ext_sup_s_state)) |>
 
               incompatibility = max(incompatibility == 1),
               cold_war = ifelse(max(year) < 1989, 1, 0),
+              pko = any(pko == 1),
 
               ongoing_interstate = max(ongoing_interstate) > 0,
               ongoing_intrastate = max(ongoing_intrastate) > 0,

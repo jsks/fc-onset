@@ -19,8 +19,8 @@ load(model_data)
 model_name <- basename(model_data) |> file_path_sans_ext()
 
 with(filter(design, id == model_name),
-     info("Model %s => outcome: %s, treatment: %s, episodes: %s, censored: %s",
-          id, outcome, treatment, episodes, censored))
+     info("Model %s => outcome: %s, treatment: %s, episodes: %s",
+          id, outcome, treatment, episodes))
 
 sprintf("posteriors/%s", model_name) |> dir.create(showWarnings = F, recursive = T)
 
