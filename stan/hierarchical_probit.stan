@@ -93,14 +93,14 @@ generated quantities {
 
             for (j in 1:N) {
                 if (contest_id[j] != i)
-                   continue;
+                    continue;
 
                 count += 1;
                 for (k in 1:(K+1))
                     ame[k, i] += margins[k][j];
-             }
+            }
 
-             ame[, i] /= count;
-         }
+            ame[, i] /= count;
+        }
     }
 }

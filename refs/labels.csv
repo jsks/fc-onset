@@ -1,0 +1,16 @@
+variable,label
+episode_duration,Episode Duration
+episode_duration2,Episode Duration (squared)
+episode_duration3,Episode Duration (cubed)
+episode_censored,Left Censored Episode
+recur,Recurring Conflict Episode
+pko,Peacekeeping Operation
+cumulative_intensity,High Intensity
+incompatibility,Territorial Conflict
+cold_war,Cold War
+ongoing_intrastate,Ongoing Intrastate Conflict(s)
+ongoing_interstate,Ongoing Interstate Conflict(s)
+ext_sup_s_state_bin,External Support to Rebel(s)
+ext_sup_s_rebel_bin,External Support to Government
+interaction,External Support to Both Sides
+frozen,Frozen

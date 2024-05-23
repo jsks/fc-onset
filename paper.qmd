@@ -20,7 +20,7 @@ format:
             - templates/before-body.tex
             - templates/title.tex
 execute:
-    cache: false
+    cache: true
     echo: false
     warning: false
 abstract: |
@@ -29,9 +29,13 @@ abstract: |
     paid to the factors influencing their emergence. This paper addresses
     one possible dimension, namely the effect of external state support to
     conflict actors on the probability of an ongoing civil conflict
-    becoming frozen. I use an original dataset coding frozen conflicts as
+    becoming frozen. Specifically, I investigate how external state support shapes
+    the conditions under which actors may prefer a sub-optimal solution, allowing a
+    conflict to transition into a state of unstable peace with an ever present
+    threat of violent re-escalation, rather than a conclusive termination. In terms
+    of empirics, I use an original dataset coding frozen conflicts as
     an outcome among UCDP civil conflict episodes from 1975 to 2019 in
-    order to construct a series of bayesian, hierarchical probit models
+    order to construct a  bayesian, hierarchical probit model
     motivated by an application of bargaining theory to the domain of
     frozen conflicts. Results indicate that directed support to rebels increases
     the probability that a civil conflict episode terminates as a frozen
@@ -42,15 +46,12 @@ abstract: |
     these findings help provide a more nuanced understanding of conflict
     termination beyond the common assumption that conflicts either
     conclude through a negotiated settlement or a one-sided military
-    victory. Furthermore, this paper also helps shed light on the
-    conditions under which actors may prefer a sub-optimal solution,
-    allowing a conflict to transition into a state of unstable peace with
-    an ever present threat of violent re-escalation, rather than a
-    conclusive termination.
+    victory.
 ---
 
 [//]: # Setup R environment
 ```{r setup, include = F}
+library(bayesplot)
 library(dplyr)
 library(ggplot2)
 library(ggthemes)
@@ -69,17 +70,20 @@ options(knitr.kable.NA = ".", knitr.kable.format = "latex",
 theme_set(theme_tufte(base_family = "TeX Gyre Pagella", base_size = 10))
 
 design <- readRDS("./data/model_inputs/design.rds")
+labels <- read.csv("./refs/labels.csv")
 ```
 
-Frozen conflicts are among some of the most pernicious, difficult to resolve conflicts. They are unique among conflict outcomes in that they emerge from an inconclusive conflict termination, and leave conflict actors in an indeterminate state of unstable peace with an ever present threat of violent re-escalation.
+Frozen conflicts are among some of the most pernicious, difficult to resolve conflicts. They are unique among conflict outcomes in that they emerge from an inconclusive conflict termination, and leave conflict actors in an indeterminate state of unstable peace with an ever present threat of violent re-escalation. This state can be perpetuated for decades with alternations between mediation attempts and sporadic incidences of violence, and in some cases punctuated by full blown re-ignition of the initial war.
 
-Surprisingly, despite the geographic and temporal dispersion of frozen conflicts, little scholarly attention has been paid to the factors influencing their emergence [@klosek_frozen_2021]. The frozen conflict specific literature mostly consists of qualitative case studies of specific conflicts, while the broader academic work on conflict termination has so far not incorporated frozen conflict as a unique conflict outcome.
+It is also notable the extent to which frozen conflicts are geograpically and temporally dispersed. The concept of frozen conflicts has long been associated with the separatist conflicts that emerged following the breakdown of the Soviet Union and Yugoslavia; however, numerous regions across the world have at different times been host to frozen conflicts including, for example, the self-declared Sahrawi Arab Democratic Republic in Western Sahara, Northern Cyprus, and Aceh in Indonesia. These conflicts have emerged at different time periods and also exhibit significant variation in the duration in which they can be classified as frozen.
 
-This paper seeks to address this gap by asking, why do some civil conflicts become frozen? There are a wide variety of potential factors which could plausibly be correlated with the emergence of frozen conflicts; however, I decide to focus on the international dimension, specifically the role of external support provided by third party state actors to conflict belligerents. There exists extensive work on the impact of external support on conflict onset, duration, and termination [@hartzell_civil_2016]. Although there may be disagreements on the exact relationship between external support and various aspects of civil conflicts, the aggregate finding is that external support is an important factor.
+Surprisingly, despite the risk for future violence posed by frozen conflicts, little scholarly attention has been paid to the factors influencing their emergence [@klosek_frozen_2021]. The limited frozen conflict specific literature mostly consists of qualitative case studies of specific conflicts, while the broader academic work on conflict termination has so far not incorporated frozen conflict as a unique conflict outcome.
+
+This paper seeks to address this gap by asking, why do some civil conflicts become frozen? There are a wide variety of potential factors which could plausibly be correlated with the emergence of frozen conflicts; however, I decide to focus on the international dimension, specifically the role of external support provided by third party state actors to conflict belligerents. The reason is twofold. First, several of the most notable examples of frozen conflicts have featured the involvement of third party states, which opens the question for how common international involvement is within the larger universe of frozen conflicts. For example, Russia has played an out-sized role both as a supporter and mediator in several of the post-Soviet separatist conflicts that have since become frozen [@lynch_separatist_2002]. Even in the case of Western Sahara, bordering states such as Algeria have involved themselves indirectly in the conflict as a supporter for the Polisario Front, and continue to allow the government-in-exile of the Sahrawi Arab Democratic Republic to reside in Tindouf, Algeria [@zunes_western_2022]. Second, within the broader conflict literature there exists extensive work on the impact of external support on conflict onset, duration, and termination [@hartzell_civil_2016]. Although there may be disagreements on the exact relationship between external support and various aspects of civil conflicts, the aggregate finding is that external support is an important factor for understanding conflict dynamics.
 
 In what follows, I begin by providing an overview of the previous literature, both in terms of the frozen conflict specific work as well as the broader literature on civil conflict termination. I then offer a theory for why certain civil conflicts become frozen and link it to the role played by external support. In brief, conflicts freeze when actors seek to minimize the costs of fighting by de-escalating the conflict intensity when unable to either achieve a military advantage during fighting or agree to a negotiated settlement. External support is thought to be positively correlated with the likelihood that a civil conflict becomes frozen, primarily by shifting the balance of power under certain conditions towards a stalemate situation.
 
-To empirically investigate this theory I provide an exploratory analysis using a series of bayesian hierarchical probit models with original coded data on frozen civil conflict onsets. The findings show that external state support does increase the probability that a civil conflict terminates in a frozen state, but only in the case of directed support to rebel groups in civil conflicts where the central incompatibility centers around territory. These results contribute to our understanding of frozen conflicts, as well as provide a more nuanced understanding of conflict termination more broadly.
+To empirically investigate this theory I provide an exploratory analysis using a bayesian hierarchical probit model with original coded data on frozen civil conflict onsets. The findings show that external state support does increase the conditional probability that a civil conflict terminates in a frozen state, but only in the case of directed support to rebel groups in civil conflicts where the underlying incompatibility centers around territory. These results contribute to our understanding of frozen conflicts, as well as provide a more nuanced understanding of conflict termination more broadly by identifying conflict episodes that terminate, but are nonetheless perpetuated as a frozen conflict. This latter point has implications for the study of recurrent conflicts since a frozen state is an important link between what may be otherwise perceived as discrete episodes of violence.
 
 # Literature Review
 
@@ -107,7 +111,6 @@ Consider the case of the Second Libyan Civil War. In the aftermath of the overth
 
 I contend that the intervening years between the initial ceasefire agreement and the 2019 offensive are best characterized as a dyadic frozen conflict between non-separatist entities within a larger civil war. Although significantly shorter than the typical examples of frozen conflicts involving *de facto* independent separatist states, it satisfies the criteria of an initial period of violence followed by a cessation of large-scale hostilities, albeit with intermittent fighting, and the core issue clearly remained highly salient whilst central government authority was seriously contested.
 
-
 Finally, it is worth distinguishing frozen conflict from several related concepts, specifically protracted stalemates and enduring internal rivalries. In the case of the former, stalemates during a conflict can potentially endure for extended periods of time and offer conditions similar to those of a frozen conflict. However, they do not necessitate a stop in active fighting. Instead, they may develop into wars of attrition where actors are unable to achieve an outright military advantage, but continue fighting in the hope of outlasting and "grinding down" the enemy, *i.e.* being better able to endure the prolonged costs of conflict. In the case of the latter, enduring internal rivalries are defined by @derouen_enduring_2008 as "...internal conflicts between a government and an insurgency with at least 10 years of [non-consecutive] armed conflict in which there are at least 25 deaths", an extension of the interstate concept of enduring rivalries [@goertz_enduring_1993] characterized by repeated onsets of militarized disputes. Compared to frozen conflicts, enduring internal rivalries include an explicit temporal requirement and, similar to stalemates, are not restricted to conflicts where fighting has largely stopped. The concept of frozen concepts uniquely captures the post-war condition of unstable peace that characterizes certain conflicts where there is no conclusive termination to the initial episode of fighting.
 
 ## The Emergence of Frozen Conflicts
@@ -124,7 +127,7 @@ Secondly, there is an implicit assumption that conflict costs are dynamic over t
 
 [^lit]: This assumption is often carried on in more recent literature as well. See for example the overviews provided by @reiter_exploring_2003 and @walter_bargaining_2009.
 
-Finally, for a frozen conflict to emerge as a equilibrium state the underlying issue has to remain salient. This was previously discussed in the definition for frozen conflict, but it is worth reiterating in order to emphasize that a stalemate situation is not sufficient to guarantee that a frozen conflict will emerge. For example, in the case where a conflict terminates in an indeterminate state, but one of the belligerents unilaterally renounces violence then the underlying incompatibility as an impetus for armed conflict would no longer be pertinent. Such a scenario could hardly be described as an ongoing conflict that has frozen.
+Finally, for a frozen conflict to emerge as a equilibrium state the underlying issue has to remain salient. This was previously discussed in the definition for frozen conflict, but it is worth reiterating in order to emphasize that a stalemate situation is not sufficient to guarantee that a frozen conflict will emerge. For example, in the case where a conflict terminates in an indeterminate state, but one of the belligerents unilaterally renounces violence then the underlying incompatibility as an impetus for armed conflict would no longer be relevant. Such was the case with the Basque separatist group, Euskadi Ta Askatasuna (ETA), which unilaterally declared a cessation of armed activity in 2011 followed by complete disbandement in 2018. Such a scenario could hardly be described as an ongoing conflict that has frozen.
 
 Taken together, convergent beliefs, dynamic costs, and issue salience represent minimum requirements for a conflict to become frozen, but there is still the open question, why would an actor in a stalemate situation not prefer a bargained solution terminating the conflict?[^mirror] Actors may be able to minimize costs by de-escalating the intensity; however, because the conflict is not conclusively terminated there is an ever present threat of violent re-escalation meaning that actors need to maintain some degree of military preparedness, lest the balance of power swings too far in favor of the opposing side. More formally, the expected utility of maintaining the conflict in a frozen state, with the potential to violently relitigate the issue at some future time, has to outweigh the costs associated with a frozen conflict. This means that an actor either expects to be able to gain the military advantage they were unable to achieve in the first round of fighting, or believes that they can achieve a more favourable bargain than what is currently available. To this end, I propose three different mechanisms that can plausibly incentivize actors to forgo a peaceful settlement under the condition of being unable to achieve a one-sided military victory.
 
@@ -132,11 +135,19 @@ Taken together, convergent beliefs, dynamic costs, and issue salience represent 
 
 #### Credible Commitments
 
-That certain actors are at times unable to credibly commit to a negotiated settlement has long been identified as a potential hindrance to civil conflict termination [@walter_critical_1997; @sawyer_role_2017]. If an actor believes that an opponent will eventually renege on an agreement, they may be incentivized to fight even if they prefer to avoid war. A similar mechanism can be applied to frozen conflicts. Distrust and uncertainty can make it difficult to establish a bargaining space between actors. If neither actor is willing to continue fighting, then it may be preferable to let the conflict freeze if the costs of a frozen conflict are outweighed by the risk of the opponent reneging.
+That certain actors are at times unable to credibly commit to a negotiated settlement has long been identified as a potential hindrance to civil conflict termination [@walter_critical_1997; @sawyer_role_2017]. If an actor believes that an opponent will eventually renege on an agreement, they may be incentivized to fight even if they prefer to avoid war. This belief arises when there is uncertainty over potential future shifts in the distribution of relative capabilities absent guarantees that enforce the agreement, and can occur even in ideal scenarios where actors have complete information on the opponent's strength and resolve.[^democracy] This logic can be applied directly to frozen conflicts. Distrust and uncertainty can make it difficult to establish a bargaining space between actors. If neither actor is willing or able to continue fighting, then it may be preferable to let the conflict freeze if the costs of a frozen conflict are outweighed by the risk of the opponent reneging.
+
+[^democracy]: For example, within the context of civil conflicts,
+    democratic political institutions are often considered to be one
+    viable pathway through which commitment problems can be overcome
+    by translating the transitory *de facto* power of the opposition
+    into *de jure* guarantees for the regular, peaceful contest of
+    office [@acemoglu_economic_2005; hegre_democracy_2014].
+
 
 #### Transitory War Gains
 
-A second important mechanism relates to the wartime distribution of disputed goods. During the course of a conflict, actors achieve transitory gains, such as for example territory or access to specific resources, which may not carry over into the post-conflict order under a bargained solution. If those transitory gains outweigh the benefits of a settlement, an actor who discounts the future will seek to maintain the *intrabellum* distribution and forestall any negotiations [@spaniel_stall_2020]. This is particularly applicable to frozen conflicts since by definition the belligerents are unable to agree on a bargained solution to the conflict. When the conflict freezes this also freezes the current status quo such that actors are able to continue deriving utility from their transitory war gains. Therefore, a frozen conflict may arise when there is a mismatch between the wartime distribution and the expected distribution under a post-conflict settlement.
+A second important mechanism relates to the wartime distribution of disputed goods. During the course of a conflict, actors achieve transitory gains, such as for example territory or access to specific resources, which may not carry over into the post-conflict order under a bargained solution. If those transitory gains outweigh the benefits of a settlement, an actor who discounts the future will seek to maintain the *intrabellum* distribution and forestall any negotiations [@spaniel_stall_2020]. This is particularly applicable to frozen conflicts since by definition the belligerents are unable to agree on a bargained solution to the conflict. When the conflict freezes this also freezes the current status quo such that actors are able to continue deriving utility from their transitory war gains. Therefore, a frozen conflict may arise when there is a mismatch between the wartime distribution and the expected distribution under a post-conflict settlement. This opens up for the possibility that a frozen conflict can provide a positive utility to actors, despite the accumulating costs of maintaining hostilities in a frozen state.
 
 #### Time Horizons
 
@@ -146,23 +157,27 @@ Lastly, actors may also prefer the utility gained from a frozen conflict over a 
 
 ### Distinguishing Between Civil Conflict Types
 
-All three of these mechanisms may be present in different conflicts that have become frozen; their logics are not necessarily mutually exclusive and in some ways can be complementary. The degree to which each mechanism is relevant to any specific conflict depends in part on the conflict type. It is useful here to distinguish between civil conflicts fought over control of the state and civil conflicts fought over autonomy and/or independence claims. In the case of the former, the ultimate goal is to seize power from an incumbent regime. The prime impediment to a settlement is the risk that the post-conflict incumbent will violate the agreement, especially within authoritarian contexts where there is a fear of retribution. Thus, the preference for a frozen conflict, assuming that neither side can achieve a military advantage, may primarily stem from credible commitment problems.
+All three of these mechanisms may be present in different conflicts that have become frozen; their logics are not necessarily mutually exclusive and in some ways can be complementary. The degree to which each mechanism is relevant to any specific conflict depends in part on the conflict type. It is useful here to distinguish between civil conflicts fought over control of the state and civil conflicts fought over autonomy or independence claims. In the case of the former, the ultimate goal is to seize power from an incumbent regime. Absent a clear military victory, a bargained solution will typically imply some type of power-sharing agreement. In such a scenario, the prime impediment to a settlement is the risk that the post-conflict incumbent will violate the agreement, especially within an authoritarian context where there is a fear of retribution. Thus, the preference for a frozen conflict, again assuming that neither side can achieve a military advantage, may primarily stem from credible commitment problems.
 
-In the case of the latter, civil conflicts fought over autonomy and/or independence claims, can also involve credible commitment issues as an incentive towards frozen conflict. Specifically, it is difficult for the government to credible commit to an agreement granting greater autonomy, in part because it may galvanize additional claims from other groups [@walter_information_2006; @toft_self-determination_2012]. Furthermore, as some scholars have argued, the international community tends to be fairly conservative regarding new sovereignty claims [@huddleston_foulweather_2021; @siroky_unilateral_2021]. Since rebel groups are typically outmatched by the government [@brandt_when_2008] such that it is unlikely that they will win in an absolute war and successfully disarm the regime, a frozen conflict may be the optimal outcome, especially when the opposition is able to seize and consolidate territory. If the rebel group is unable to trust the government to credibly bargain, then they will highly value the present transitory gains and seek to maintain the status quo. Meanwhile, the government may also face an incentive towards a frozen conflict in these scenarios. There is a strong international norm in favor territorial integrity.[^IR] If the government is unable to outright defeat a rebel group, especially one that has established a *de facto* independent state, then the government may be seeking a long-term plan for forcible reintegration. A frozen conflict allows the government to ease the burden of active fighting while maintaining their sovereignty claims on breakaway territory. Crucially, this latter point allows the government to frame the frozen conflict as an ongoing civil war if and when there is another violent re-escalation, as opposed to an interstate war of territorial conquest against a newly independent state.
+In the case of the latter, civil conflicts fought over autonomy and/or independence claims, can also involve credible commitment issues as an incentive towards frozen conflict for the opposition. Specifically, it is difficult for the government to credible commit to an agreement granting greater autonomy, in part because it may create a precedent that galvanizes additional claims from other groups [@walter_information_2006; @toft_self-determination_2012]. Thus, even if the government is willing to negotiate it must balance between the immediate demands from one group versus potential future claims by other groups which may threaten territorial stability. This creates a dilemma that undermines the government's credibility when bargaining. Furthermore, as some scholars have argued, the international community tends to be fairly conservative regarding new sovereignty claims [@huddleston_foulweather_2021; @siroky_unilateral_2021]. Since rebel groups are typically outmatched by the government [@brandt_when_2008] such that it is unlikely that they will win in an absolute war and successfully disarm the regime, a frozen conflict may be the optimal outcome, especially when the opposition is able to seize and consolidate territory. If the rebel group is unable to trust the government to credibly bargain, then they will highly value the present transitory gains and seek to maintain the status quo.
 
-[^IR]: I need to check the IR literature to provide a citation for this claim.
+Meanwhile, the government may also face an incentive towards a frozen conflict in these scenarios. Some scholars have argued that there is a strong international norm in favor territorial integrity [@zacher_territorial_2001].[^IR] If the government is unable to outright defeat a rebel group, especially one that has established a *de facto* independent state, then the government may be seeking a long-term plan for forcible reintegration. A frozen conflict allows the government to ease the burden of active fighting while maintaining their sovereignty claims on breakaway territory. Crucially, this latter point permits the government to frame the frozen conflict as an ongoing civil war if and when there is another violent re-escalation, as opposed to an interstate war of territorial conquest against a newly independent state.
+
+[^IR]: It is worth noting that this claim as it relates to the prevalance of territorial conquest has been contested, see for example @altman_evolution_2020 and @altman_why_2022 where it is argued that small-scale territorial conquest has persisted in the post-WW2 era. However, complete conquest of an opposing state has not occurred, rendering it difficult for a state to forcibly reintegrate former territory that has achieved internationally recognized *de jure* independence.
 
 ### External State Support
 
-Where does external support by third party states to belligerents fit into the previously mentioned mechanisms and how does external support shape the utility calculation of actors either in favor or against a conflict freezing? I see external state support affecting the propensity for a frozen conflict in several different ways. Principally, support to a conflict actor can increase their military capabilities and shift the balance of power. As some scholars have argued, this is especially true in the case of directed support to rebel groups [@balch-lindsay_third-party_2008; @gent_going_2008], providing them an opportunity to launch a credible challenge to the government. This does not mean that the conflict will automatically become frozen, but it may raise the likelihood of a stalemate which is an important first step. Furthermore, external support also helps subsidize the potential cost of maintaining a frozen conflict, which may allow actors a longer time horizon such that they will reject an immediate settlement if they are optimistic about the future utility of renewed fighting.
+Where does external support by third party states to belligerents fit into the previously mentioned mechanisms and how does external support shape the utility calculation of actors either in favor or against a conflict freezing? I see external state support affecting the propensity for a frozen conflict in several different ways. Principally, support to a conflict actor can increase their military capabilities and shift the balance of power. As some scholars have argued, this is especially true in the case of directed support to rebel groups [@balch-lindsay_third-party_2008; @gent_going_2008], providing them an opportunity to launch a credible challenge to the government. This does not mean that the conflict will automatically become frozen, but it may raise the likelihood of a stalemate which is an important first step. As a second step, external support may also create uncertainty over the *future* balance of power. Recall the credible commitment mechanism, whereby actors may prefer war over a bargained solution when there exists uncertainty over the future distribution of power, absent guarantees that the opposing side will not renege. Previous instances of external support may create an expectation of future support, affecting the ability of an actor to credibly commit to bargaining in the present [@karlen_legacy_2017]. Faced with a stalemate situation and a credible commitment dilemma, actors may prefer a frozen conflict.
 
-Scholars have also argued that the involvement of additional third party actors can complicate the bargaining process for an ongoing civil conflict [@cunningham_veto_2006; @cunningham_blocking_2010]. External supporters may have conflicting outcome preferences to the actors they are supporting. As the number of actors involved in a bargaining process grows, coordinating the disparate interests becomes increasingly difficult, another disincentive against achieving a negotiated settlement.
+In addition, external support may also help subsidize the potential cost of maintaining a frozen conflict. This is crucial for actors that value the present status quo. For example, offsetting the cost of a frozen conflict allows actors to maximize the utility gained from transitory war gains, which may be particularly important in the case of territorial civil conflicts, as discussed previously. It may also allow actors to extend their time horizons such that they will reject an immediate settlement if they are optimistic about the future utility of renewed fighting. For governments aiming to forcibly reintegrate a breakaway territory, external support aids and subsidizes the waiting time during which the government aims to improve their military forces in order to relitigate the conflict in the future.
 
-In sum, external support should increase the likelihood of a stalemate and incentivize actors to maintain the transitory status quo in the form of a frozen conflict. My empirical expectation is that the effect should be strongest when directed support is only provided to the rebels. When support is either provided to the government, or to both sides, then it is less likely that a balance of power will emerge and I assume the situation will on average favor the government. Furthermore, I also expect this correlation to be strongest for civil conflicts concerning independence or autonomy. Given how difficult it is to secure autonomy rights from a government or achieve international sovereignty recognition for separatist rebels, as well as the general desire for governments to forcibly reintegrate territories where they maintain a sovereignty claim, there exists a stronger incentive from both sides to favour a frozen outcome. External support is especially important then to provide the capacity to rebel groups to secure territory and consolidate power.
+Finally, scholars have also argued that the involvement of additional third party actors can complicate the bargaining process for an ongoing civil conflict [@cunningham_veto_2006; @cunningham_blocking_2010]. External supporters may have conflicting outcome preferences to the actors they are supporting. As the number of actors involved in a bargaining process grows, coordinating the disparate interests becomes increasingly difficult, another disincentive against achieving a negotiated settlement. In the face of competitive interventions, third party actors may also be unwilling to fully invest the resources necessary for a military victory if they are not confident that there will be a favourable post-conflict order. In such a scenario, in may be in the external supporters interest to perpetuate the conflict in a frozen state.
+
+In sum, external support should increase the likelihood of a stalemate and incentivize actors to maintain the transitory status quo in the form of a frozen conflict through any of three aforementioned mechanisms. Therefore, my empirical expectation is that there should be a positive correlation between external third party support and the probability of a civil conflict becoming frozen. On the basis of previous empirical findings highlighting the importance of support to the opposition, I expect the effect should be strongested when directed support is only provided to the rebels. When support is either provided to the government, or to both sides, then it is less likely that a balance of power will emerge and I assume the situation will on average favor the government. Furthermore, I also expect this correlation to be strongest for civil conflicts concerning independence or autonomy. Given how difficult it is to secure autonomy rights from a government or achieve international sovereignty recognition for separatist rebels, as well as the general desire for governments to forcibly reintegrate territories where they maintain a sovereignty claim, there exists a stronger incentive from both sides to favour a frozen outcome. External support is especially important then to provide the capacity to rebel groups to secure territory and consolidate power.
 
 # Empirics
 
-To empirically assess whether external state support for conflict actors affects the probability of a civil conflict episode terminating as a frozen conflict a series of bayesian probit models were run using original data on frozen civil conflicts. In what follows, I will first present the model specification followed by a discussion of the included dependent and independent variables, including operationalizations and data sources. Finally, I will present the results and discuss the implications for understanding the emergence of frozen conflicts.
+To empirically assess whether external state support for conflict actors affects the probability of a civil conflict episode terminating as a frozen conflict a bayesian probit model was run using original data on frozen civil conflicts. In what follows, I will first present the model specification followed by a discussion of the included dependent and independent variables, including operationalizations and data sources. Finally, I will present the results and discuss the implications for understanding the emergence of frozen conflicts.
 
 ## Probit Model
 
@@ -177,9 +192,9 @@ where $\Phi(\cdot)$ is the standard normal cumulative density function. Then, $\
 
 In the case of the global intercept and slope coefficients for the control variables, $X$, I select fairly conservative, weakly informative priors given the restricted sample size and moderate number of predictors. Specifically, I set $\alpha \sim \text{N}(0, 5)$ and $\beta \sim \text{N}(0, 1)$ to improve sampling efficiency by placing less prior probability density on unlikely large values on the probit scale and to provide a degree of regularization.
 
-For $\delta_k$ and $\gamma$ I use hierarchical priors that allow for varying effects while partially pooling information across groups to prevent overfitting. Regarding the former, this means $\delta_{jk} \sim \text{N}(\mu_j, \tau_j)$ for $j = 1, 2, \ldots, D$ where $\mu_j \sim \text{N}(0, 1)$ and $\tau_j \sim \text{N}(0, 2.5)$. And for the latter, $\gamma_c \sim \text{N}(0, \sigma)$ and $\sigma \sim \text{N}(0, 1)$. The particularly restrictive hyperprior on $\sigma$ shrinks the posterior $\gamma$ estimates towards zero and encodes a significant degree of skepticism towards country-specific deviations.[^country-intercepts]
+For $\delta_k$ and $\gamma$ I use hierarchical priors that allow for varying effects while partially pooling information across groups to guard against overfitting. Regarding the former, this means $\delta_{jk} \sim \text{N}(\mu_j, \tau_j)$ for $j = 1, 2, \ldots, D$ where $\mu_j \sim \text{N}(0, 1)$ and $\tau_j \sim \text{N}(0, 2.5)$. And for the latter, $\gamma_c \sim \text{N}(0, \sigma)$ and $\sigma \sim \text{N}(0, 1)$. The particularly restrictive hyperprior on $\sigma$ shrinks the posterior $\gamma$ estimates towards zero and encodes a significant degree of skepticism towards country-specific deviations.[^country-intercepts]
 
-[^country-intercepts]: The risk for overfitting is especially high for the country-specific intercepts since the number of observations per country is relatively small with the median country only experiencing two episodes within the time period under study.
+[^country-intercepts]: The risk for overfitting is especially high for the country-specific intercepts since the number of observations per country is relatively small with the median country only experiencing two episodes within the time period under study. The practical effect is that the intercepts for countries with few observations will be pulled towards zero with an increase in the posterior uncertainty intervals.
 
 Due to the non-linear nature of a probit regression model, in order to interpret the estimated association between the treatments and outcome, the target empirical estimands are the group-specific average marginal effects, *i.e.* the changes in the conditional expectation of the outcome variable given the various treatment states versus the baseline control averaged over the relevant subgroup sample.[^mem] Let $\theta$ denote the vector of all unknown parameters in the regression model, then the average marginal effect (AME) for the $j^{th}$ treatment state represented by vector $w_j$ for subsample $k$ can be approximated using $m = 1, 2, \ldots, M$ posterior draws from $p(\theta | y, X, T)$ such that
 
@@ -199,7 +214,7 @@ The outcome variable in my regression model is a binary indicator for whether a 
 
 [^partial]: Note, this does not exclude tha possibility that frozen conflicts can arise following a partial peace agreement or ceasefire. For example, the First Nagorno-Karabkh War was terminated with the 1994 Bishkek Protocol establishing a general ceasefire; however, the agreement failed to address the status of Nagorno-Karabakh leading to a frozen conflict with periodic re-escalations until the forcible reintegration of the territory by Azerbaijan following the 2023 offensive.
 
-[^strict_frozen]: In the [appendix][robustness checks] I extend the analysis presented in this paper and run a series of robustness checks where I adopt a more strict definition of conflict termination requiring that frozen conflicts have more than 2 years below the UCDP threshold for an active conflict year in order to better distinguish between frozen conflicts and short-term pauses in fighting. TODO: what are the results?
+[^strict_frozen]: In the [appendix][robustness checks] I extend the analysis presented in this paper and run a series of robustness checks where I adopt a more strict definition of conflict termination requiring that frozen conflicts have more than 2 years below the UCDP threshold for an active conflict year in order to better distinguish between frozen conflicts and short-term pauses in fighting.
 
 ```{r dataset}
 dataset <- readRDS("./data/merged_data.rds")
@@ -258,10 +273,9 @@ p1 + p2
 
 ```
 
+Compared to the only other extant coding of frozen conflicts, the Frozen Conflict Dataset (FCD) [@klosek_frozen_2021], the measure that I employ features a more expansive operationalization of the concept of frozen conflicts. Although the FCD covers a wider period from 1946 until 2011, only civil conflicts involving *de facto* states according to the coding by @florea_facto_2014 are included resulting in 17 cases of frozen civil conflicts. Furthermore, the termination year for a civil conflict episode in the FCD is coded as the last year in which the number of battle related deaths is above 500. In contrast, my measure looks beyond only *de facto* states and considers civil conflicts where the central incompatibility may center over control of the government. Furthermore, I follow the UCDP and employ a smaller battle related fatalities threshold thereby capturing lower intensity conflict episodes.[^insurgencies]
 
-Compared to the only other extant coding of frozen conflicts, the Frozen Conflict Dataset (FCD) [@klosek_frozen_2021], the measure that I employ features a more expansive operationalization of the concept of frozen conflicts. Although the FCD covers a wider period from 1946 until 2011, only civil conflicts involving *de facto* states according to the coding by @florea_facto_2014 are included resulting in 17 cases of frozen conflict. Furthermore, the termination year for a civil conflict episode in the FCD is coded as the last year in which the number of battle related deaths is above 500. In contrast, my measure looks beyond only *de facto* states and considers civil conflicts where the central incompatibility may center over control of the government. Furthermore, I follow the UCDP and employ a smaller battle related fatalities threshold thereby capturing lower intensity conflict episodes.[^insurgencies]
-
-[^insurgencies]: There is a risk that including low-level conflict episodes risks conflating minor, long-running insurgencies with frozen conflicts. It can be argued that the former may persist at such a low level of activity with only sporadic, isolated incidences of limited violence as to not represent a meaningfully salient issue to the incumbent state and would therefore not constitute a frozen conflict. To mitigate this risk, I also run the analysis presented in this paper on a sub-sample of conflicts with a cumulative intensity of at least 1,000 battle related fatalities since onset in the [appendix][robustness checks]. TODO: results
+[^insurgencies]: There is a risk that including low-level conflict episodes risks conflating minor, long-running insurgencies with frozen conflicts. It can be argued that the former may persist at such a low level of activity with only sporadic, isolated incidences of limited violence as to not represent a meaningfully salient issue to the incumbent state and would therefore not constitute a frozen conflict. To mitigate this risk, I also run the analysis presented in this paper on a sub-sample of conflicts with a cumulative intensity of at least 1,000 battle related fatalities since onset in the [appendix][robustness checks].
 
 ### Treatments
 
@@ -305,11 +319,11 @@ p1 + p2 + plot_layout(axis_title = "collect", guides = "collect") & xlab("Extern
 
 ### Control Variables
 
-In addition to the treatment variables I also include a set of covariates that could plausibly confound the relationship between external state support and frozen conflicts. This includes variables related to  conflict dynamics, specifically: conflict episode duration, episode recurrence within a conflict, and cumulative intensity. Conflicts which last longer may affect the willingness of third party actors to offer support to belligerents. Simultaneously, long-running conflicts may also be at a greater risk of becoming frozen since the protracted nature of the conflict indicates an inability for either side to achieve a one-sided victory or be willing to reach a compromise through a peace agreement. We could expect the costs to increase such that active fighting ceases; however, the underlying conflict remains unresolved and the conflict transitions to being frozen. Thus, I include the number of years for which each episodes lasts until termination transformed with the natural logarithm function in order to reflect the diminishing impact of each one unit increase. A similar logic may also apply to episode recurrence. Recurring episodes can also indicate an intractable long-running conflict that may affect both external support and the likelihood for a conflict to become frozen. Therefore, I include a binary indicator variable for whether an episode is a recurring episode within a larger conflict as identified by the UCDP. Finally, I also include a binary indicator for whether the cumulative number of battle related deaths has exceeded 1,000 since onset. High intensity conflicts would be indicative of a greater relative strength for the opposition and may be more likely to attract outside intervention both because of the potential destabilizing effects to international/regional security as well as the greater opportunity for third party state rivals to secure a favourable post-war outcome. Furthermore, a stronger opposition may also raise the probability that the conflict becomes frozen since the incumbent government may be less likely to win an outright victory.
+In addition to the treatment variables I also include a set of covariates that could plausibly confound the relationship between external state support and frozen conflicts.[^descriptive] This includes variables related to conflict dynamics, specifically: conflict episode duration, episode recurrence within a conflict, and cumulative intensity. Conflicts which last longer may affect the willingness of third party actors to offer support to belligerents. Simultaneously, long-running conflicts may also be at a greater risk of becoming frozen since the protracted nature of the conflict indicates an inability for either side to achieve a one-sided victory or be willing to reach a compromise through a peace agreement. We could expect the costs to increase such that active fighting ceases; however, the underlying conflict remains unresolved and the conflict transitions to being frozen. Thus, I include the number of years each episodes lasts until termination as cubic polynomial terms in order to capture a potential non-linear effect [@carter_back_2010]. A similar logic may also apply to episode recurrence. Recurring episodes can also indicate an intractable long-running conflict that may affect both external support and the likelihood for a conflict to become frozen. Therefore, I include a binary indicator variable for whether an episode is a recurring episode within a larger conflict as identified by the UCDP. Finally, I also include a binary indicator for whether the cumulative number of battle related deaths has exceeded 1,000 since onset. High intensity conflicts would be indicative of a greater relative strength for the opposition and may be more likely to attract outside intervention both because of the potential destabilizing effects to international/regional security as well as the greater opportunity for third party state rivals to secure a favourable post-war outcome. Furthermore, a stronger opposition may also raise the probability that the conflict becomes frozen since the incumbent government may be less likely to win an outright victory.
 
-In complement to the partially pooled varying treatment effects, I also include a binary indicator for whether the conflict incompatibility concerns territory in order to account for a potential differing baseline probability for termination as a frozen conflict and the possibility that the conflict incompatibility affects the likelihood of external support. Further, I include variables to control for the Cold War and ongoing inter/intra-state conflicts within the host country. The former is a binary indicator for whether the termination year falls before 1989 to capture temporal dynamics related to the propensity for different types of conflict terminations. For example, international norms concerning external intervention in civil conflicts may be shaped in part by the state of the international system influencing both the decision by third party actors to intervene in a civil conflict and the types of conflict terminations that external interveners seek [@howard_how_2017]. The latter are binary indicators as well measuring whether an interstate or intrastate conflict occurred at any time during the conflict episode. Third party states involved in one conflict may be more likely to also intervene in another ongoing conflict within the same country. Furthermore, multiple ongoing conflicts could also indicate a weakened incumbent government forced to face multiple opponents, which may in turn affect the probability that a conflict freezes. Lastly, I include a binary variable for whether a conflict is left censored, *i.e.*, that the onset of the episode occurred before the coding start for the dataset, since data on external support from the ESD is only available from 1975 until 2017.[^robust_censor]
+[^descriptive]: Descriptive statistics for the control variables as well as the outcome and treatments are provided in @tbl-stats in the [appendix][Descriptive Statistics].
 
-[^robust_censor]: I also run multiple robustness checks in the [appendix][robustness checks] where I alternatively drop episodes with an episode onset year before the coding start for the dataset and/or recurrent episodes within conflicts that also began prior to 1975.
+In complement to the partially pooled varying treatment effects, I also include a binary indicator for whether the conflict incompatibility concerns territory in order to account for a potential differing baseline probability for termination as a frozen conflict and the possibility that the conflict incompatibility affects the likelihood of external support. Moreover, I include binary variables to control for the Cold War, ongoing inter/intra-state conflicts, and the presence of peacekeeping operations within the host country. The first is an indicator for whether the termination year falls before 1989 to capture temporal dynamics related to the propensity for different types of conflict terminations. For example, international norms concerning external intervention in civil conflicts may be shaped in part by the state of the international system influencing both the decision by third party actors to intervene in a civil conflict and the types of conflict terminations that external interveners seek [@howard_how_2017]. The second are variables measuring whether an interstate or intrastate conflict occurred at any time during the conflict episode. Third party states involved in one conflict may be more likely to also intervene in another ongoing conflict within the same country. Furthermore, multiple ongoing conflict could also indicate a weakened incumbent government forced to face multiple opponents, which may in turn affect the probability that a conflict freezes. The third is drawn from the Third-Party Peacekeeping Missions Dataset version 3.5 [@mark_j_mullenbach_third-party_2013] which codes UN and non-UN led peacekeeping operations. Lastly, I include a binary variable for whether a conflict is left censored, *i.e.*, that the onset of the episode occurred before the coding start for the dataset, since data on external support from the ESD is only available from 1975 until 2017.
 
 ## Results
 
@@ -327,8 +341,8 @@ In complement to the partially pooled varying treatment effects, I also include 
 #|     frozen conflict onset versus the baseline with 50% and 90%
 #|     credible intervals. Point estimates are the posterior medians.
 
-main_model <- filter(design, outcome == "frozen", treatment == "bin", episodes == "all",
-                     censored == "with_censored") |> pull(id)
+main_model <- filter(design, outcome == "frozen", treatment == "bin", episodes == "all") |>
+    pull(id)
 
 fit <- sprintf("posteriors/%s/fit.rds", main_model) |>  readRDS()
 
@@ -354,6 +368,7 @@ ggplot(ame, aes(x = value, y = variable, fill = variable)) +
                                 "ame[4]" = "Both")) +
     coord_flip() +
     facet_grid(. ~ group) +
+    theme(strip.text = element_text(face = "bold")) +
     scale_fill_solarized()
 ```
 
@@ -392,16 +407,21 @@ ggplot(delta, aes(x = value, y = variable, fill = variable)) +
     scale_fill_solarized()
 ```
 
-From the parameter plots in @fig-delta, the main driver for this substantive results is the estimate for external support given to the rebel(s) in the context of a territorial civil conflict. In this case, the probability for the treatment parameter being greater than zero is `r mean(delta2$value > 0) |> signif(2)` with $\text{CI}_{90\%}: [`r quantile(delta2$value, 0.05) |> signif(2)`, `r quantile(delta2$value, 0.95) |> signif(2)`]$. Taken together, these results indicate that the crucial predictor for whether an intra-state conflict terminates as a frozen conflict is whether the opposition received external support by a third party state during a conflict episode centered around a territorial incompatibility. Meanwhile, external support directed to the government is fairly uninformative as are all treatment effects under the condition of a government incompatibility. However, the posterior uncertainty remains high, which limits the degree to which the treatment effect can be substantively interpreted.
+From the parameter plots in @fig-delta, the main driver for these substantive results is the estimate for external support given to the rebel(s) in the context of a territorial civil conflict.[^controls] In this case, the probability for the treatment parameter being greater than zero is `r mean(delta2$value > 0) |> signif(2)` with $\text{CI}_{90\%}: [`r quantile(delta2$value, 0.05) |> signif(2)`, `r quantile(delta2$value, 0.95) |> signif(2)`]$. Taken together, these results indicate that the crucial predictor for whether an intra-state conflict terminates as a frozen conflict is whether the opposition received external support by a third party state during a conflict episode centered around a territorial incompatibility. Meanwhile, external support directed to the government is fairly uninformative as are all treatment effects under the condition of a government incompatibility. However, the posterior uncertainty remains high, which limits the degree to which the treatment effect can be substantively interpreted.
+
+[^controls]: In addition to the treatment parameters presented here, @fig-controls in the [appendix][Additional Model Estimates] plots the posterior 50%/90% posterior quantile intervals for the non-treatment covariate coefficients.
+
+These results are partially confirmed by the [robustness checks][Robustness Checks] in the appendix. Specifically, under the alternative specifications, external support to the rebel(s) is found to still have a positive effect on the posterior probability of a civil conflict becoming frozen given that it has terminated. However, in contrast to the main results presented above, this effect is only under the condition of no matching external support to the government. In other words, the average marginal effect for external support given to both sides is no longer informative for predicting whether a terminated civil conflict becomes a frozen conflict.
 
 # Conclusion
 
-This paper sought to investigate a potential link between external support offered by third party states and the likelihood that a civil conflict transitions into a frozen conflict. A theory was offered emphasizing the expected utility of actors
-and how external support can shape the cost-benefit calculation in favour of a frozen outcome. This was then investigated empirically with a bayesian hierarchical probit model showing correlationary evidence that directed support to rebel groups does increase the probability that a civil conflict freezes, but only within the context of territorial civil conflicts.
+This paper has sought to investigate the potential link between external support offer by third party states and the likelihood that a civil conflict transitions into a becoming a frozen conflict. A theory was offered emphasizing the expected utility of actors and how external support can shape the cost-benefit calculation in favour of a frozen outcome. Specifically, it was argued that there are three plausible mechanisms by which actors may come to prefer a frozen conflict over a settlement when unable to achieve a military victory: credible commitments, transitory war gains, and time horizons. External state support can play an important role in all three by shaping the current and future distribution of power between conflict belligerents and subsidizing the accumulating costs of maintaining a frozen conflict such that the utility of transitory war gains can be maximized and actors can extend their time horizons.
 
-One potential shortcoming is that I did not take into account the preferences of external supporters and motivation for offering support. Nor did I disaggregate between different types of external support. In line with other empirical work on the disaggregated effects of external support and conflict duration, there may be a differential effect depending on the type and amount of support offered to conflict belligerents.
+The empirical results indicate that external state support directed to the opposition within the context of territorial civil conflicts does have a positive effect on the probability that a civil conflict becomes frozen given that it has terminated. However, the results provide only correlational evidence and are hampered by the observational nature of the data. Furthermore, from the robustness checks it is unclear if external support to the opposition holds when similar support is given to the government in territorial civil conflicts.
 
-Furthermore, the measurement offered for frozen conflicts was necessarily crude. It operationalized frozen conflict as a discrete event, "frozeness" maybe is best conceptualized as lying on a continuous dimension that allows conflicts to fluctuate  between "more" and "less" frozen. Future work should focus on refining this measure and to hopefully further expand on our understanding of both frozen conflicts and civil conflict termination.
+Nonetheless, these results provide preliminary evidence that external support may be an important factor for understanding the emergence of frozen conflicts. They also contribute to the pre-existing literature on conflict termination by providing a more nuanced picture of conflict outcomes with original coded data that should help research distinguish between conclusively terminated conflicts, and civil conflicts that instead transition to becoming frozen.
+
+Future research should continue to investigate the potential link between external support and frozen conflicts, examining for example the disaggregated effects of different types of support as well as whether the amount of support, especially in terms of material aid, has a significant impact. Furthermore, the measurement offered for frozen conflicts can be a starting point for more sophisticated attempts at measuring frozen conflicts on a continuous dimensions that allows conflicts to fluctuate between "more" and "less" frozen. Such an approach would allow researchers to better understand how conflicts transition between states of active and frozen conflict.
 
 \newpage
 
@@ -461,8 +481,6 @@ filter(dataset, frozen == 1) |>
     kable(longtable = T)
 ```
 
-\newpage
-
 ## Simulation Based Calibration
 
 The model specification is implemented using the probabilistic programming language, Stan. I use simulation-based calibration to validate the correctness of the implementation code according to the following procedure [@gelman_bayesian_2020].
@@ -484,7 +502,7 @@ Finally, I calculate the rank statistic for each parameter $k$, $r_{m, k} = \sum
 #| fig-cap: |
 #|     Simulation based calibration results for $M = 5000$ and $L =
 #|     2000$. Posteriors were not thinned since the effective sample
-#|     sizes showed anticorrelation among the MCMC draws.
+#|     sizes showed anticorrelation in the MCMC draws.
 sbc <- readRDS("./posteriors/sbc.rds") |>
     select(-.chain, -.iteration, -.draw)
 
@@ -498,29 +516,93 @@ for (i in seq_along(sbc)) {
 }
 ```
 
-\newpage
+## Descriptive Statistics
+
+```{R}
+#| label: tbl-stats
+#| tbl-cap: Descriptive statistics for both the dependent and
+#|          independent variables in the dataset. In total there are 212
+#|          conflict episodes spanning from 1975 - 2017.
+
+load("./data/model_inputs/0001.RData")
+
+descriptive <- function(x, name) {
+    list(Variable = labels$label[labels$variable == name],
+         Mean = mean(x),
+         Min = min(x),
+         Max = max(x))
+}
+
+# Note, grab duration from sub.df since episode_duration in the
+# covariate matrix X has already been normalized.
+covariates <- as.data.frame(X) |>
+    select(-matches("episode_duration")) |>
+    bind_cols(treatments, select(sub.df, frozen, episode_duration))
+
+tbl <- lapply(colnames(covariates), \(name) descriptive(covariates[[name]], name)) |>
+    bind_rows() |>
+    arrange(Variable)
+
+kable(tbl, digits = 2)
+```
+
+## Additional Model Estimates
+
+```{R}
+#| label: fig-controls
+#| fig-cap: Posterior estimates with 50% and 90% quantile intervals
+#|          for the non-treatment covariate coefficients in the probit
+#|          model presented in the main text. Not displayed are the
+#|          partially pooled, country-specific varying-intercepts.
+fit <- readRDS("./posteriors/0001/fit.rds")
+
+pars <- fit$draws(c("alpha", "beta"), format = "matrix")
+
+colnames(pars)[grepl("alpha", colnames(pars))] <- "Intercept"
+colnames(pars)[grepl("beta", colnames(pars))] <- labels$label[match(colnames(X), labels$variable)]
+
+mcmc_intervals(pars)
+```
 
 ## Robustness Checks
 
 There are several concerns that may be raised with the main results presented in this paper examining the potential link between directed external support by a third party state to a conflict actor and the probability for a civil conflict to have terminated as a frozen conflict. It what follows I detail each potential issue and present additional and/or alternative measures of frozen conflicts, conflict episodes, and the treatment variables. Finally, I re-run the model for all the resulting combinations and present the results.
 
-The first potential issue is that the original definition for a conflict termination as taken from the UCDP Conflict Termination Dataset requires that a conflict drops below a threshold of 25 battle related fatalities for only a single year. This risks including brief pauses in fighting as potential terminations to be coded as frozen conflicts. Although the conceptual definition of frozen conflict that I employ does not include an explicit temporal dimension as a requirement for a conflict to be considered frozen, it could be nonetheless argued that such pauses should not be considered candidates for being classified as frozen since actors may view the conflict as active and ongoing. Therefore, I also construct a stricter measure for frozen conflict whereby a conflict episode has to be followed by more than two years below the UCDP battle related threshold to be considered eligible to being classified as frozen, conditional on the remaining the coding criteria.
+The first potential issue is that the original definition for a conflict termination as taken from the UCDP Conflict Termination Dataset requires that a conflict drops below a threshold of 25 battle related fatalities for only a single year. This risks including brief pauses in fighting as potential terminations to be coded as frozen conflicts. Although the conceptual definition of frozen conflict that I employ does not include an explicit temporal dimension as a requirement for a conflict to be considered frozen, it could be nonetheless argued that such pauses should not be considered candidates for being classified as frozen since actors may view the conflict as active and ongoing. Therefore, I also construct a stricter measure for frozen conflict whereby a conflict episode has to be followed by more than two years below the UCDP battle related threshold to be considered eligible to being classified as frozen, conditional on the remaining coding criteria.[^strict_num]
 
-The second issue also relates to the underlying population of conflict episodes used to construct the frozen conflict measure. In the original coding for frozen conflict, I included all conflict episodes from the UCDP within the time period from 1975 to 2017, including low-level conflicts with relatively few battle related fatalities. It can be argued that minor, long-running insurgencies should not be considered as frozen conflicts since the underlying issue may no longer be particularly salient and there is a relatively low risk for a major escalation in violence. Such conflicts may experience sporadic, isolated incidences of violence, but would otherwise are minor factors in the domestic political agenda. To this end, I subset the list of conflict episodes to only include civil conflict episodes that have cumulatively experienced at least 1,000 battle related fatalities since onset in the hopes that major conflicts maintain a greater degree of salience post-termination.
+[^strict_num]: From the original dataset, `r sum(dataset$strict_frozen)` civil conflict episodes from 1975 until 2017 were coded as frozen conflicts following this stricter operationalization.
 
-Third, due to the truncated nature of the dataset, some of the civil conflict episodes are censored with missing data before 1975. In the main results I included a binary variable if the onset of an episode occurred before the start of the dataset. As an alternative, in the following robustness checks I also drop all censored episodes as well as censored conflicts.
+The second issue also relates to the underlying population of conflict episodes used to construct the frozen conflict measure. In the original coding for frozen conflict, I included all conflict episodes from the UCDP within the time period from 1975 to 2017, including low-level conflicts with relatively few battle related fatalities. It can be argued that minor, long-running insurgencies should not be considered as frozen conflicts since the underlying issue may no longer be particularly salient and there is a relatively low risk for a major escalation in violence. Such conflicts may experience sporadic, isolated incidences of violence, but would otherwise be considered minor within the larger issue of domestic politics. To this end, I subset the list of conflict episodes to only include civil conflict episodes that have cumulatively experienced at least 1,000 battle related fatalities since onset in the hopes that major conflicts maintain a greater degree of salience post-termination.[^high_intensity]
 
-Finally, the primary treatment variables used in the main text are aggregated binary measures for directed support, plus the interaction, at any time during a civil conflict episode. Although this aids in the interpretation of the treatment effect, these variables do not capture the extent to which support is provided during a conflict episode. Thus, I also replace the treatment variables with measures capturing the proportion of conflict-years within an episode that each actor received external support.
+[^high_intensity]: This leads to a dataset consisting of `r dplyr::filter(dataset, cumulative_intensity == 1) |> nrow()` civil conflict episodes of which `r dplyr::filter(dataset, cumulative_intensity == 1, frozen == 1) |> nrow()` satisfy the original operationalization of frozen conflict and `r dplyr::filter(dataset, cumulative_intensity == 1, strict_frozen == 1) |> nrow()` episodes satisfy the stricter, alternative operationalization.
 
-In total, this leads to `r list.files("posteriors", "\\d{4}") |> length()` different model configurations for the original vs strict definition of frozen conflict, inclusion and exclusion of low-intensity conflict episodes, inclusion and exclusion of censored episodes and/or conflicts, and finally the proportional aggregation of the treatment variables. @fig-robust
+Finally, the primary treatment variables used in the main text are aggregated binary measures for directed support, plus the interaction, at any time during a civil conflict episode. Although this aids in the interpretation of the associated model parameters, these variables do not capture the extent to which support is provided during a conflict episode. Thus, I also replace the treatment variables with measures capturing the proportion of conflict-years within an episode that each actor received external support.
 
+In total, this leads to `r list.files("posteriors", "\\d{4}") |> length()` different model configurations for the original versus strict definition of frozen conflict, inclusion and exclusion of low-intensity conflict episodes, and finally the proportional aggregation of the treatment variables. @fig-robust-1 and @fig-robust-2 plot the posterior average marginal effect for directed external support given only to the government during the course of a civil conflict episode. The former graph shows the estimates for the different models using all of the conflict episodes, while the latter estimates are fitted using only high intensity conflict episodes. In all cases, the posterior estimates indicate that the parameters are fairly uninformative for predicting whether a terminated civil conflict episode freezes. The highest posterior probability that the average marginal effect is greater than zero is only slightly above 0.8 across all models. This mirrors the results from the model presented in the main text.
 
 ```{R}
-#| label: fig-robust
-#| fig-cap: Robustness checks
+#| label: fig-robust-1
+#| fig-cap: Posterior estimates for the average marginal effect of
+#|          external support to the government only varied by
+#|          incompatibility type across the different model
+#|          configurations for all conflict episodes.
+
+appendix_plot <- function(df) {
+    ggplot(df, aes(pzero, median, colour = treatment)) +
+        geom_point(aes(shape = outcome), alpha = 0.9, size = 2) +
+        geom_errorbar(aes(ymin = q5, ymax = q95), alpha = 0.5, width = 0) +
+    geom_hline(yintercept = 0, linetype = "dashed", alpha = 0.2) +
+    facet_grid(. ~ group) +
+    theme(panel.border = element_rect(fill = NA, colour = "grey"),
+          strip.text = element_text(face = "bold"),
+          plot.title = element_text(face = "bold", hjust = 0.5)) +
+    xlab(TeX("$P(AME_{jk} > 0)$")) +
+    ylab(TeX("$AME_{jk}$")) +
+    scale_color_solarized()
+}
 
 models <- list.dirs("posteriors", recursive = F)
-stopifnot(length(models) != 0)
+stopifnot(length(models) > 0)
 
 fits <- lapply(models, \(dir) file.path(dir, "fit.rds") |> readRDS())
 names(fits) <- basename(models)
@@ -543,21 +625,72 @@ model_ames$variable <- case_when(ame_keys == "ame[1]" ~ "Ext. Sup. Gov Only",
 model_ames$group <- ifelse(sapply(ll, `[`, 2) == 1, "Government Incompatibility",
                            "Territorial Incompatibility")
 
-rebel <- filter(model_ames, variable == "Ext. Sup. Rebel Only", censored == "with_censored")
-ggplot(rebel, aes(pzero, median, colour = treatment)) +
-    geom_point(aes(shape = outcome), alpha = 0.8) +
-    geom_errorbar(aes(ymin = q5, ymax = q95), alpha = 0.1) +
-    geom_vline(xintercept = 0.9, linetype = "dashed", alpha = 0.2) +
-    facet_grid(episodes ~ group)
+filter(model_ames, variable == "Ext. Sup. Gov Only", episodes == "all") |>
+    appendix_plot() +
+    ggtitle("Ext. Sup. Gov Only - All Episodes")
+```
 
-#filter(model_ames, variable == "Ext. Sup. Rebel Only") |>
-#ggplot(aes(pzero, median, colour = treatment)) +
-#    geom_point(alpha = 0.2) +
-#    geom_errorbar(aes(ymin = q5, ymax = q95), alpha = 0.25) +
-#    geom_hline(yintercept = 0, linetype = "dashed", alpha = 0.2) +
-#    geom_vline(xintercept = 0.9, linetype = "dashed", alpha = 0.2) +
-#    facet_grid(variable ~ group) +
-#    labs(y = parse(text = "tilde(Delta)"), x = parse(text = "P(tilde(Delta) > 0)")) +
-#    theme(legend.position = "none")
+```{R}
+#| label: fig-robust-2
+#| fig-cap: Posterior estimates for the average marginal effect of
+#|          external support to the government only varied by
+#|          incompatibility type across the different model
+#|          configurations for only high intensity conflict episodes.
 
+filter(model_ames, variable == "Ext. Sup. Gov Only", episodes == "cumulative_intensity") |>
+    appendix_plot() +
+    ggtitle("Ext. Sup. Gov Only - High Intensity Episodes")
+```
+
+@fig-robust-3 and @fig-robust-4 similarly plot the estimates for the average marginal effect of external support to only the opposition for each aforementioned model. Again, the results are largely inline with the conclusions drawn from the model presented in the main text. The posterior probability that the average marginal effect for external support to the rebel side is greater than zero is greater than 0.9 across all specifications for civil conflict episodes centering on a territorial incompatibility. In the case of civil conflicts where the contest is over control of the central government, the average marginal effect is found to be positively associated with the probability of a terminated episode freezing only for the models fit on the high intensity episode data whilst excluding the proportional treatment for the standard operationalization of frozen conflict.
+
+```{R}
+#| label: fig-robust-3
+#| fig-cap: Posterior estimates for the average marginal effect of
+#|          external support to the rebel side only varied by
+#|          incompatibility type across the different model
+#|          configurations for all conflict episodes.
+
+filter(model_ames, variable == "Ext. Sup. Rebel Only", episodes == "all") |>
+    appendix_plot() +
+    ggtitle("Ext. Sup. Rebel Only - All Episodes")
+```
+
+```{R}
+#| label: fig-robust-4
+#| fig-cap: Posterior estimates for the average marginal effect of
+#|          external support to the rebel side only varied by
+#|          incompatibility type across the different model
+#|          configurations for only high intensity conflict episodes.
+
+filter(model_ames, variable == "Ext. Sup. Rebel Only", episodes == "cumulative_intensity") |>
+    appendix_plot() +
+    ggtitle("Ext. Sup. Rebel Only - High Intensity Episodes")
+```
+
+Finally, @fig-robust-5 and @fig-robust-6 depict the average marginal effects when both sides in a civil conflict episode receive support. In the main text this was found to be positively associated with the probability of a frozen conflict onset, largely being driven by the parameter for external support to the rebel side --- in other words, external support for the opposition was found to be positively associated with frozen conflict onset even in the presence of external support to the government. The results here indicate that this relationship is fairly non-robust across the alternative models. Rather, external support support for the rebel side is positively associated with the probability of frozen conflict onset, but only in the absence of support to the government.
+
+```{R}
+#| label: fig-robust-5
+#| fig-cap: Posterior estimates for the average marginal effect of
+#|          external support to both sides varied by incompatibility
+#|          type across the different model configurations for all
+#|          conflict episodes.
+
+filter(model_ames, variable == "Ext. Sup. to Both", episodes == "all") |>
+    appendix_plot() +
+    ggtitle("Ext. Sup. to Both - All Episodes")
+```
+
+
+```{R}
+#| label: fig-robust-6
+#| fig-cap: Posterior estimates for the average marginal effect of
+#|          external support to both sides varied by incompatibility
+#|          type across the different model configurations for only
+#|          high intensity conflict episodes.
+
+filter(model_ames, variable == "Ext. Sup. to Both", episodes == "cumulative_intensity") |>
+    appendix_plot() +
+    ggtitle("Ext. Sup. to Both - High Intensity Episodes")
 ```
