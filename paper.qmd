@@ -436,13 +436,13 @@ Future research should continue to investigate the potential link between extern
 
 ## Coding Protocol
 
-The frozen conflict data was created using a mix of programmatic and manual coding in a two-stage process. The first stage filtered out dyadic civil conflict episode outcomes according to a preset list of rules listed in detail below. This candidate list was then manually corrected in the second stage to form the final list of frozen conflict onsets.
+The frozen conflict data was created using a mix of programmatic and manual coding in a two-stage process. The first stage filtered out civil conflict episode outcomes according to a preset list of rules listed in detail below. This candidate list was then manually corrected in the second stage to form the final list of frozen conflict onsets.
 
 ### Procedure
 
 #### Stage 1
 
-Dyadic conflict episode outcomes were drawn from the UCDP Conflict Termination dataset v21.1. This means that the definition of a conflict episode and its corresponding termination followed the coding conventions of the UCDP dataset. Namely, dyad-years are coded as active conflicts when the number of battle related fatalities rises above a threshold of 25. Consecutive conflict years, or episodes, are terminated the first year when this number drops below the threshold.
+Conflict episode outcomes were drawn from the UCDP Conflict Termination dataset v21.1. This means that the definition of a conflict episode and its corresponding termination followed the coding conventions of the UCDP dataset. Namely, conflict-years are coded as active conflicts when the number of battle related fatalities rises above a threshold of 25. Consecutive conflict years, or episodes, are terminated the first year when this number drops below the threshold.
 
 Episode outcomes were selected as potential onsets of frozen civil conflicts when satisfying the following predicates:
 
