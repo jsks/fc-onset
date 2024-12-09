@@ -3,9 +3,6 @@ title: "Frozen Civil Conflicts"
 subtitle: "The Role of External State Support"
 authors:
 - name: J.L.A. Krusell
-  email: "joshua.krusell@gu.se"
-  affiliations:
-      - "University of Gothenburg"
 date: today
 date-format: long
 linestretch: 1.25
