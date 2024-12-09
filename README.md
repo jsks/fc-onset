@@ -51,3 +51,9 @@ Additional documentation on the available commands in the pipeline can be found 
 ```sh
 $ make help
 ```
+
+## License
+
+This project is licensed under a [Creative Commons Attribution-ShareAlike 4.0 International License](http://creativecommons.org/licenses/by-sa/4.0/).
+
+![](https://i.creativecommons.org/l/by-sa/4.0/88x31.png)
